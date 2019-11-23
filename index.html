@@ -30,7 +30,7 @@
   border: 1px rgba(0, 0, 0, 0.5) solid;
   padding: 5px;
   box-sizing: border-box;
-  color: white;
+  overflow: hidden;
 }
 .legend {
   position: absolute;
@@ -79,6 +79,15 @@
 
 
 .effort {
+  position: absolute;
+  width: 100%;
+  left: 0px;
+  top: calc(var(--key-unit) * 2 / 3);
+  text-align: center;
+  line-height: calc(var(--key-unit) / 3);
+  font-size: 12px;
+}
+.usage {
   position: absolute;
   width: 100%;
   left: 0px;
@@ -386,37 +395,37 @@ var legend_lookup = {
 };
 
 var shifted_keys = {
-  "'": "\"",
-  ";": ":",
-  "/": "?",
-  ",": "<",
-  ".": ">",
-  "a": "A",
-  "b": "B",
-  "c": "C",
-  "d": "D",
-  "e": "E",
-  "f": "F",
-  "g": "G",
-  "h": "H",
-  "i": "I",
-  "j": "J",
-  "k": "K",
-  "l": "L",
-  "m": "M",
-  "n": "N",
-  "o": "O",
-  "p": "P",
-  "q": "Q",
-  "r": "R",
-  "s": "S",
-  "t": "T",
-  "u": "U",
-  "v": "V",
-  "w": "W",
-  "x": "X",
-  "y": "Y",
-  "z": "Z",
+  "\"": "'",
+  ":": ";",
+  "?": "/",
+  "<": ",",
+  ">": ".",
+  "A": "a",
+  "B": "b",
+  "C": "c",
+  "D": "d",
+  "E": "e",
+  "F": "f",
+  "G": "g",
+  "H": "h",
+  "I": "i",
+  "J": "j",
+  "K": "k",
+  "L": "l",
+  "M": "m",
+  "N": "n",
+  "O": "o",
+  "P": "p",
+  "Q": "q",
+  "R": "r",
+  "S": "s",
+  "T": "t",
+  "U": "u",
+  "V": "v",
+  "W": "w",
+  "X": "x",
+  "Y": "y",
+  "Z": "z",
 };
 
 var num_layers = 0;
@@ -501,6 +510,7 @@ function loadLayout(info) {
     if (info.layout[i].w)
       w = info.layout[i].w;
     keymap[i] = {};
+    keymap[i].i = i;
     keymap[i] = info.layout[i];
     keymap[i].w = w;
     keymap[i].layers = [];
@@ -523,7 +533,7 @@ function renderLayout() {
     var effort = precise(keymap[i].penalty + keymap[i].base);
     var bg_color = d3.interpolateTurbo(effort/10);
     var text_color = d3.lab(bg_color).l >= 17.5 ? "black": "white";
-    inner += `<div id="key-${i}" class="key" style="left: calc(${keymap[i].x} * (var(--key-spacing) + var(--key-unit))); top: calc(${keymap[i].y} * (var(--key-spacing) + var(--key-unit))); width: calc(${keymap[i].w} * var(--key-unit)); background:${bg_color}; color: ${text_color}">${key_html}<div class="effort">${effort}</div></div>`;
+    inner += `<div id="key-${i}" class="key" style="left: calc(${keymap[i].x} * (var(--key-spacing) + var(--key-unit))); top: calc(${keymap[i].y} * (var(--key-spacing) + var(--key-unit))); width: calc(${keymap[i].w} * var(--key-unit));">${key_html}<div class="effort" style="background:${bg_color}; color: ${text_color}">${effort}</div></div>`;
   }
 
   layout_element.innerHTML = inner;
@@ -681,6 +691,11 @@ document.getElementById("compute").onclick = function(event) {
   var total_penalty = 0;
   var total_stroke_path = 0;
   var keys = [];
+
+  for (var i = 0; i < keymap.length; i++) {
+    keymap[i].count = 0;
+  } 
+
   for (var i = 0; i < text.length; i++) {
     var key_index = findKeyIndex(text[i]);
     // skip keys we can't find
@@ -699,6 +714,8 @@ document.getElementById("compute").onclick = function(event) {
   // save for later incase we need to remove some for calculations
   var num_triads = keys.length - 2;
   for (var i = 0; i < keys.length - 2; i++) {
+    keys[i].count++;
+
     var base_1 = keys[i].base;
     var base_2 = keys[i+1].base;
     var base_3 = keys[i+2].base;
@@ -730,6 +747,13 @@ document.getElementById("compute").onclick = function(event) {
                   K_P * penalty +
                   K_S * stroke_path;
     total_effort += effort;
+  }
+
+  for (var i = 0; i < keymap.length; i++) {
+    var perc = precise(keymap[i].count / keys.length);
+    var bg_color = d3.interpolateTurbo(1 - perc * 4);
+    var text_color = d3.lab(bg_color).l >= 17.5 ? "black": "white";
+    document.getElementById("key-"+i).innerHTML += `<div class="usage" style="background:${bg_color}; color: ${text_color}">${precise(perc * 100)}</div>`;
   }
 
   var average_effort = total_effort / num_triads;
