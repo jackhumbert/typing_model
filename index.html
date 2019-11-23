@@ -177,6 +177,10 @@ It was also in this conviction that the positive duty of burying the deceased or
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script>
 
+function textColorFromBackground(bg_color) {
+  return d3.lab(bg_color).l >= 50 ? "black": "white";
+}
+
 data = [];
 
 let currentFilter = "",
@@ -391,7 +395,9 @@ var legend_lookup = {
   "KC_MNXT": "⏭",
   "KC_VOLU": "🕪",
   "KC_VOLD": "🕩",
-
+  "MO(1)": "▲1",
+  "MO(2)": "▲2",
+  "LT(1,KC_GRV)": "▲1",
 };
 
 var shifted_keys = {
@@ -434,67 +440,112 @@ var keyboard = {};
 var keymap = [];
 var HOMEROW_OFFSET = 3;
 
-function findKeyIndex(character) {
+function findKey(character) {
   for (var key = 0; key < keymap.length; key++) {
     for (var layer = 0; layer < num_layers; layer++) {
       if (keymap[key].layers[layer] == character) {
-        return key;
+        return {index: key, layer: layer};
       }
     }
   }
   return -1;
 }
 
+function findKeyAtCoords(x, y) {
+  var closest_dist = 1000, dist, closest_index;
+  for (var key = 0; key < keymap.length; key++) {
+    dist = Math.sqrt(Math.pow(keymap[key].x - x, 2) + Math.pow(keymap[key].y - y, 2));
+    if (dist < closest_dist) {
+      closest_dist = dist;
+      closest_index = key;
+    }
+  }
+  return {index: closest_index, dist: closest_dist};
+}
+
 function guessHomerow() {
+  // assumes that home row keys are all neighbors in the layout
   var lm, lp, rp, rm;
   // test for qwerty
-  lm = findKeyIndex("d");
-  lp = findKeyIndex("f");
-  rp = findKeyIndex("j");
-  rm = findKeyIndex("k");
-  if ((lm + 1 == lp) && (rp + 1 == rm))
-    return {left: lp, right: rp};
+  lm = findKey("d");
+  lp = findKey("f");
+  rp = findKey("j");
+  rm = findKey("k");
+  if ((lm.index + 1 == lp.index) && (rp.index + 1 == rm.index))
+    return {leftPointer: lp, rightPointer: rp};
   // test for colemak
-  lm = findKeyIndex("s");
-  lp = findKeyIndex("t");
-  rp = findKeyIndex("n");
-  rm = findKeyIndex("e");
-  if ((lm + 1 == lp) && (rp + 1 == rm))
-    return {left: lp, right: rp};
+  lm = findKey("s");
+  lp = findKey("t");
+  rp = findKey("n");
+  rm = findKey("e");
+  if ((lm.index + 1 == lp.index) && (rp.index + 1 == rm.index))
+    return {leftPointer: lp, rightPointer: rp};
+}
+
+function guessThumbs(homerow) {
+  var key_lp = keymap[homerow.leftPointer.index];
+  var key_rp = keymap[homerow.rightPointer.index];
+  var left = findKeyAtCoords(key_lp.x + 1, key_lp.y + 2);
+  var right = findKeyAtCoords(key_rp.x - 1, key_rp.y + 2);
+  return {left: left, right: right}; 
 }
 
 function calcPenalty(key) {
-  return W_0 + W_HAND * P_HAND[key.hand] + W_FINGER * P_FINGER[key.finger] + W_ROW * P_ROW[Math.round(key.row)];
+  if (key.thumb)
+    return W_0 + W_HAND * P_HAND[key.hand] + W_THUMB;
+  else
+    return W_0 + W_HAND * P_HAND[key.hand] + W_FINGER * P_FINGER[key.finger] + W_ROW * P_ROW[Math.round(key.row)];
 }
 
 function guessBaseEffort() {
-  var homePointers = guessHomerow();
+  var homerow = guessHomerow();
+  var thumbs = guessThumbs(homerow);
   for (var key = 0; key < keymap.length; key++) {
-    var dist = 1000;
+    var closest_dist = 1000;
     var finger = 0;
     var hand = 0;
     var row = HOMEROW_OFFSET;
+    var thumb = false;
+    var dist, vert_dist;
     for (var i = 0; i < 4; i++) {
-      var hrk, new_dist;
-      hrk = keymap[homePointers.left - i];
-      new_dist = Math.sqrt(Math.pow(parseFloat(keymap[key].x) - parseFloat(hrk.x), 2) + Math.pow(parseFloat(keymap[key].y) - parseFloat(hrk.y), 2));
-      if (new_dist < dist) {
-        dist = new_dist;
+      var hrk;
+      hrk = keymap[homerow.leftPointer.index - i];
+      dist = Math.sqrt(Math.pow(parseFloat(keymap[key].x) - parseFloat(hrk.x), 2) + Math.pow(parseFloat(keymap[key].y) - parseFloat(hrk.y), 2));
+      if (dist < closest_dist) {
+        closest_dist = dist;
         finger = 3 - i;
         hand = 0;
         row = keymap[key].y - hrk.y + HOMEROW_OFFSET;
       }
-      hrk = keymap[homePointers.right + i];
-      new_dist = Math.sqrt(Math.pow(parseFloat(keymap[key].x) - parseFloat(hrk.x), 2) + Math.pow(parseFloat(keymap[key].y) - parseFloat(hrk.y), 2));
-      if (new_dist < dist) {
-        dist = new_dist;
+      hrk = keymap[homerow.rightPointer.index + i];
+      dist = Math.sqrt(Math.pow(parseFloat(keymap[key].x) - parseFloat(hrk.x), 2) + Math.pow(parseFloat(keymap[key].y) - parseFloat(hrk.y), 2));
+      if (dist < closest_dist) {
+        closest_dist = dist;
         finger = i + 4;
         hand = 1;
         row = keymap[key].y - hrk.y + HOMEROW_OFFSET;
       }
     }
-    keymap[key].dist = dist;
-    keymap[key].base = dist * 2;
+
+    dist = Math.sqrt(Math.pow(keymap[key].x - keymap[thumbs.left.index].x, 2) + Math.pow(keymap[key].y - keymap[thumbs.left.index].y, 2));
+    vert_dist = Math.abs(keymap[key].y - keymap[thumbs.left.index].y);
+    if (dist < closest_dist && vert_dist < 1.0) {
+      closest_dist = dist;
+      thumb = true;
+      hand = 0;
+    }
+
+    dist = Math.sqrt(Math.pow(keymap[key].x - keymap[thumbs.right.index].x, 2) + Math.pow(keymap[key].y - keymap[thumbs.right.index].y, 2));
+    vert_dist = Math.abs(keymap[key].y - keymap[thumbs.right.index].y);
+    if (dist < closest_dist && vert_dist < 1.0) {
+      closest_dist = dist;
+      thumb = true;
+      hand = 1;
+    }
+
+    keymap[key].dist = closest_dist;
+    keymap[key].base = closest_dist * 2;
+    keymap[key].thumb = thumb;
     keymap[key].hand = hand;
     keymap[key].finger = finger;
     keymap[key].row = row;
@@ -510,9 +561,11 @@ function loadLayout(info) {
     if (info.layout[i].w)
       w = info.layout[i].w;
     keymap[i] = {};
-    keymap[i].i = i;
     keymap[i] = info.layout[i];
-    keymap[i].w = w;
+    keymap[i].x = parseFloat(keymap[i].x);
+    keymap[i].y = parseFloat(keymap[i].y);
+    keymap[i].w = parseFloat(w);
+    keymap[i].i = i;
     keymap[i].layers = [];
   }
 }
@@ -531,8 +584,8 @@ function renderLayout() {
       key_html += `<div class="legend legend-${layer}" title="${keymap[i].layers[layer]}">${keymap[i].layers[layer]}</div>`;
     }
     var effort = precise(keymap[i].penalty + keymap[i].base);
-    var bg_color = d3.interpolateTurbo(effort/10);
-    var text_color = d3.lab(bg_color).l >= 17.5 ? "black": "white";
+    var bg_color = d3.interpolateCividis(effort/10);
+    var text_color = textColorFromBackground(bg_color);
     inner += `<div id="key-${i}" class="key" style="left: calc(${keymap[i].x} * (var(--key-spacing) + var(--key-unit))); top: calc(${keymap[i].y} * (var(--key-spacing) + var(--key-unit))); width: calc(${keymap[i].w} * var(--key-unit));">${key_html}<div class="effort" style="background:${bg_color}; color: ${text_color}">${effort}</div></div>`;
   }
 
@@ -644,6 +697,7 @@ var W_0      = 0.0000;
 var W_HAND   = 1.0000;
 var W_ROW    = 1.3088;
 var W_FINGER = 2.4948;
+var W_THUMB  = 0.0000;
 
 var F_HAND   = 1.0;
 var F_ROW    = 0.3;
@@ -670,7 +724,7 @@ var STROKE_PATH_ROW_INDEX = [
 
 // 3 bits per finger, 0 is left pinky, 7 right pinky
 // https://docs.google.com/spreadsheets/d/14FXg6m0PgpJf6eSjiu0r1wzG-G45J_H6WQEIGcLrODM/edit?usp=sharing
-// 3 double inner roll
+// 0 double inner roll
 // 1 repeat one
 // 2 single inner roll
 // 3 single outer roll
@@ -680,6 +734,17 @@ var STROKE_PATH_ROW_INDEX = [
 // 7 bounce
 var STROKE_PATH_FINGER_INDEX = [ 5, 1, 1, 1, 1, 1, 1, 1, 7, 1, 0, 0, 2, 2, 2, 2, 7, 3, 1, 0, 2, 2, 2, 2, 7, 3, 3, 1, 2, 2, 2, 2, 6, 6, 6, 6, 1, 3, 3, 3, 6, 6, 6, 6, 2, 1, 3, 3, 6, 6, 6, 6, 2, 2, 1, 3, 6, 6, 6, 6, 2, 2, 2, 1, 1, 7, 3, 3, 3, 3, 3, 3, 1, 5, 1, 1, 1, 1, 1, 1, 2, 7, 1, 0, 2, 2, 2, 2, 2, 7, 3, 1, 2, 2, 2, 2, 6, 6, 6, 6, 1, 3, 3, 3, 6, 6, 6, 6, 2, 1, 3, 3, 6, 6, 6, 6, 2, 2, 1, 3, 6, 6, 6, 6, 2, 2, 2, 1, 1, 3, 7, 3, 3, 3, 3, 3, 4, 1, 7, 3, 3, 3, 3, 3, 1, 1, 5, 1, 1, 1, 1, 1, 2, 2, 7, 1, 2, 2, 2, 2, 6, 6, 6, 6, 1, 3, 3, 3, 6, 6, 6, 6, 2, 1, 3, 3, 6, 6, 6, 6, 2, 2, 1, 3, 6, 6, 6, 6, 2, 2, 2, 1, 1, 3, 3, 7, 3, 3, 3, 3, 4, 1, 3, 7, 3, 3, 3, 3, 4, 4, 1, 7, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 6, 6, 6, 6, 1, 3, 3, 3, 6, 6, 6, 6, 2, 1, 3, 3, 6, 6, 6, 6, 2, 2, 1, 3, 6, 6, 6, 6, 2, 2, 2, 1, 1, 2, 2, 2, 6, 6, 6, 6, 3, 1, 2, 2, 6, 6, 6, 6, 3, 3, 1, 2, 6, 6, 6, 6, 3, 3, 3, 1, 6, 6, 6, 6, 1, 1, 1, 1, 5, 1, 1, 1, 3, 3, 3, 3, 7, 1, 4, 4, 3, 3, 3, 3, 7, 3, 1, 4, 3, 3, 3, 3, 7, 3, 3, 1, 1, 2, 2, 2, 6, 6, 6, 6, 3, 1, 2, 2, 6, 6, 6, 6, 3, 3, 1, 2, 6, 6, 6, 6, 3, 3, 3, 1, 6, 6, 6, 6, 2, 2, 2, 2, 1, 7, 2, 2, 1, 1, 1, 1, 1, 5, 1, 1, 3, 3, 3, 3, 3, 7, 1, 4, 3, 3, 3, 3, 3, 7, 3, 1, 1, 2, 2, 2, 6, 6, 6, 6, 3, 1, 2, 2, 6, 6, 6, 6, 3, 3, 1, 2, 6, 6, 6, 6, 3, 3, 3, 1, 6, 6, 6, 6, 2, 2, 2, 2, 1, 3, 7, 2, 2, 2, 2, 2, 0, 1, 7, 2, 1, 1, 1, 1, 1, 1, 5, 1, 3, 3, 3, 3, 3, 3, 7, 1, 1, 2, 2, 2, 6, 6, 6, 6, 3, 1, 2, 2, 6, 6, 6, 6, 3, 3, 1, 2, 6, 6, 6, 6, 3, 3, 3, 1, 6, 6, 6, 6, 2, 2, 2, 2, 1, 3, 3, 7, 2, 2, 2, 2, 0, 1, 3, 7, 2, 2, 2, 2, 0, 0, 1, 7, 1, 1, 1, 1, 1, 1, 1, 5 ];
 
+// this weights the indexes above, on a scale 0-7
+var STROKE_PATH_FINGER_WEIGHT = [
+  0.0, // 0 double inner roll
+  2.0, // 1 repeat one
+  1.0, // 2 single inner roll
+  3.0, // 3 single outer roll
+  2.0, // 4 double outer roll
+  5.0, // 5 same finger
+  3.0, // 6 alt hands
+  2.0  // 7 bounce
+];
 var K_B = 0.3555;
 var K_P = 0.6423;
 var K_S = 0.4268;
@@ -690,50 +755,72 @@ document.getElementById("compute").onclick = function(event) {
   var total_base = 0;
   var total_penalty = 0;
   var total_stroke_path = 0;
-  var keys = [];
+  var keys = [], thumbs = [], fingers = [];
 
   for (var i = 0; i < keymap.length; i++) {
     keymap[i].count = 0;
   } 
 
   for (var i = 0; i < text.length; i++) {
-    var key_index = findKeyIndex(text[i]);
+    // convert to lut/switch eventually
+    if (text[i] == "\n" || text[i] == "\r")
+      text[i] = "↵";
+    var key = findKey(text[i]);
     // skip keys we can't find
-    if (key_index != -1)
-      keys.push(keymap[key_index]);
-    // check for shifted keys
-    key_index = findKeyIndex(shifted_keys[text[i]]);
-    if (key_index != -1) {
-      var shift_key_index = findKeyIndex("⇧");
-      if (shift_key_index != -1) {
-        keys.push(keymap[shift_key_index]);
-        keys.push(keymap[key_index]);
+    if (key != -1) {
+      if (key.layer != 0) {
+        var layer_key = findKey("▲"+key.layer);
+        if (layer_key != -1)
+          keys.push(keymap[layer_key.index])
+      }
+      keys.push(keymap[key.index]);
+    } else {
+      // check for shifted keys
+      key = findKey(shifted_keys[text[i]]);
+      if (key != -1) {
+        var shift_key = findKey("⇧");
+        if (shift_key != -1) {
+          keys.push(keymap[shift_key.index]);
+          keys.push(keymap[key.index]);
+        }
       }
     }
   }
-  // save for later incase we need to remove some for calculations
-  var num_triads = keys.length - 2;
-  for (var i = 0; i < keys.length - 2; i++) {
+  for (var i = 0; i < keys.length; i++) {
     keys[i].count++;
+    if (keys[i].thumb) {
+      thumbs[fingers.length] = keys[i];
+    } else {
+      fingers.push(keys[i]);
+    }
+  }
+  // save for later incase we need to remove some for calculations
+  var num_triads = fingers.length - 2;
+  for (var i = 0; i < fingers.length - 2; i++) {
+    // very basic thumb model. should account for previous states
+    if (thumbs[i] != null) {
+      total_effort += thumbs[i].base + thumbs[i].penalty;
+    }
 
-    var base_1 = keys[i].base;
-    var base_2 = keys[i+1].base;
-    var base_3 = keys[i+2].base;
+
+    var base_1 = fingers[i].base;
+    var base_2 = fingers[i+1].base;
+    var base_3 = fingers[i+2].base;
     var base = base_1 * K_1 *
                       (1 + base_2 * K_2 * 
                       (1 + base_3 * K_3));
 
-    var penalty = keys[i].penalty * K_1 *
-                  (1 + keys[i+1].penalty * K_2 *
-                  (1 + keys[i+2].penalty * K_3));
+    var penalty = fingers[i].penalty * K_1 *
+                  (1 + fingers[i+1].penalty * K_2 *
+                  (1 + fingers[i+2].penalty * K_3));
 
-    var stroke_path_hand = STROKE_PATH_HAND_INDEX[(keys[i].hand << 2) | (keys[i+1].hand << 1) | (keys[i+2].hand)];
+    var stroke_path_hand = STROKE_PATH_HAND_INDEX[(fingers[i].hand << 2) | (fingers[i+1].hand << 1) | (fingers[i+2].hand)];
     
-    var row_diff_1 = parseInt(Math.round(keys[i].row - keys[i+1].row + HOMEROW_OFFSET));
-    var row_diff_2 = parseInt(Math.round(keys[i].row - keys[i+2].row + HOMEROW_OFFSET));
+    var row_diff_1 = parseInt(Math.round(fingers[i].row - fingers[i+1].row + HOMEROW_OFFSET));
+    var row_diff_2 = parseInt(Math.round(fingers[i].row - fingers[i+2].row + HOMEROW_OFFSET));
     var stroke_path_row = STROKE_PATH_ROW_INDEX[(row_diff_1 << 3) | row_diff_2];
 
-    var stroke_path_finger = STROKE_PATH_FINGER_INDEX[(keys[i].finger << 6) | (keys[i+1].finger << 3) | keys[i+2].finger];
+    var stroke_path_finger = STROKE_PATH_FINGER_WEIGHT[STROKE_PATH_FINGER_INDEX[(fingers[i].finger << 6) | (fingers[i+1].finger << 3) | fingers[i+2].finger]];
 
     var stroke_path = stroke_path_hand * F_HAND + 
                       stroke_path_row * F_ROW + 
@@ -749,10 +836,16 @@ document.getElementById("compute").onclick = function(event) {
     total_effort += effort;
   }
 
+  var max_count = 0;
   for (var i = 0; i < keymap.length; i++) {
-    var perc = precise(keymap[i].count / keys.length);
-    var bg_color = d3.interpolateTurbo(1 - perc * 4);
-    var text_color = d3.lab(bg_color).l >= 17.5 ? "black": "white";
+    if (keymap[i].count > max_count)
+      max_count = keymap[i].count;
+  }
+
+  for (var i = 0; i < keymap.length; i++) {
+    var perc = precise(keymap[i].count / fingers.length);
+    var bg_color = d3.interpolatePuBuGn(keymap[i].count / max_count);
+    var text_color = textColorFromBackground(bg_color);
     document.getElementById("key-"+i).innerHTML += `<div class="usage" style="background:${bg_color}; color: ${text_color}">${precise(perc * 100)}</div>`;
   }
 
@@ -764,7 +857,7 @@ document.getElementById("compute").onclick = function(event) {
   data.push({
     keyboard: keyboard.keyboard_name,
     filename: filename,
-    corpus: text.slice(0, 10)+"...",
+    corpus: text.slice(0, 20)+"...",
     total_effort: precise(average_effort),
     base: precise(average_base),
     penalties: precise(average_penalty),
