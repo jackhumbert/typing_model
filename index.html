@@ -124,6 +124,18 @@ tr[data-item-id]:hover {
   background: #eee;
 }
 
+button#effort-button, button#usage-button {
+  display: inline-block;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+button.selected {
+  background: #333;
+  color: white;
+  border-color : #111;
+}
+
 </style>
 
 
@@ -165,6 +177,9 @@ It was also in this conviction that the positive duty of burying the deceased or
 </div>
 <div class="columns three">
   <button id="compute" class="u-full-width">compute</button>
+
+  <button id="effort-button">effort</button>
+  <button id="usage-button" class="selected">usage</button>
 </div>
 </div>
   <div id="keymap"></div>
@@ -188,6 +203,8 @@ It was also in this conviction that the positive duty of burying the deceased or
 <!-- <script src="https://d3js.org/d3-color.v1.min.js"></script> -->
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script>
+
+var usage_selected = true;
 
 function textColorFromBackground(bg_color) {
   return d3.lab(bg_color).l >= 50 ? "black": "white";
@@ -627,7 +644,7 @@ function renderLayout(keymap) {
     var effort = precise(keymap[i].penalty + keymap[i].base);
     var bg_color = d3.interpolateCividis(effort/10);
     var text_color = textColorFromBackground(bg_color);
-    inner += `<div id="key-${i}" class="key" style="left: calc(${keymap[i].x} * (var(--key-spacing) + var(--key-unit))); top: calc(${keymap[i].y} * (var(--key-spacing) + var(--key-unit))); width: calc(${keymap[i].w} * var(--key-unit));">${key_html}<div class="effort" style="background:${bg_color}; color: ${text_color}">${effort}</div></div>`;
+    inner += `<div id="key-${i}" class="key" style="left: calc(${keymap[i].x} * (var(--key-spacing) + var(--key-unit))); top: calc(${keymap[i].y} * (var(--key-spacing) + var(--key-unit))); width: calc(${keymap[i].w} * var(--key-unit));">${key_html}<div class="effort" style="background:${bg_color}; color: ${text_color}; display: ${usage_selected ? "none": "block"}">${effort}</div></div>`;
   }
 
   layout_element.innerHTML = inner;
@@ -804,7 +821,37 @@ function clone(obj) {
     return copy;
 }
 
-document.getElementById("compute").onclick = function(event) { computeCorpus(document.getElementById("corpus").value) };
+document.getElementById("compute").onclick = function(event) { 
+  computeCorpus(document.getElementById("corpus").value);
+};
+
+document.getElementById("usage-button").onclick = function(event) { 
+  usage_selected = true;
+  document.getElementById("usage-button").classList.add("selected");
+  document.getElementById("effort-button").classList.remove("selected");
+  var divs = document.querySelectorAll(".key .usage");
+  Array.prototype.forEach.call(divs, div => {
+    div.style.display = "block";
+  });
+  divs = document.querySelectorAll(".key .effort");
+  Array.prototype.forEach.call(divs, div => {
+    div.style.display = "none";
+  });
+};
+
+document.getElementById("effort-button").onclick = function(event) { 
+  usage_selected = false;
+  document.getElementById("effort-button").classList.add("selected");
+  document.getElementById("usage-button").classList.remove("selected");
+  var divs = document.querySelectorAll(".key .usage");
+  Array.prototype.forEach.call(divs, div => {
+    div.style.display = "none";
+  });
+  divs = document.querySelectorAll(".key .effort");
+  Array.prototype.forEach.call(divs, div => {
+    div.style.display = "block";
+  });
+};
 
 function computeCorpus(text) {
   var total_effort = 0;
@@ -927,7 +974,7 @@ function renderUsage(keymap) {
   for (var i = 0; i < keymap.length; i++) {
     var bg_color = d3.interpolatePuBuGn(keymap[i].count / max_count);
     var text_color = textColorFromBackground(bg_color);
-    document.getElementById("key-"+i).innerHTML += `<div class="usage" style="background:${bg_color}; color: ${text_color}">${precise(keymap[i].usage * 100)}</div>`;
+    document.getElementById("key-"+i).innerHTML += `<div class="usage" style="background:${bg_color}; color: ${text_color}; display: ${usage_selected ? "block": "none"}">${precise(keymap[i].usage * 100)}</div>`;
   }
 }
 
