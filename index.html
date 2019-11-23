@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="utf-8">
+  <title>Typing Model</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="normalize.css">
+  <link rel="stylesheet" href="skeleton.css">
+
+<style>
+
+:root {
+  --key-unit: 80px;
+  --key-padding: 5px;
+  --key-spacing: calc(var(--key-padding));
+  --keyboard-width: 0;
+  --keyboard-height: 0;
+}
+#keymap {
+  position: relative;
+  height: calc(var(--keyboard-height) * (var(--key-unit) + var(--key-spacing)) - var(--key-spacing));
+}
+.key {
+  position: absolute;
+  height: calc(var(--key-unit));
+  border-radius: 5px;
+  border: 1px rgba(0, 0, 0, 0.5) solid;
+  padding: 5px;
+  box-sizing: border-box;
+  color: white;
+}
+.legend {
+  position: absolute;
+  width: calc((var(--key-unit) - 10px) / 3);
+  line-height: calc(var(--key-unit) / 3);
+  font-size: 12px;
+  text-align: center;
+  overflow: hidden;
+}
+.legend-0 {
+  top: 0px;
+  left: 0px;
+}
+.legend-1 {
+  top: 0px;
+  left: calc(var(--key-unit) / 3);
+}
+.legend-2 {
+  top: 0px;
+  left: calc(var(--key-unit) * 2 / 3);
+}
+.legend-3 {
+  top: calc(var(--key-unit) / 3);
+  left: 0px;
+}
+.legend-4 {
+  top: calc(var(--key-unit) / 3);
+  left: calc(var(--key-unit) / 3);
+}
+.legend-5 {
+  top: calc(var(--key-unit) / 3);
+  left: calc(var(--key-unit) * 2 / 3);
+}
+.legend-6 {
+  top: calc(var(--key-unit) * 2 / 3);
+  left: 0px;
+}
+.legend-7 {
+  top: calc(var(--key-unit) * 2 / 3);
+  left: calc(var(--key-unit) / 3);
+}
+.legend-8 {
+  top: calc(var(--key-unit) * 2 / 3);
+  left: calc(var(--key-unit) * 2 / 3);
+}
+
+
+.effort {
+  position: absolute;
+  width: 100%;
+  left: 0px;
+  top: calc(var(--key-unit) * 2 / 3);
+  text-align: center;
+  line-height: calc(var(--key-unit) / 3);
+  font-size: 12px;
+}
+
+.layer-2 {
+  background: red;
+  color: white;
+}
+html, body {
+  height: 100%;
+}
+
+th {
+  &[data-filter-value] {
+            cursor: pointer;
+        }  &.active {
+            color: red;
+        }
+}
+</style>
+
+
+</head>
+<body>
+    <div class="container" id="main-container">
+      <br />
+      <h1>QMK Keymap Carpalx Analyser</h1>
+      <p>This attempts to adapt <a href="http://mkweb.bcgsc.ca/carpalx/?typing_effort">Carpalx</a> into a JS system that can analyse QMK keymaps in the form of configurator .json files. <a href="https://github.com/qmk/qmk_configurator/tree/master/public/keymaps">Some default keymaps are available here</a>, which can be dropped any where on this page. The textarea below is used as a corpus, and is populated by a <a href="http://www.gutenberg.org/files/60750/60750-h/60750-h.htm">section from a book on Project Gutenberg</a>.</p>
+      <div class="row">
+        <div class="columns eleven">
+  <textarea id="corpus" class="u-full-width">A consciousness of immortality, sometimes dim and vague, sometimes vivid and clear, seems to be characteristic of the human race. However low man may stand he cannot consider death to be the end of his existence. The conviction that he is immortal is innate to him. Annihilation is contrary to the nature and demands of his spirit. It is true that uncertainty and doubt might arise, but man will never be able wholly to uproot either hope or fear as to the possibility of a future life.
+
+Experiencing such feelings and presentiments, man finds himself amidst a world where death and dissolution everywhere surround him. He sees the objects of his love or fear pass away, and he knows that sooner or later the same fate will befall himself. When he beholds the lifeless body of some near relative, his presentiment of immortality tells him that the selfsame soul that once animated that body is still alive. In such moments even the man of low cultivation is forced into more or less profound contemplation. The following reflection impresses itself with might and wonder upon him: “I feel convinced that the dead is living, but how can he live without his body and what form does his new life take?”
+
+In all ages and stages, men have asked the same or similar questions, and they will go on asking them as long as belief in a future life obtains.
+
+But man does not confine himself to questioning, he wants answers, and especially must this be true where the reply is so intimately connected with himself. And these answers have not been lacking; we find them formulated in those opinions and theories respecting a future life which throughout the ages have gradually appeared and prevailed.
+
+The critically thinking public of the present day takes a decidedly skeptical attitude toward all these theories. They assert, and not without strong arguments, that it is impossible to know anything. But, however convinced the public may be of the fruitlessness of discussing the topic, no one will succeed in pushing it entirely aside. Time and again the same questions reappear as dark and threatening clouds on the horizon of our consciousness; they occupy our thoughts, take hold upon our feelings and color our sentiments. It would undoubtedly be sufficient at such moments to have, were it only one fixed point to stand upon; one established fact to start from and which we could trust would lead our thoughts in the right direction. But such a basis to set out from we have not hitherto been able to find. Will this remain the case forever? Will science concerning a future life always fail to attain aught but negative results? Let us say at once that humanity will probably be able to ascertain as much as it may be necessary or useful for us to know in this world. This hope is founded on our firm belief that at this time a basis such as that above mentioned really exists. Natural science has furnished this basis, though nobody as yet has happened to reflect that the facts upon which this basis rests may have any bearing upon our attitude toward a future life, much less give answer to questions such as the following: How, and in what way, is man to pass from this life into another?
+
+It will be the object of the following pages, then, to develop further the view just intimated.
+
+In prehistoric times men believed in a close relationship between the soul of the deceased and his body in the grave, and this purely instinctive faith is the more remarkable, as it prevailed during stages of civilization when differentiation between spiritual qualities and physical matter was almost unknown.
+
+The contradistinction between soul and body is certainly a fact, a general experience. But neither the individual nor the race realizes this fact suddenly or all at once. The knowledge of the distinction between the physical and the spiritual sphere, with their different characteristics and qualities, proceeds step by step, being the result of slowly advancing evolution.
+
+The child and the savage remain unconscious of any discrimination between soul and body, and even for the more cultivated man, the border between the two is vague and undetermined. According to the psychologic order of man’s evolution we might therefore expect that the problem as to this relationship would appear at a comparatively late date, and even then be of importance only to a reduced number of more cultivated individuals. But, on the contrary, experience shows that this question occupies the thoughts of men in very low stages of civilization, and, in fact, that it is of the most general interest.
+
+The reason for this evidently lies in the instinctive belief that the body contains something which is immortal, and which in the life hereafter the soul cannot dispense with.
+
+In its first historic form the question concerning the soul’s relation to the body deals with this relation after, not before, the separation of the soul and body. This latter problem emerges only in very high stages of civilization, and even then is of scientific interest to an insignificant minority only, while the question of our existence after death is religious in its nature and of interest to all.
+
+In olden times men were more fully convinced of a continued personal existence after death than civilized mankind seems to be nowadays. The same vivid conviction we find even in our age among people in the natural state. From the prehistoric peoples we have no written communication, but from their graves they speak to the present day intelligibly and plainly of their belief in a life to come. Behold the monuments defying time and decay, which these people have erected in memory of their deceased. The sepulchres of the Egyptian kings to this very day arouse our amazement and admiration.
+
+What was it, then, that induced these peoples of early times to bestow such extraordinary labor on the places of their last rest? It certainly was their belief that the graves contained not only the lifeless body, but also the living soul. The funeral ceremonies evidently show, as Fustel de Coulanges says, that when the body was laid in the grave it was thought that something yet alive was placed there at the same time. The soul was born simultaneously with the body; death did not separate them; they were both enclosed together in the grave. In olden times people felt so fully assured that a man lived in the tomb, that they never failed to bury with him the things of which he was thought to be in want. They poured wine on the grave in order to quench his thirst; they brought food to his tomb in order to appease his hunger; they killed horses and slaves, believing that, if enclosed with the dead, these would serve him in his grave as they had served him during his life.
+
+It was also in this conviction that the positive duty of burying the deceased originated. In order to bring rest to the soul in the subterranean dwelling that fitted its new existence, it was necessary that the body, to which, in some way or another, it still clung, should be covered with earth. The soul, denied a grave, had no dwelling. Drifting about, it sought in vain the desired rest after life’s fitful struggle. Without shelter, without offerings or food, it was condemned to everlasting wandering. Therefore, because the deceased was unhappy, he became ill-natured. He tormented the living; sent them diseases; destroyed their harvests; haunted them in uncanny visions in order to remind them of their duty to bury the body and thereby secure peace for himself.</textarea>
+</div>
+<div class="columns one">
+  <button id="compute">compute</button>
+</div>
+  <div id="keymap"></div>
+  <table id="results" class="u-full-width">
+          <thead>
+              <tr>
+                  <th data-filter-value="keyboard" class="active">Keyboard</th>
+                  <th data-filter-value="filename">Filename</th>
+                  <th data-filter-value="corpus">Corpus</th>
+                  <th data-filter-value="total_effort">Total Effort</th>
+                  <th data-filter-value="base">Base</th>
+                  <th data-filter-value="penalties">Penalties</th>
+                  <th data-filter-value="path">Path</th>
+              </tr>
+          </thead>
+          <tbody>
+  </tbody>
+  </table>
+</div>
+</body>
+<!-- <script src="https://d3js.org/d3-color.v1.min.js"></script> -->
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script>
+
+data = [];
+
+let currentFilter = "",
+  prevFilter = "",
+  orderAsc = true;
+
+const toggleOrder = () => {
+  if (currentFilter === prevFilter) {
+    orderAsc = !orderAsc;
+  } else {
+    orderAsc = true;
+  }
+};
+
+const sortTable = (array, sortKey) => {
+  return array.sort((a, b) => {
+    let x = a[sortKey],
+      y = b[sortKey];
+
+    return orderAsc ? x - y : y - x;
+  });
+};
+
+function encode(r) {
+  return r.replace(/[\x26\x0A\x3c\x3e\x22\x27]/g, function(r) {
+  return "&#" + r.charCodeAt(0) + ";";
+  });
+}
+
+const renderTable = tableData => {
+  return `${tableData
+    .map(item => {
+      return `<tr>
+                        <td>${item.keyboard}</td>
+                        <td>${item.filename}</td>
+                        <td>${encode(item.corpus)}</td>
+                        <td>${item.total_effort}</td>
+                        <td>${item.base}</td>
+                        <td>${item.penalties}</td>
+                        <td>${item.path}</td>
+                    </tr>`;
+    })
+    .join("")}`;
+};
+  
+const appendTable = (table, destination) => {
+  document.querySelector(destination).innerHTML = table;
+};
+
+const handleSortClick = () => {
+  const filters = document.querySelectorAll("#results th");
+
+  Array.prototype.forEach.call(filters, filter => {
+    filter.addEventListener("click", () => {
+      if (!filter.dataset.filterValue) return false;
+
+      Array.prototype.forEach.call(filters, filter => {
+        filter.classList.remove("active");
+      });
+      filter.classList.add("active");
+      currentFilter = filter.dataset.filterValue;
+      toggleOrder();
+      drawTable();
+    });
+  });
+};
+
+const drawTable = () => {
+  let newTableData = sortTable(data, currentFilter),
+    tableOutput = renderTable(newTableData);
+
+  appendTable(tableOutput, "#results tbody");
+
+  prevFilter = currentFilter;
+};
+
+handleSortClick();
+
+var effort = [ [
+  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
+  2.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 2.0,
+  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
+  4.0, 3.0, 3.0, 2.0, 0.0, 2.0, 2.0, 0.0, 2.0, 3.0, 3.0, 4.0 
+], [
+  4.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
+  2.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 2.0,
+  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
+  4.0, 4.0, 3.0, 2.0, 0.0, 3.0, 2.0, 0.0, 2.0, 3.0, 3.0, 4.0 
+], [
+  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 4.0,
+  2.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 2.0,
+  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
+  4.0, 3.0, 3.0, 2.0, 0.0, 2.0, 3.0, 0.0, 2.0, 3.0, 4.0, 4.0 
+] ];
+
+var shift_effort = [ [
+  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
+  2.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 2.0,
+  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
+  4.0, 3.0, 3.0, 2.0, 0.0, 2.0, 2.0, 0.0, 2.0, 3.0, 3.0, 4.0 
+], [
+  4.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
+  2.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 2.0,
+  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
+  4.0, 4.0, 3.0, 2.0, 0.0, 3.0, 2.0, 0.0, 2.0, 3.0, 3.0, 4.0 
+], [
+  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 4.0,
+  2.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 2.0,
+  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
+  4.0, 3.0, 3.0, 2.0, 0.0, 2.0, 3.0, 0.0, 2.0, 3.0, 4.0, 4.0 
+] ];
+
+var legend_lookup = {
+  "KC_TRNS": "",
+  "KC_SPC": " ",
+  "KC_TAB": "⭾",
+  "KC_A": "a",
+  "KC_B": "b",
+  "KC_C": "c",
+  "KC_D": "d",
+  "KC_E": "e",
+  "KC_F": "f",
+  "KC_G": "g",
+  "KC_H": "h",
+  "KC_I": "i",
+  "KC_J": "j",
+  "KC_K": "k",
+  "KC_L": "l",
+  "KC_M": "m",
+  "KC_N": "n",
+  "KC_O": "o",
+  "KC_P": "p",
+  "KC_Q": "q",
+  "KC_R": "r",
+  "KC_S": "s",
+  "KC_T": "t",
+  "KC_U": "u",
+  "KC_V": "v",
+  "KC_W": "w",
+  "KC_X": "x",
+  "KC_Y": "y",
+  "KC_Z": "z",
+  "KC_SCLN": ";",
+  "KC_COMM": ",",
+  "KC_DOT": ".",
+  "KC_SLSH": "/",
+  "KC_GRV": "`",
+  "KC_TILD": "~",
+  "KC_BSLS": "\\",
+  "KC_PIPE": "|",
+  "KC_QUOT": "'",
+  "KC_LSFT": "⇧",
+  "KC_ENT": "↵",
+  "KC_BSPC": "⌫",
+  "KC_DEL": "⌦",
+  "KC_ESC": "⎋",
+  "KC_F1": "F1",
+  "KC_F2": "F2",
+  "KC_F3": "F3",
+  "KC_F4": "F4",
+  "KC_F5": "F5",
+  "KC_F6": "F6",
+  "KC_F7": "F7",
+  "KC_F8": "F8",
+  "KC_F9": "F9",
+  "KC_F10": "F10",
+  "KC_F11": "F11",
+  "KC_F12": "F12",
+  "KC_1": "1",
+  "KC_2": "2",
+  "KC_3": "3",
+  "KC_4": "4",
+  "KC_5": "5",
+  "KC_6": "6",
+  "KC_7": "7",
+  "KC_8": "8",
+  "KC_9": "9",
+  "KC_0": "0",
+  "KC_EXLM": "!",
+  "KC_AT": "@",
+  "KC_HASH": "#",
+  "KC_DLR": "$",
+  "KC_PERC": "%",
+  "KC_CIRC": "^",
+  "KC_AMPR": "&",
+  "KC_ASTR": "*",
+  "KC_LPRN": "(",
+  "KC_RPRN": ")",
+  "KC_MINS": "-",
+  "KC_UNDS": "_",
+  "KC_EQL": "=",
+  "KC_PLUS": "+",
+  "KC_LBRC": "[",
+  "KC_RBRC": "]",
+  "KC_LCBR": "{",
+  "KC_RCBR": "}",
+  "KC_LEFT": "←",
+  "KC_DOWN": "↓",
+  "KC_UP": "↑",
+  "KC_RGHT": "→",
+  "KC_HOME": "⤒",
+  "KC_END": "⤓",
+  "KC_PGUP": "⇞",
+  "KC_PGDN": "⇟",
+  "KC_LCTL": "⌃",
+  "KC_LALT": "⌥",
+  "KC_LGUI": "◆",
+  "KC_RCTL": "⌃",
+  "KC_RALT": "⌥",
+  "KC_RGUI": "◆",
+  "KC_MPLY": "⏯",
+  "KC_MNXT": "⏭",
+  "KC_VOLU": "🕪",
+  "KC_VOLD": "🕩",
+
+};
+
+var shifted_keys = {
+  "'": "\"",
+  ";": ":",
+  "/": "?",
+  ",": "<",
+  ".": ">",
+  "a": "A",
+  "b": "B",
+  "c": "C",
+  "d": "D",
+  "e": "E",
+  "f": "F",
+  "g": "G",
+  "h": "H",
+  "i": "I",
+  "j": "J",
+  "k": "K",
+  "l": "L",
+  "m": "M",
+  "n": "N",
+  "o": "O",
+  "p": "P",
+  "q": "Q",
+  "r": "R",
+  "s": "S",
+  "t": "T",
+  "u": "U",
+  "v": "V",
+  "w": "W",
+  "x": "X",
+  "y": "Y",
+  "z": "Z",
+};
+
+var num_layers = 0;
+var filename;
+var keyboard = {};
+var keymap = [];
+var HOMEROW_OFFSET = 3;
+
+function findKeyIndex(character) {
+  for (var key = 0; key < keymap.length; key++) {
+    for (var layer = 0; layer < num_layers; layer++) {
+      if (keymap[key].layers[layer] == character) {
+        return key;
+      }
+    }
+  }
+  return -1;
+}
+
+function guessHomerow() {
+  var lm, lp, rp, rm;
+  // test for qwerty
+  lm = findKeyIndex("d");
+  lp = findKeyIndex("f");
+  rp = findKeyIndex("j");
+  rm = findKeyIndex("k");
+  if ((lm + 1 == lp) && (rp + 1 == rm))
+    return {left: lp, right: rp};
+  // test for colemak
+  lm = findKeyIndex("s");
+  lp = findKeyIndex("t");
+  rp = findKeyIndex("n");
+  rm = findKeyIndex("e");
+  if ((lm + 1 == lp) && (rp + 1 == rm))
+    return {left: lp, right: rp};
+}
+
+function calcPenalty(key) {
+  return W_0 + W_HAND * P_HAND[key.hand] + W_FINGER * P_FINGER[key.finger] + W_ROW * P_ROW[Math.round(key.row)];
+}
+
+function guessBaseEffort() {
+  var homePointers = guessHomerow();
+  for (var key = 0; key < keymap.length; key++) {
+    var dist = 1000;
+    var finger = 0;
+    var hand = 0;
+    var row = HOMEROW_OFFSET;
+    for (var i = 0; i < 4; i++) {
+      var hrk, new_dist;
+      hrk = keymap[homePointers.left - i];
+      new_dist = Math.sqrt(Math.pow(parseFloat(keymap[key].x) - parseFloat(hrk.x), 2) + Math.pow(parseFloat(keymap[key].y) - parseFloat(hrk.y), 2));
+      if (new_dist < dist) {
+        dist = new_dist;
+        finger = 3 - i;
+        hand = 0;
+        row = keymap[key].y - hrk.y + HOMEROW_OFFSET;
+      }
+      hrk = keymap[homePointers.right + i];
+      new_dist = Math.sqrt(Math.pow(parseFloat(keymap[key].x) - parseFloat(hrk.x), 2) + Math.pow(parseFloat(keymap[key].y) - parseFloat(hrk.y), 2));
+      if (new_dist < dist) {
+        dist = new_dist;
+        finger = i + 4;
+        hand = 1;
+        row = keymap[key].y - hrk.y + HOMEROW_OFFSET;
+      }
+    }
+    keymap[key].dist = dist;
+    keymap[key].base = dist * 2;
+    keymap[key].hand = hand;
+    keymap[key].finger = finger;
+    keymap[key].row = row;
+    keymap[key].penalty = calcPenalty(keymap[key]);
+  }
+}
+
+function loadLayout(info) {
+  keymap = [];
+
+  for (var i = 0; i < info.layout.length; i++) {
+    var w = 1;
+    if (info.layout[i].w)
+      w = info.layout[i].w;
+    keymap[i] = {};
+    keymap[i] = info.layout[i];
+    keymap[i].w = w;
+    keymap[i].layers = [];
+  }
+}
+
+function precise(x) {
+  return Number.parseFloat(x).toPrecision(4);
+}
+
+function renderLayout() {
+  var layout_element = document.getElementById("keymap");
+  var inner = "";
+
+  for (var i = 0; i < keymap.length; i++) {
+    var key_html = "";
+    for (var layer = 0; layer < keymap[i].layers.length; layer++) {
+      key_html += `<div class="legend legend-${layer}" title="${keymap[i].layers[layer]}">${keymap[i].layers[layer]}</div>`;
+    }
+    var effort = precise(keymap[i].penalty + keymap[i].base);
+    var bg_color = d3.interpolateTurbo(effort/10);
+    var text_color = d3.lab(bg_color).l >= 17.5 ? "black": "white";
+    inner += `<div id="key-${i}" class="key" style="left: calc(${keymap[i].x} * (var(--key-spacing) + var(--key-unit))); top: calc(${keymap[i].y} * (var(--key-spacing) + var(--key-unit))); width: calc(${keymap[i].w} * var(--key-unit)); background:${bg_color}; color: ${text_color}">${key_html}<div class="effort">${effort}</div></div>`;
+  }
+
+  layout_element.innerHTML = inner;
+}
+
+function loadLayers(layers) {
+  num_layers = layers.length;
+  for (var layer = 0; layer < layers.length; layer++) {
+    for (var key = 0; key < layers[layer].length; key++) {
+      var c = layers[layer][key];
+      if (legend_lookup[c] != null)
+        c = legend_lookup[c];
+      keymap[key].layers[layer] = c;
+    }
+  }
+}
+
+function loadKeymap(file) {
+  if (!file.keyboard) {
+    console.log("No keyboard defined");
+    return;
+  }
+  const fetchPromise = fetch('https://api.qmk.fm/v1/keyboards/' + file.keyboard);
+  fetchPromise.then(promise => {
+    return promise.json();
+  }).then(response => {
+    if (!Object.keys(response.keyboards).length || !response.keyboards[file.keyboard]) {
+      console.log("Keyboard not found");
+      return;
+    }
+    if (!response.keyboards[file.keyboard].layouts[file.layout]) {
+      console.log("Layout not found");
+      return;
+    }
+    keyboard = response.keyboards[file.keyboard];
+    var width = parseInt(getComputedStyle(document.getElementById("main-container")).getPropertyValue("width"));
+    var padding = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--key-padding'));
+    var spacing = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--key-spacing'));
+    // var scale = document.documentElement.clientWidth / response.keyboards[file.keyboard].width;
+    var scale = width / response.keyboards[file.keyboard].width;
+    document.documentElement.style.setProperty('--key-unit', (scale-padding)+'px');
+    document.documentElement.style.setProperty('--keyboard-height', keyboard.height);
+    document.documentElement.style.setProperty('--keyboard-width', keyboard.width);
+    loadLayout(response.keyboards[file.keyboard].layouts[file.layout]);
+    loadLayers(file.layers)
+    guessBaseEffort();
+    renderLayout();
+  });
+}
+
+if (window.File && window.FileReader && window.FileList && window.Blob) {
+  // Great success!
+  function handleJSONDrop(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+    var files = evt.dataTransfer.files;
+      // Loop through the FileList and read
+      for (var i = 0, f; f = files[i]; i++) {
+  
+        // Only process json files.
+          if (!f.type.match('application/json')) {
+          continue;
+        }
+  
+        var reader = new FileReader();
+  
+        // Closure to capture the file information.
+        reader.onload = (function(theFile) {
+          return function(e) {
+            p = JSON.parse(e.target.result);
+            loadKeymap(p);
+            filename = theFile.name;
+            // var span = document.createElement('span');
+            // span.innerHTML = p.keyboard;
+            // document.getElementById('div').insertBefore(span, null);
+          };
+        })(f);
+  
+        reader.readAsText(f);
+      }
+  }
+
+  function handleDragOver(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+  }
+
+  // Setup the dnd listeners.
+  var dropZone = document.getElementsByTagName('body')[0];
+  dropZone.addEventListener('dragover', handleDragOver, false);
+  dropZone.addEventListener('drop', handleJSONDrop, false);
+  
+
+} else {
+  alert('The File APIs are not fully supported in this browser.');
+}
+
+var K_1 = 1.000;
+var K_2 = 0.367;
+var K_3 = 0.235;
+
+var P_HAND = [ 0.0, 0.0 ];
+var P_ROW = [ 2.5, 1.5, 0.5, 0.0, 0.5, 1.5, 2.5];
+var P_FINGER = [ 1.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 1.0 ];
+
+var W_0      = 0.0000;
+var W_HAND   = 1.0000;
+var W_ROW    = 1.3088;
+var W_FINGER = 2.4948;
+
+var F_HAND   = 1.0;
+var F_ROW    = 0.3;
+var F_FINGER = 0.3;
+
+
+// 0b000 format where each bit is a hand, left=0 right=1
+// write out elements manually, then sort by index
+var STROKE_PATH_HAND_INDEX = [2, 0, 1, 0, 0, 1, 0, 2];
+
+// 3 bits per row, 0b011 is homerow, higher numbers are higher rows
+// write out elements manually, then sort by index
+// neat pattern forms based around 3,3
+var STROKE_PATH_ROW_INDEX = [
+  1, 5, 5, 3, 7, 7, 7, 7, 
+  4, 1, 5, 3, 7, 7, 7, 7, 
+  4, 4, 1, 3, 7, 7, 7, 7, 
+  1, 1, 1, 0, 2, 2, 2, 2, 
+  5, 5, 5, 3, 2, 6, 6, 6, 
+  5, 5, 5, 3, 7, 2, 6, 6, 
+  5, 5, 5, 3, 7, 7, 2, 6, 
+  5, 5, 5, 3, 7, 7, 7, 2
+];
+
+// 3 bits per finger, 0 is left pinky, 7 right pinky
+// https://docs.google.com/spreadsheets/d/14FXg6m0PgpJf6eSjiu0r1wzG-G45J_H6WQEIGcLrODM/edit?usp=sharing
+// 3 double inner roll
+// 1 repeat one
+// 2 single inner roll
+// 3 single outer roll
+// 4 double outer roll
+// 5 same key
+// 6 alt hands
+// 7 bounce
+var STROKE_PATH_FINGER_INDEX = [ 5, 1, 1, 1, 1, 1, 1, 1, 7, 1, 0, 0, 2, 2, 2, 2, 7, 3, 1, 0, 2, 2, 2, 2, 7, 3, 3, 1, 2, 2, 2, 2, 6, 6, 6, 6, 1, 3, 3, 3, 6, 6, 6, 6, 2, 1, 3, 3, 6, 6, 6, 6, 2, 2, 1, 3, 6, 6, 6, 6, 2, 2, 2, 1, 1, 7, 3, 3, 3, 3, 3, 3, 1, 5, 1, 1, 1, 1, 1, 1, 2, 7, 1, 0, 2, 2, 2, 2, 2, 7, 3, 1, 2, 2, 2, 2, 6, 6, 6, 6, 1, 3, 3, 3, 6, 6, 6, 6, 2, 1, 3, 3, 6, 6, 6, 6, 2, 2, 1, 3, 6, 6, 6, 6, 2, 2, 2, 1, 1, 3, 7, 3, 3, 3, 3, 3, 4, 1, 7, 3, 3, 3, 3, 3, 1, 1, 5, 1, 1, 1, 1, 1, 2, 2, 7, 1, 2, 2, 2, 2, 6, 6, 6, 6, 1, 3, 3, 3, 6, 6, 6, 6, 2, 1, 3, 3, 6, 6, 6, 6, 2, 2, 1, 3, 6, 6, 6, 6, 2, 2, 2, 1, 1, 3, 3, 7, 3, 3, 3, 3, 4, 1, 3, 7, 3, 3, 3, 3, 4, 4, 1, 7, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 6, 6, 6, 6, 1, 3, 3, 3, 6, 6, 6, 6, 2, 1, 3, 3, 6, 6, 6, 6, 2, 2, 1, 3, 6, 6, 6, 6, 2, 2, 2, 1, 1, 2, 2, 2, 6, 6, 6, 6, 3, 1, 2, 2, 6, 6, 6, 6, 3, 3, 1, 2, 6, 6, 6, 6, 3, 3, 3, 1, 6, 6, 6, 6, 1, 1, 1, 1, 5, 1, 1, 1, 3, 3, 3, 3, 7, 1, 4, 4, 3, 3, 3, 3, 7, 3, 1, 4, 3, 3, 3, 3, 7, 3, 3, 1, 1, 2, 2, 2, 6, 6, 6, 6, 3, 1, 2, 2, 6, 6, 6, 6, 3, 3, 1, 2, 6, 6, 6, 6, 3, 3, 3, 1, 6, 6, 6, 6, 2, 2, 2, 2, 1, 7, 2, 2, 1, 1, 1, 1, 1, 5, 1, 1, 3, 3, 3, 3, 3, 7, 1, 4, 3, 3, 3, 3, 3, 7, 3, 1, 1, 2, 2, 2, 6, 6, 6, 6, 3, 1, 2, 2, 6, 6, 6, 6, 3, 3, 1, 2, 6, 6, 6, 6, 3, 3, 3, 1, 6, 6, 6, 6, 2, 2, 2, 2, 1, 3, 7, 2, 2, 2, 2, 2, 0, 1, 7, 2, 1, 1, 1, 1, 1, 1, 5, 1, 3, 3, 3, 3, 3, 3, 7, 1, 1, 2, 2, 2, 6, 6, 6, 6, 3, 1, 2, 2, 6, 6, 6, 6, 3, 3, 1, 2, 6, 6, 6, 6, 3, 3, 3, 1, 6, 6, 6, 6, 2, 2, 2, 2, 1, 3, 3, 7, 2, 2, 2, 2, 0, 1, 3, 7, 2, 2, 2, 2, 0, 0, 1, 7, 1, 1, 1, 1, 1, 1, 1, 5 ];
+
+var K_B = 0.3555;
+var K_P = 0.6423;
+var K_S = 0.4268;
+
+document.getElementById("compute").onclick = function(event) {
+  var text = document.getElementById("corpus").value;
+  var total_effort = 0;
+  var total_base = 0;
+  var total_penalty = 0;
+  var total_stroke_path = 0;
+  var keys = [];
+  for (var i = 0; i < text.length; i++) {
+    var key_index = findKeyIndex(text[i]);
+    // skip keys we can't find
+    if (key_index != -1)
+      keys.push(keymap[key_index]);
+    // check for shifted keys
+    key_index = findKeyIndex(shifted_keys[text[i]]);
+    if (key_index != -1) {
+      var shift_key_index = findKeyIndex("⇧");
+      if (shift_key_index != -1) {
+        keys.push(keymap[shift_key_index]);
+        keys.push(keymap[key_index]);
+      }
+    }
+  }
+  // save for later incase we need to remove some for calculations
+  var num_triads = keys.length - 2;
+  for (var i = 0; i < keys.length - 2; i++) {
+    var base_1 = keys[i].base;
+    var base_2 = keys[i+1].base;
+    var base_3 = keys[i+2].base;
+    var base = base_1 * K_1 *
+                      (1 + base_2 * K_2 * 
+                      (1 + base_3 * K_3));
+
+    var penalty = keys[i].penalty * K_1 *
+                  (1 + keys[i+1].penalty * K_2 *
+                  (1 + keys[i+2].penalty * K_3));
+
+    var stroke_path_hand = STROKE_PATH_HAND_INDEX[(keys[i].hand << 2) | (keys[i+1].hand << 1) | (keys[i+2].hand)];
+    
+    var row_diff_1 = parseInt(Math.round(keys[i].row - keys[i+1].row + HOMEROW_OFFSET));
+    var row_diff_2 = parseInt(Math.round(keys[i].row - keys[i+2].row + HOMEROW_OFFSET));
+    var stroke_path_row = STROKE_PATH_ROW_INDEX[(row_diff_1 << 3) | row_diff_2];
+
+    var stroke_path_finger = STROKE_PATH_FINGER_INDEX[(keys[i].finger << 6) | (keys[i+1].finger << 3) | keys[i+2].finger];
+
+    var stroke_path = stroke_path_hand * F_HAND + 
+                      stroke_path_row * F_ROW + 
+                      stroke_path_finger * F_FINGER; 
+
+    total_base += base;
+    total_penalty += penalty;
+    total_stroke_path += stroke_path;
+
+    var effort =  K_B * base +
+                  K_P * penalty +
+                  K_S * stroke_path;
+    total_effort += effort;
+  }
+
+  var average_effort = total_effort / num_triads;
+  var average_base = total_base / num_triads;
+  var average_penalty = total_penalty / num_triads;
+  var average_stroke_path = total_stroke_path / num_triads;
+
+  data.push({
+    keyboard: keyboard.keyboard_name,
+    filename: filename,
+    corpus: text.slice(0, 10)+"...",
+    total_effort: precise(average_effort),
+    base: precise(average_base),
+    penalties: precise(average_penalty),
+    path: precise(average_stroke_path)
+  });
+  drawTable();
+}
+
+</script>
+
+</html>
