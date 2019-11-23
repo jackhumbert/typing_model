@@ -105,13 +105,25 @@ html, body {
   height: 100%;
 }
 
-th {
-  &[data-filter-value] {
-            cursor: pointer;
-        }  &.active {
-            color: red;
-        }
+th[data-filter-value]:hover {
+  cursor: pointer;
+  background: #eee;
 }
+
+th[data-filter-value].active {
+  color: red;
+}
+
+tr[data-item-id].selected {
+  color: red;
+  background: #f7f7f7;
+}
+
+tr[data-item-id]:hover {
+  cursor: pointer;
+  background: #eee;
+}
+
 </style>
 
 
@@ -120,7 +132,7 @@ th {
     <div class="container" id="main-container">
       <br />
       <h1>QMK Keymap Carpalx Analyser</h1>
-      <p>This attempts to adapt <a href="http://mkweb.bcgsc.ca/carpalx/?typing_effort">Carpalx</a> into a JS system that can analyse QMK keymaps in the form of configurator .json files. <a href="https://github.com/qmk/qmk_configurator/tree/master/public/keymaps">Some default keymaps are available here</a>, which can be dropped any where on this page. The textarea below is used as a corpus, and is populated by a <a href="http://www.gutenberg.org/files/60750/60750-h/60750-h.htm">section from a book on Project Gutenberg</a>.</p>
+      <p>This attempts to adapt <a href="http://mkweb.bcgsc.ca/carpalx/?typing_effort">Carpalx</a> into a JS system that can analyse QMK keymaps in the form of configurator .json files. <a href="https://github.com/qmk/qmk_configurator/tree/master/public/keymaps">Some default keymaps are available here</a>, which can be dropped any where on this page (drop multiple files for quick comparing). The textarea below is used as a corpus, and is populated by a <a href="http://www.gutenberg.org/files/60750/60750-h/60750-h.htm">section from a book on Project Gutenberg</a>.</p>
       <div class="row">
         <div class="columns nine">
   <textarea id="corpus" class="u-full-width">A consciousness of immortality, sometimes dim and vague, sometimes vivid and clear, seems to be characteristic of the human race. However low man may stand he cannot consider death to be the end of his existence. The conviction that he is immortal is innate to him. Annihilation is contrary to the nature and demands of his spirit. It is true that uncertainty and doubt might arise, but man will never be able wholly to uproot either hope or fear as to the possibility of a future life.
@@ -213,8 +225,8 @@ function encode(r) {
 const renderTable = tableData => {
   return `${tableData
     .map(item => {
-      return `<tr>
-                        <td>${item.keyboard}</td>
+      return `<tr data-item-id="${item.id}" class="${item.selected ? "selected":""}">
+                        <td>${item.keyboard.keyboard_name}</td>
                         <td>${item.filename}</td>
                         <td>${encode(item.corpus)}</td>
                         <td>${item.total_effort}</td>
@@ -243,18 +255,46 @@ const handleSortClick = () => {
       filter.classList.add("active");
       currentFilter = filter.dataset.filterValue;
       toggleOrder();
-      drawTable();
+      drawTable(false);
     });
   });
 };
 
-const drawTable = () => {
-  let newTableData = sortTable(data, currentFilter),
-    tableOutput = renderTable(newTableData);
+const drawTable = (selectLast) => {
+  if (selectLast) {
+    for (var i = 0; i < data.length; i++) {
+      data[i].selected = (data[i].id == data.length - 1);
+    }
+  }
+  let newTableData = sortTable(data, currentFilter);
+  let tableOutput = renderTable(newTableData);
 
   appendTable(tableOutput, "#results tbody");
 
   prevFilter = currentFilter;
+
+  const rows = document.querySelectorAll("#results tr");
+
+  Array.prototype.forEach.call(rows, row => {
+    row.addEventListener("click", () => {
+      if (!row.dataset.itemId) return false;
+      var selected_item;
+      Array.prototype.forEach.call(rows, row_i => {
+        if (!row_i.dataset.itemId) return false;
+        if (data[row_i.dataset.itemId].id == row.dataset.itemId) {
+          selected_item = data[row_i.dataset.itemId]
+          selected_item.selected = true;
+        } else {
+          data[row_i.dataset.itemId].selected = false;
+        }
+      });
+      drawTable(false);
+      renderKeyboard(selected_item.keyboard);
+      renderLayout(selected_item.keymap);
+      renderUsage(selected_item.keymap);
+    });
+  });
+
 };
 
 handleSortClick();
@@ -294,6 +334,7 @@ var shift_effort = [ [
 ] ];
 
 var legend_lookup = {
+  "KC_NO": "",
   "KC_TRNS": "",
   "KC_SPC": " ",
   "KC_TAB": "⭾",
@@ -435,7 +476,7 @@ var shifted_keys = {
 };
 
 var num_layers = 0;
-var filename;
+var current_filename;
 var keyboard = {};
 var keymap = [];
 var HOMEROW_OFFSET = 3;
@@ -574,7 +615,7 @@ function precise(x) {
   return Number.parseFloat(x).toPrecision(4);
 }
 
-function renderLayout() {
+function renderLayout(keymap) {
   var layout_element = document.getElementById("keymap");
   var inner = "";
 
@@ -604,7 +645,7 @@ function loadLayers(layers) {
   }
 }
 
-function loadKeymap(file) {
+function loadKeymap(file, filename) {
   if (!file.keyboard) {
     console.log("No keyboard defined");
     return;
@@ -622,19 +663,24 @@ function loadKeymap(file) {
       return;
     }
     keyboard = response.keyboards[file.keyboard];
+    renderKeyboard(keyboard);
+    loadLayout(keyboard.layouts[file.layout]);
+    loadLayers(file.layers)
+    guessBaseEffort();
+    renderLayout(keymap);
+    current_filename = filename;
+    computeCorpus(document.getElementById("corpus").value);
+  });
+}
+
+function renderKeyboard(keyboard) {
     var width = parseInt(getComputedStyle(document.getElementById("main-container")).getPropertyValue("width"));
     var padding = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--key-padding'));
     var spacing = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--key-spacing'));
-    // var scale = document.documentElement.clientWidth / response.keyboards[file.keyboard].width;
-    var scale = width / response.keyboards[file.keyboard].width;
+    var scale = width / keyboard.width;
     document.documentElement.style.setProperty('--key-unit', (scale-padding)+'px');
     document.documentElement.style.setProperty('--keyboard-height', keyboard.height);
     document.documentElement.style.setProperty('--keyboard-width', keyboard.width);
-    loadLayout(response.keyboards[file.keyboard].layouts[file.layout]);
-    loadLayers(file.layers)
-    guessBaseEffort();
-    renderLayout();
-  });
 }
 
 if (window.File && window.FileReader && window.FileList && window.Blob) {
@@ -657,8 +703,7 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
         reader.onload = (function(theFile) {
           return function(e) {
             p = JSON.parse(e.target.result);
-            loadKeymap(p);
-            filename = theFile.name;
+            loadKeymap(p, theFile.name);
             // var span = document.createElement('span');
             // span.innerHTML = p.keyboard;
             // document.getElementById('div').insertBefore(span, null);
@@ -749,8 +794,19 @@ var K_B = 0.3555;
 var K_P = 0.6423;
 var K_S = 0.4268;
 
-document.getElementById("compute").onclick = function(event) {
-  var text = document.getElementById("corpus").value;
+
+function clone(obj) {
+    if (null == obj || "object" != typeof obj) return obj;
+    var copy = obj.constructor();
+    for (var attr in obj) {
+        if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+    }
+    return copy;
+}
+
+document.getElementById("compute").onclick = function(event) { computeCorpus(document.getElementById("corpus").value) };
+
+function computeCorpus(text) {
   var total_effort = 0;
   var total_base = 0;
   var total_penalty = 0;
@@ -836,18 +892,12 @@ document.getElementById("compute").onclick = function(event) {
     total_effort += effort;
   }
 
-  var max_count = 0;
+  var usage = [];
   for (var i = 0; i < keymap.length; i++) {
-    if (keymap[i].count > max_count)
-      max_count = keymap[i].count;
+    keymap[i].usage = precise(keymap[i].count / fingers.length);
   }
 
-  for (var i = 0; i < keymap.length; i++) {
-    var perc = precise(keymap[i].count / fingers.length);
-    var bg_color = d3.interpolatePuBuGn(keymap[i].count / max_count);
-    var text_color = textColorFromBackground(bg_color);
-    document.getElementById("key-"+i).innerHTML += `<div class="usage" style="background:${bg_color}; color: ${text_color}">${precise(perc * 100)}</div>`;
-  }
+  renderUsage(keymap);
 
   var average_effort = total_effort / num_triads;
   var average_base = total_base / num_triads;
@@ -855,15 +905,30 @@ document.getElementById("compute").onclick = function(event) {
   var average_stroke_path = total_stroke_path / num_triads;
 
   data.push({
-    keyboard: keyboard.keyboard_name,
-    filename: filename,
+    id: data.length,
+    filename: current_filename,
     corpus: text.slice(0, 20)+"...",
     total_effort: precise(average_effort),
     base: precise(average_base),
     penalties: precise(average_penalty),
-    path: precise(average_stroke_path)
+    path: precise(average_stroke_path),
+    keyboard: clone(keyboard),
+    keymap: keymap.slice(0),
   });
-  drawTable();
+  drawTable(true);
+}
+
+function renderUsage(keymap) {
+  var max_count = 0;
+  for (var i = 0; i < keymap.length; i++) {
+    if (keymap[i].count > max_count)
+      max_count = keymap[i].count;
+  }
+  for (var i = 0; i < keymap.length; i++) {
+    var bg_color = d3.interpolatePuBuGn(keymap[i].count / max_count);
+    var text_color = textColorFromBackground(bg_color);
+    document.getElementById("key-"+i).innerHTML += `<div class="usage" style="background:${bg_color}; color: ${text_color}">${precise(keymap[i].usage * 100)}</div>`;
+  }
 }
 
 </script>
