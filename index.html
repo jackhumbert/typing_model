@@ -431,6 +431,11 @@ var legend_lookup = {
   "KC_UNDS": "_",
   "KC_EQL": "=",
   "KC_PLUS": "+",
+  "KC_DQUO": "\"",
+  "KC_LT": "<",
+  "KC_GT": ">",
+  "KC_QUES": "?",
+  "KC_COLN": ":",
   "KC_LBRC": "[",
   "KC_RBRC": "]",
   "KC_LCBR": "{",
@@ -443,23 +448,58 @@ var legend_lookup = {
   "KC_END": "⤓",
   "KC_PGUP": "⇞",
   "KC_PGDN": "⇟",
-  "KC_LCTL": "⌃",
-  "KC_LALT": "⌥",
-  "KC_LGUI": "◆",
-  "KC_RCTL": "⌃",
-  "KC_RALT": "⌥",
-  "KC_RGUI": "◆",
+  "KC_LCTL": "Ⓒ",
+  "KC_RCTL": "Ⓒ",
+  "KC_LALT": "Ⓐ",
+  "KC_RALT": "Ⓐ",
+  "KC_LGUI": "Ⓖ",
+  "KC_RGUI": "Ⓖ",
   "KC_MPLY": "⏯",
   "KC_MNXT": "⏭",
   "KC_VOLU": "🕪",
   "KC_VOLD": "🕩",
   "MO(1)": "▲1",
   "MO(2)": "▲2",
+  "MO(3)": "▲3",
   "LT(1,KC_GRV)": "▲1",
 };
 
+var shift_keys = {
+  "'": "\"",
+  ";": ":",
+  "/": "?",
+  ",": "<",
+  ".": ">",
+  "a": "A",
+  "b": "B",
+  "c": "C",
+  "d": "D",
+  "e": "E",
+  "f": "F",
+  "g": "G",
+  "h": "H",
+  "i": "I",
+  "j": "J",
+  "k": "K",
+  "l": "L",
+  "m": "M",
+  "n": "N",
+  "o": "O",
+  "p": "P",
+  "q": "Q",
+  "r": "R",
+  "s": "S",
+  "t": "T",
+  "u": "U",
+  "v": "V",
+  "w": "W",
+  "x": "X",
+  "y": "Y",
+  "z": "Z",
+};
+
 var shifted_keys = {
-  "\"": "'",
+  "\"": "'", 
   ":": ";",
   "?": "/",
   "<": ",",
@@ -538,6 +578,7 @@ function guessHomerow() {
   rm = findKey("e");
   if ((lm.index + 1 == lp.index) && (rp.index + 1 == rm.index))
     return {leftPointer: lp, rightPointer: rp};
+  return {leftPointer: { index: 16 }, rightPointer: { index: 19}};
 }
 
 function guessThumbs(homerow) {
@@ -650,13 +691,21 @@ function renderLayout(keymap) {
   layout_element.innerHTML = inner;
 }
 
+const lsft = /LSFT\((.+)\)/;
+
 function loadLayers(layers) {
   num_layers = layers.length;
   for (var layer = 0; layer < layers.length; layer++) {
     for (var key = 0; key < layers[layer].length; key++) {
       var c = layers[layer][key];
-      if (legend_lookup[c] != null)
+      if (legend_lookup[c] != null) {
         c = legend_lookup[c];
+      } else {
+        let m;
+        if ((m = lsft.exec(c)) != null) {
+          c = shift_keys[legend_lookup[m[1]]];
+        }
+      }
       keymap[key].layers[layer] = c;
     }
   }
@@ -864,10 +913,9 @@ function computeCorpus(text) {
     keymap[i].count = 0;
   } 
 
+  // convert to lut/switch eventually
+  text = text.replace(/(?:\r\n|\r|\n)/g, '↵');
   for (var i = 0; i < text.length; i++) {
-    // convert to lut/switch eventually
-    if (text[i] == "\n" || text[i] == "\r")
-      text[i] = "↵";
     var key = findKey(text[i]);
     // skip keys we can't find
     if (key != -1) {
