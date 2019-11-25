@@ -136,6 +136,39 @@ button.selected {
   border-color : #111;
 }
 
+td {
+    border-bottom: none;
+  }
+
+.graphs {
+  padding: 0px;
+  white-space: nowrap;
+}
+
+.graph {
+  left: 0px;
+  bottom: 0px;
+  background: red;
+  height: 10px;
+  display: inline-block;
+}
+
+.base {
+ background: #C5C5C5;
+}
+.base.thumb {
+ background: #787878;
+}
+.penalties {
+ background: #168EF3;
+}
+.penalties.thumb {
+ background: #074E89;
+}
+.path {
+ background: #F3C216;
+}
+
 </style>
 
 
@@ -187,12 +220,14 @@ It was also in this conviction that the positive duty of burying the deceased or
           <thead>
               <tr>
                   <th data-filter-value="keyboard" class="active">Keyboard</th>
-                  <th data-filter-value="filename">Filename</th>
                   <th data-filter-value="corpus">Corpus</th>
                   <th data-filter-value="total_effort">Total Effort</th>
-                  <th data-filter-value="base">Base</th>
-                  <th data-filter-value="penalties">Penalties</th>
+                  <th data-filter-value="thumb_effort">Thumb Effort</th>
+                  <th data-filter-value="finger_effort">Finger Effort</th>
+                  <th data-filter-value="finger_base">Finger Base</th>
+                  <th data-filter-value="finger_penalties">Finger Penalties</th>
                   <th data-filter-value="path">Path</th>
+                  <th data-filter-value="unknown_chars" title="Unknown Characters">?</th>
               </tr>
           </thead>
           <tbody>
@@ -240,17 +275,31 @@ function encode(r) {
 }
 
 const renderTable = tableData => {
+  
+  var max_total_effort = 0;
+  Array.prototype.forEach.call(tableData, result => {
+    if (max_total_effort < result.total_effort) {
+      max_total_effort = result.total_effort;
+    }
+  });
+
   return `${tableData
     .map(item => {
-      return `<tr data-item-id="${item.id}" class="${item.selected ? "selected":""}">
-                        <td>${item.keyboard.keyboard_name}</td>
-                        <td>${item.filename}</td>
+      var relative_scale = item.total_effort / max_total_effort * 100;
+      return `<tr data-item-id="${item.id}" class="${item.selected ? "selected ":""}result">
+                        <td><strong>${item.keyboard.keyboard_name}</strong><br />${item.filename}</td>
                         <td>${encode(item.corpus)}</td>
                         <td>${item.total_effort}</td>
-                        <td>${item.base}</td>
-                        <td>${item.penalties}</td>
+                        <td>${item.thumb_effort}</td>
+                        <td>${item.finger_effort}</td>
+                        <td>${item.finger_base}</td>
+                        <td>${item.finger_penalties}</td>
                         <td>${item.path}</td>
-                    </tr>`;
+                        <td title="${item.unknown_chars}">${item.unknown_chars.length}</td>
+                    </tr>
+              <tr><td colspan="9" class="graphs">
+                <div class="graph base" title="Finger Base: ${item.finger_base}" style="width:${relative_scale * item.finger_base * K_B / item.total_effort}%"></div><div class="graph base thumb" title="Thumb Base: ${item.thumb_base}" style="width:${relative_scale * item.thumb_base * K_B / item.total_effort}%"></div><div class="graph penalties" title="Finger Penalties: ${item.finger_penalties}" style="width:${relative_scale * item.finger_penalties * K_P / item.total_effort}%"></div><div class="graph penalties thumb" title="Thumb Penalties: ${item.thumb_penalties}" style="width:${relative_scale * item.thumb_penalties * K_P / item.total_effort}%"></div><div class="graph path" title="Stroke Path: ${item.path}" style="width:${relative_scale * item.path * K_S / item.total_effort}%"></div>
+              </td></tr>`;
     })
     .join("")}`;
 };
@@ -316,40 +365,6 @@ const drawTable = (selectLast) => {
 
 handleSortClick();
 
-var effort = [ [
-  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
-  2.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 2.0,
-  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
-  4.0, 3.0, 3.0, 2.0, 0.0, 2.0, 2.0, 0.0, 2.0, 3.0, 3.0, 4.0 
-], [
-  4.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
-  2.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 2.0,
-  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
-  4.0, 4.0, 3.0, 2.0, 0.0, 3.0, 2.0, 0.0, 2.0, 3.0, 3.0, 4.0 
-], [
-  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 4.0,
-  2.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 2.0,
-  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
-  4.0, 3.0, 3.0, 2.0, 0.0, 2.0, 3.0, 0.0, 2.0, 3.0, 4.0, 4.0 
-] ];
-
-var shift_effort = [ [
-  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
-  2.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 2.0,
-  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
-  4.0, 3.0, 3.0, 2.0, 0.0, 2.0, 2.0, 0.0, 2.0, 3.0, 3.0, 4.0 
-], [
-  4.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
-  2.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 2.0,
-  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
-  4.0, 4.0, 3.0, 2.0, 0.0, 3.0, 2.0, 0.0, 2.0, 3.0, 3.0, 4.0 
-], [
-  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 4.0,
-  2.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 2.0,
-  3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 3.0,
-  4.0, 3.0, 3.0, 2.0, 0.0, 2.0, 3.0, 0.0, 2.0, 3.0, 4.0, 4.0 
-] ];
-
 var legend_lookup = {
   "KC_NO": "",
   "KC_TRNS": "",
@@ -391,6 +406,7 @@ var legend_lookup = {
   "KC_PIPE": "|",
   "KC_QUOT": "'",
   "KC_LSFT": "⇧",
+  "KC_RSFT": "⇧",
   "KC_ENT": "↵",
   "KC_BSPC": "⌫",
   "KC_DEL": "⌦",
@@ -584,8 +600,8 @@ function guessHomerow() {
 function guessThumbs(homerow) {
   var key_lp = keymap[homerow.leftPointer.index];
   var key_rp = keymap[homerow.rightPointer.index];
-  var left = findKeyAtCoords(key_lp.x + 1, key_lp.y + 2);
-  var right = findKeyAtCoords(key_rp.x - 1, key_rp.y + 2);
+  var left = findKeyAtCoords(key_lp.x + 0, key_lp.y + 2);
+  var right = findKeyAtCoords(key_rp.x - 0, key_rp.y + 2);
   return {left: left, right: right}; 
 }
 
@@ -852,7 +868,7 @@ var STROKE_PATH_FINGER_WEIGHT = [
   1.0, // 2 single inner roll
   3.0, // 3 single outer roll
   2.0, // 4 double outer roll
-  5.0, // 5 same finger
+  2.0, // 5 same finger
   3.0, // 6 alt hands
   2.0  // 7 bounce
 ];
@@ -903,11 +919,15 @@ document.getElementById("effort-button").onclick = function(event) {
 };
 
 function computeCorpus(text) {
-  var total_effort = 0;
-  var total_base = 0;
-  var total_penalty = 0;
+  var finger_effort = 0;
+  var thumb_effort = 0;
+  var finger_base = 0;
+  var finger_penalty = 0;
+  var thumb_base = 0;
+  var thumb_penalty = 0;
   var total_stroke_path = 0;
   var keys = [], thumbs = [], fingers = [];
+  var unknown_chars = [];
 
   for (var i = 0; i < keymap.length; i++) {
     keymap[i].count = 0;
@@ -934,6 +954,8 @@ function computeCorpus(text) {
           keys.push(keymap[shift_key.index]);
           keys.push(keymap[key.index]);
         }
+      } else {
+        unknown_chars.push(text[i]);
       }
     }
   }
@@ -949,17 +971,35 @@ function computeCorpus(text) {
   var num_triads = fingers.length - 2;
   for (var i = 0; i < fingers.length - 2; i++) {
     // very basic thumb model. should account for previous states
-    if (thumbs[i] != null) {
-      total_effort += thumbs[i].base + thumbs[i].penalty;
+    if (thumbs[i] != null && thumbs[i+1] != null && thumbs[i+2] != null) {
+      var t_base = thumbs[i].base * K_1 *
+                 (1 + thumbs[i+1].base * K_2 * 
+                 (1 + thumbs[i+2].base * K_3));
+      var t_penalty = thumbs[i].penalty * K_1 *
+                    (1 + thumbs[i+1].penalty * K_2 *
+                    (1 + thumbs[i+2].penalty * K_3));
+      thumb_base += t_base;
+      thumb_penalty += t_penalty;
+      thumb_effort += K_B * t_base + K_P * t_penalty;
+    } else if (thumbs[i] != null && thumbs[i+1] != null) {
+      var t_base = thumbs[i].base * K_1 *
+                 (1 + thumbs[i+1].base * K_2);
+      var t_penalty = thumbs[i].penalty * K_1 *
+                    (1 + thumbs[i+1].penalty * K_2);
+      thumb_base += t_base;
+      thumb_penalty += t_penalty;
+      thumb_effort += K_B * t_base + K_P * t_penalty;
+    } else if (thumbs[i] != null) {
+      var t_base = thumbs[i].base * K_1;
+      var t_penalty = thumbs[i].penalty * K_1;
+      thumb_base += t_base;
+      thumb_penalty += t_penalty;
+      thumb_effort += K_B * t_base + K_P * t_penalty;
     }
 
-
-    var base_1 = fingers[i].base;
-    var base_2 = fingers[i+1].base;
-    var base_3 = fingers[i+2].base;
-    var base = base_1 * K_1 *
-                      (1 + base_2 * K_2 * 
-                      (1 + base_3 * K_3));
+    var base = fingers[i].base * K_1 *
+                      (1 + fingers[i+1].base * K_2 * 
+                      (1 + fingers[i+2].base * K_3));
 
     var penalty = fingers[i].penalty * K_1 *
                   (1 + fingers[i+1].penalty * K_2 *
@@ -971,20 +1011,27 @@ function computeCorpus(text) {
     var row_diff_2 = parseInt(Math.round(fingers[i].row - fingers[i+2].row + HOMEROW_OFFSET));
     var stroke_path_row = STROKE_PATH_ROW_INDEX[(row_diff_1 << 3) | row_diff_2];
 
-    var stroke_path_finger = STROKE_PATH_FINGER_WEIGHT[STROKE_PATH_FINGER_INDEX[(fingers[i].finger << 6) | (fingers[i+1].finger << 3) | fingers[i+2].finger]];
+    var stroke_path_finger_index = STROKE_PATH_FINGER_INDEX[(fingers[i].finger << 6) | (fingers[i+1].finger << 3) | fingers[i+2].finger];
+    var stroke_path_finger = STROKE_PATH_FINGER_WEIGHT[stroke_path_finger_index];
+    if (stroke_path_finger_index == 1 || stroke_path_finger_index == 5) {
+      if (fingers[i] != fingers[i+1] && fingers[i+1] != fingers[i+2]) {
+        stroke_path_finger *= 3;
+      } else if (fingers[i] != fingers[i+1] || fingers[i+1] != fingers[i+2]) {
+        stroke_path_finger *= 2;
+      }
+    }
 
     var stroke_path = stroke_path_hand * F_HAND + 
                       stroke_path_row * F_ROW + 
                       stroke_path_finger * F_FINGER; 
 
-    total_base += base;
-    total_penalty += penalty;
+    finger_base += base;
+    finger_penalty += penalty;
     total_stroke_path += stroke_path;
 
-    var effort =  K_B * base +
-                  K_P * penalty +
-                  K_S * stroke_path;
-    total_effort += effort;
+    finger_effort += K_B * base +
+                     K_P * penalty +
+                     K_S * stroke_path;
   }
 
   var usage = [];
@@ -994,21 +1041,32 @@ function computeCorpus(text) {
 
   renderUsage(keymap);
 
-  var average_effort = total_effort / num_triads;
-  var average_base = total_base / num_triads;
-  var average_penalty = total_penalty / num_triads;
+  var total_effort = thumb_effort + finger_effort;
+
+  var average_total = total_effort / num_triads;
+  var average_thumb = thumb_effort / num_triads;
+  var average_thumb_base = thumb_base / num_triads;
+  var average_thumb_penalty = thumb_penalty / num_triads;
+  var average_finger = finger_effort / num_triads;
+  var average_finger_base = finger_base / num_triads;
+  var average_finger_penalty = finger_penalty / num_triads;
   var average_stroke_path = total_stroke_path / num_triads;
 
   data.push({
     id: data.length,
     filename: current_filename,
-    corpus: text.slice(0, 20)+"...",
-    total_effort: precise(average_effort),
-    base: precise(average_base),
-    penalties: precise(average_penalty),
+    corpus: text.slice(0, 12)+"...",
+    total_effort: precise(average_total),
+    thumb_effort: precise(average_thumb),
+    thumb_base: precise(average_thumb_base),
+    thumb_penalties: precise(average_thumb_penalty),
+    finger_effort: precise(average_finger),
+    finger_base: precise(average_finger_base),
+    finger_penalties: precise(average_finger_penalty),
     path: precise(average_stroke_path),
     keyboard: clone(keyboard),
     keymap: keymap.slice(0),
+    unknown_chars: unknown_chars.slice(0),
   });
   drawTable(true);
 }
