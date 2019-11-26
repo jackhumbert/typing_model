@@ -83,16 +83,7 @@
 }
 
 
-.effort {
-  position: absolute;
-  width: 100%;
-  left: 0px;
-  top: calc(var(--key-unit) * 2 / 3);
-  text-align: center;
-  line-height: calc(var(--key-unit) / 3);
-  font-size: 12px;
-}
-.usage {
+.heatmap {
   position: absolute;
   width: 100%;
   left: 0px;
@@ -129,7 +120,7 @@ tr[data-item-id]:hover {
   background: #eee;
 }
 
-button#effort-button, button#usage-button {
+button.heatmap-button {
   display: inline-block;
   padding-left: 10px;
   padding-right: 10px;
@@ -367,8 +358,6 @@ h1, h2, h3, h4 {
       </details>
 
  <p></p>
-      <div class="row">
-        <div class="columns nine">
   <textarea id="corpus" class="u-full-width">A consciousness of immortality, sometimes dim and vague, sometimes vivid and clear, seems to be characteristic of the human race. However low man may stand he cannot consider death to be the end of his existence. The conviction that he is immortal is innate to him. Annihilation is contrary to the nature and demands of his spirit. It is true that uncertainty and doubt might arise, but man will never be able wholly to uproot either hope or fear as to the possibility of a future life.
 
 Experiencing such feelings and presentiments, man finds himself amidst a world where death and dissolution everywhere surround him. He sees the objects of his love or fear pass away, and he knows that sooner or later the same fate will befall himself. When he beholds the lifeless body of some near relative, his presentiment of immortality tells him that the selfsame soul that once animated that body is still alive. In such moments even the man of low cultivation is forced into more or less profound contemplation. The following reflection impresses itself with might and wonder upon him: “I feel convinced that the dead is living, but how can he live without his body and what form does his new life take?”
@@ -396,12 +385,16 @@ In olden times men were more fully convinced of a continued personal existence a
 What was it, then, that induced these peoples of early times to bestow such extraordinary labor on the places of their last rest? It certainly was their belief that the graves contained not only the lifeless body, but also the living soul. The funeral ceremonies evidently show, as Fustel de Coulanges says, that when the body was laid in the grave it was thought that something yet alive was placed there at the same time. The soul was born simultaneously with the body; death did not separate them; they were both enclosed together in the grave. In olden times people felt so fully assured that a man lived in the tomb, that they never failed to bury with him the things of which he was thought to be in want. They poured wine on the grave in order to quench his thirst; they brought food to his tomb in order to appease his hunger; they killed horses and slaves, believing that, if enclosed with the dead, these would serve him in his grave as they had served him during his life.
 
 It was also in this conviction that the positive duty of burying the deceased originated. In order to bring rest to the soul in the subterranean dwelling that fitted its new existence, it was necessary that the body, to which, in some way or another, it still clung, should be covered with earth. The soul, denied a grave, had no dwelling. Drifting about, it sought in vain the desired rest after life’s fitful struggle. Without shelter, without offerings or food, it was condemned to everlasting wandering. Therefore, because the deceased was unhappy, he became ill-natured. He tormented the living; sent them diseases; destroyed their harvests; haunted them in uncanny visions in order to remind them of their duty to bury the body and thereby secure peace for himself.</textarea>
-</div>
-<div class="columns three">
-  <button id="compute" class="u-full-width">compute</button>
+<div class="row">
+<div class="columns eight">
 
-  <button id="effort-button">effort</button>
-  <button id="usage-button" class="selected">usage</button>
+  <button class="heatmap-button" id="heatmap-0" data-heatmap-id="0">base + penalties</button>
+  <button class="heatmap-button" id="heatmap-1" data-heatmap-id="1">base effort</button>
+  <button class="heatmap-button" id="heatmap-2" data-heatmap-id="2">penalties</button>
+  <button class="heatmap-button" id="heatmap-3" data-heatmap-id="3" class="selected">usage</button>
+</div>
+<div class="columns four">
+  <button id="compute" class="u-full-width">Compute with selected</button>
 </div>
 </div>
   <div id="keymap"></div>
@@ -429,7 +422,7 @@ It was also in this conviction that the positive duty of burying the deceased or
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script>
 
-var usage_selected = true;
+var heatmap_selected = 3;
 
 function textColorFromBackground(bg_color) {
   return d3.lab(bg_color).l >= 50 ? "black": "white";
@@ -498,7 +491,7 @@ const renderTable = tableData => {
                         <td>${item.finger_base}</td>
                         <td>${item.finger_penalties}</td>
                         <td>${item.path}</td>
-                        <td 6title="${distinct_chars.join(" ")}">${distinct_chars.length}</td>
+                        <td title="${distinct_chars.join(" ")}">${distinct_chars.length}</td>
                     </tr>
               <tr><td colspan="10" class="graphs">
                 <div class="graph base" title="Finger Base: ${item.finger_base}" style="width:${relative_scale * item.finger_base * K_B}%"></div><div class="graph base thumb" title="Thumb Base: ${item.thumb_base}" style="width:${relative_scale * item.thumb_base * K_B}%"></div><div class="graph penalties" title="Finger Penalties: ${item.finger_penalties}" style="width:${relative_scale * item.finger_penalties * K_P}%"></div><div class="graph penalties thumb" title="Thumb Penalties: ${item.thumb_penalties}" style="width:${relative_scale * item.thumb_penalties * K_P}%"></div><div class="graph path" title="Stroke Path: ${item.path}" style="width:${relative_scale * item.path * K_S}%"></div>
@@ -814,7 +807,7 @@ function calcPenalty(key) {
   if (key.thumb)
     return (parseFloat(W_0) + W_HAND * Math.max((key.hand?2:-2) * (P_HAND - 0.5), 0) + W_THUMB);
   else
-    return (parseFloat(W_0) + W_HAND * Math.max((key.hand?2:-2) * (P_HAND - 0.5), 0) + W_FINGER * P_FINGER[key.finger] + W_ROW * P_ROW[Math.round(key.row)]);
+    return (parseFloat(W_0) + W_HAND * Math.max((key.hand?2:-2) * (P_HAND - 0.5), 0) + W_FINGER * P_FINGER[key.finger] + W_ROW * P_ROW[Math.max(Math.min(Math.round(key.row), 6), 0)]);
 }
 
 function guessBaseEffort(keymap) {
@@ -900,10 +893,16 @@ function renderLayout(keymap) {
   var inner = "";
 
   var max_effort = 1;
+  var max_base = 1;
+  var max_penalties = 1;
   for (var i = 0; i < keymap.length; i++) {
     var effort = keymap[i].penalty + keymap[i].base;
     if (max_effort < effort)
       max_effort = effort;
+    if (max_base < keymap[i].base)
+      max_base = keymap[i].base;
+    if (max_penalties < keymap[i].penalty)
+      max_penalties = keymap[i].penalty;
   }
   for (var i = 0; i < keymap.length; i++) {
     var key_html = "";
@@ -911,9 +910,15 @@ function renderLayout(keymap) {
       key_html += `<div class="legend legend-${layer}" title="${keymap[i].layers[layer]}">${keymap[i].layers[layer]}</div>`;
     }
     var effort = precise(keymap[i].penalty + keymap[i].base);
-    var bg_color = d3.interpolatePuBuGn(1 - effort/max_effort);
-    var text_color = textColorFromBackground(bg_color);
-    inner += `<div id="key-${i}" class="key" style="left: calc(${keymap[i].x} * (var(--key-spacing) + var(--key-unit))); top: calc(${keymap[i].y} * (var(--key-spacing) + var(--key-unit))); width: calc(${keymap[i].w} * var(--key-unit));">${key_html}<div class="effort" style="background:${bg_color}; color: ${text_color}; display: ${usage_selected ? "none": "block"}">${effort}</div></div>`;
+    var effort_bg = d3.interpolatePuBuGn(1 - effort/max_effort);
+    var effort_fg = textColorFromBackground(effort_bg);
+    var base = precise(keymap[i].penalty + keymap[i].base);
+    var base_bg = d3.interpolatePuBuGn(1 - base/max_base);
+    var base_fg = textColorFromBackground(base_bg);
+    var penalties = precise(keymap[i].penalty + keymap[i].base);
+    var penalties_bg = d3.interpolatePuBuGn(1 - penalties/max_penalties);
+    var penalties_fg = textColorFromBackground(penalties_bg);
+    inner += `<div id="key-${i}" class="key" style="left: calc(${keymap[i].x} * (var(--key-spacing) + var(--key-unit))); top: calc(${keymap[i].y} * (var(--key-spacing) + var(--key-unit))); width: calc(${keymap[i].w} * var(--key-unit));">${key_html}<div class="heatmap heatmap-0" style="background:${effort_bg}; color: ${effort_fg}; display: ${heatmap_selected == 0 ? "block": "none"}">${effort}</div><div class="heatmap heatmap-1" style="background:${base_bg}; color: ${base_fg}; display: ${heatmap_selected == 1 ? "block": "none"}">${base}</div><div class="heatmap heatmap-2" style="background:${penalties_bg}; color: ${penalties_fg}; display: ${heatmap_selected == 2 ? "block": "none"}">${penalties}</div></div>`;
   }
 
   layout_element.innerHTML = inner;
@@ -1178,36 +1183,35 @@ document.getElementById("compute").onclick = function(event) {
   results[result_id].corpus = document.getElementById("corpus").value;
   computeResult(results[result_id]);
   renderUsage(results[result_id].keyboard.keymap);
+  renderLayout(results[result_id].keyboard.keymap);
   drawTable(false);
 };
 
-document.getElementById("usage-button").onclick = function(event) { 
-  usage_selected = true;
-  document.getElementById("usage-button").classList.add("selected");
-  document.getElementById("effort-button").classList.remove("selected");
-  var divs = document.querySelectorAll(".key .usage");
-  Array.prototype.forEach.call(divs, div => {
-    div.style.display = "block";
-  });
-  divs = document.querySelectorAll(".key .effort");
-  Array.prototype.forEach.call(divs, div => {
-    div.style.display = "none";
-  });
-};
+const heatmaps = document.querySelectorAll(".heatmap-button");
 
-document.getElementById("effort-button").onclick = function(event) { 
-  usage_selected = false;
-  document.getElementById("effort-button").classList.add("selected");
-  document.getElementById("usage-button").classList.remove("selected");
-  var divs = document.querySelectorAll(".key .usage");
-  Array.prototype.forEach.call(divs, div => {
-    div.style.display = "none";
+Array.prototype.forEach.call(heatmaps, heatmap => {
+  heatmap.addEventListener("click", () => {
+    if (!heatmap.dataset.heatmapId) return false;
+    heatmap_selected = heatmap.dataset.heatmapId;
+
+    Array.prototype.forEach.call(heatmaps, hm => {
+      if (hm.dataset.heatmapId == heatmap_selected) {
+        hm.classList.add("selected");
+        var divs = document.querySelectorAll(".key .heatmap-"+hm.dataset.heatmapId);
+        Array.prototype.forEach.call(divs, div => {
+          div.style.display = "block";
+        });
+      } else {
+        hm.classList.remove("selected");
+        var divs = document.querySelectorAll(".key .heatmap-"+hm.dataset.heatmapId);
+        Array.prototype.forEach.call(divs, div => {
+          div.style.display = "none";
+        });
+      }
+    });
+
   });
-  divs = document.querySelectorAll(".key .effort");
-  Array.prototype.forEach.call(divs, div => {
-    div.style.display = "block";
-  });
-};
+});
 
 function computeResult(result) {
   var finger_effort = 0;
@@ -1301,8 +1305,8 @@ function computeResult(result) {
 
     var stroke_path_hand = STROKE_PATH_HAND_INDEX[(fingers[i].hand << 2) | (fingers[i+1].hand << 1) | (fingers[i+2].hand)];
     
-    var row_diff_1 = parseInt(Math.round(fingers[i].row - fingers[i+1].row + HOMEROW_OFFSET));
-    var row_diff_2 = parseInt(Math.round(fingers[i].row - fingers[i+2].row + HOMEROW_OFFSET));
+    var row_diff_1 = Math.max(Math.min(parseInt(Math.round(fingers[i].row - fingers[i+1].row + HOMEROW_OFFSET)), 3), 0);
+    var row_diff_2 = Math.max(Math.min(parseInt(Math.round(fingers[i].row - fingers[i+2].row + HOMEROW_OFFSET)), 3), 0);
     var stroke_path_row = STROKE_PATH_ROW_INDEX[(row_diff_1 << 3) | row_diff_2];
 
     var stroke_path_finger_index = STROKE_PATH_FINGER_INDEX[(fingers[i].finger << 6) | (fingers[i+1].finger << 3) | fingers[i+2].finger];
@@ -1364,7 +1368,7 @@ function renderUsage(keymap) {
   for (var i = 0; i < keymap.length; i++) {
     var bg_color = d3.interpolatePuBuGn(keymap[i].count / max_count);
     var text_color = textColorFromBackground(bg_color);
-    document.getElementById("key-"+i).innerHTML += `<div class="usage" style="background:${bg_color}; color: ${text_color}; display: ${usage_selected ? "block": "none"}">${precise(keymap[i].usage * 100)}</div>`;
+    document.getElementById("key-"+i).innerHTML += `<div class="heatmap heatmap-3" style="background:${bg_color}; color: ${text_color}; display: ${heatmap_selected == 3 ? "block": "none"}">${precise(keymap[i].usage * 100)}</div>`;
   }
 }
 
