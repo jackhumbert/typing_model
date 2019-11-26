@@ -153,6 +153,7 @@ td {
 .graphs {
   padding: 0px;
   white-space: nowrap;
+  height: 20px;
 }
 
 .graph {
@@ -182,14 +183,36 @@ td {
  background: #F3C216;
 }
 
+.finger-row td {
+  padding-top: 0px;
+} 
+
 .finger-usages {
+  position: relative;
   padding: 0px;
   white-space: nowrap;
   height: 100px;
 }
 
+.hand-usage {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  width: 50%;
+  background: red;
+  z-index: 1;
+  opacity: .1;
+}
+.hand-usage:last-child {
+  left: 50%;
+}
+
+.hand-usage:hover {
+  opacity: .2;
+}
+
 .finger-wrapper {
-  line-height: 100px;
+  height: 100px;
   position: relative;
   display: inline-block;
   width: 10%;
@@ -200,21 +223,19 @@ td {
   z-index: 2;
   position: relative;
   font-weight: bold;
+  padding: 10px;
 }
 
 .finger-usage {
   position: absolute;
   bottom: 0px;
   width: 100%;
-  background: #C5C5C5;
-  z-index: -1px;
+  background: #eee;
+  z-index: 0;
 }
 
-.finger-wrapper:hover {
-  cursor: pointer;
-}
 .finger-wrapper:hover .finger-usage {
-  opacity: .8;
+  background: #ddd;
 }
 
 .button-wrapper {
@@ -570,15 +591,21 @@ const renderTable = tableData => {
       var distinct_chars = getDistinctArray(item.unknown_chars);
       var max_finger_usage = 0;
       var total_finger_usage = 0;
-      Array.prototype.forEach.call(item.usage_fingers, finger => {
+      var total_hand_usage = [0, 0];
+      Array.prototype.forEach.call(item.usage_fingers, (finger, index) => {
         if (max_finger_usage < finger)
           max_finger_usage = finger;
         total_finger_usage += finger;
+        if (index < 5)
+          total_hand_usage[0] += finger;
+        else 
+          total_hand_usage[1] += finger;
       });
       var finger_usage_string = "";
       Array.prototype.forEach.call(item.usage_fingers, (finger, index) => {
-        finger_usage_string += `<div class="finger-wrapper" title="${finger}, ${precise(finger/total_finger_usage*100)}%"><div class="finger-name">${finger_names[index]}</div><div class="finger-usage" style="height:${finger/max_finger_usage*100}%"></div></div>`;
+        finger_usage_string += `<div class="finger-wrapper" title="${finger}"><div class="finger-name">${finger_names[index]}<br />${precise(finger/total_finger_usage*100)}%</div><div class="finger-usage" style="height:${finger/max_finger_usage*100}%"></div></div>`;
       });
+      finger_usage_string += `<div class="hand-usage" title="${precise(total_hand_usage[0]/total_finger_usage*100)}%" style="height:${total_hand_usage[0]/total_finger_usage*50}%"></div><div class="hand-usage" title="${precise(total_hand_usage[1]/total_finger_usage*100)}%" style="height:${total_hand_usage[1]/total_finger_usage*50}%"></div>`;
       return `<tr data-item-id="${item.id}" class="${(item.id == current_result) ? "selected ":""}result">
                         <td><strong>${item.keyboard.keyboard_name}</strong><br />${item.keyboard.filename}</td>
                         <td>${encode(item.corpus.slice(0, 12))}...</td>
@@ -594,9 +621,9 @@ const renderTable = tableData => {
               <tr><td colspan="10" class="graphs">
                 <div class="graph base" title="Finger Base: ${item.finger_base}" style="width:${relative_scale * item.finger_base * K_B}%"></div><div class="graph base thumb" title="Thumb Base: ${item.thumb_base}" style="width:${relative_scale * item.thumb_base * K_B}%"></div><div class="graph penalties" title="Finger Penalties: ${item.finger_penalties}" style="width:${relative_scale * item.finger_penalties * K_P}%"></div><div class="graph penalties thumb" title="Thumb Penalties: ${item.thumb_penalties}" style="width:${relative_scale * item.thumb_penalties * K_P}%"></div><div class="graph path" title="Stroke Path: ${item.path}" style="width:${relative_scale * item.path * K_S}%"></div>
               </td></tr>
-              <tr><td colspan="10">
-                <details>
-                <summary><strong>Finger Usage</strong></summary>
+              <tr class="finger-row"><td colspan="10">
+                <details data-item-id="${item.id}"${item.details?" open":""}>
+                <summary><strong>Usage stats</strong></summary>
                 <div class="finger-usages">
                   ${finger_usage_string}
                 </div>
@@ -635,6 +662,13 @@ const getSelectedResult = () => {
   }
 }
 
+const getResult = (id) => {
+  for (var i = 0; i < results.length; i++) {
+    if (results[i].id == id)
+      return results[i];
+  }
+}
+
 const drawTable = (selectLast) => {
   if (selectLast) {
     current_result = results.length - 1;
@@ -647,7 +681,6 @@ const drawTable = (selectLast) => {
   prevFilter = currentFilter;
 
   const rows = document.querySelectorAll("#results tr");
-
   Array.prototype.forEach.call(rows, row => {
     row.addEventListener("click", () => {
       if (!row.dataset.itemId) return false;
@@ -657,6 +690,15 @@ const drawTable = (selectLast) => {
       renderKeyboard(selected_result.keyboard);
       renderLayout(selected_result.keyboard.keymap);
       renderUsage(selected_result.keyboard.keymap);
+    });
+  });
+
+  const details = document.querySelectorAll("#results tr details");
+  Array.prototype.forEach.call(details, detail => {
+    detail.addEventListener("click", () => {
+      if (!detail.dataset.itemId) return false;
+      var result = getResult(detail.dataset.itemId);
+      result.details = !detail.open;
     });
   });
 
@@ -1457,6 +1499,8 @@ function computeResult(result) {
   result.path = total_stroke_path / num_triads;
   result.unknown_chars = unknown_chars.slice(0);
   result.usage_fingers = usage_fingers;
+  if (result.details == null)
+    result.details = false;
 }
 
 function renderUsage(keymap) {
