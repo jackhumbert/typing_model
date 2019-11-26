@@ -391,7 +391,7 @@ It was also in this conviction that the positive duty of burying the deceased or
   <button class="heatmap-button" id="heatmap-0" data-heatmap-id="0">base + penalties</button>
   <button class="heatmap-button" id="heatmap-1" data-heatmap-id="1">base effort</button>
   <button class="heatmap-button" id="heatmap-2" data-heatmap-id="2">penalties</button>
-  <button class="heatmap-button" id="heatmap-3" data-heatmap-id="3" class="selected">usage</button>
+  <button class="heatmap-button selected" id="heatmap-3" data-heatmap-id="3">usage</button>
 </div>
 <div class="columns four">
   <button id="compute" class="u-full-width">Compute with selected</button>
@@ -484,13 +484,13 @@ const renderTable = tableData => {
       return `<tr data-item-id="${item.id}" class="${(item.id == current_result) ? "selected ":""}result">
                         <td><strong>${item.keyboard.keyboard_name}</strong><br />${item.keyboard.filename}</td>
                         <td>${encode(item.corpus.slice(0, 12))}...</td>
-                        <td>${item.total_effort}</td>
-                        <td>${item.thumb_effort}</td>
-                        <td>${item.finger_effort}</td>
-                        <td>${item.thumb_base}</td>
-                        <td>${item.finger_base}</td>
-                        <td>${item.finger_penalties}</td>
-                        <td>${item.path}</td>
+                        <td>${precise(item.total_effort)}</td>
+                        <td>${precise(item.thumb_effort)}</td>
+                        <td>${precise(item.finger_effort)}</td>
+                        <td>${precise(item.thumb_base)}</td>
+                        <td>${precise(item.finger_base)}</td>
+                        <td>${precise(item.finger_penalties)}</td>
+                        <td>${precise(item.path)}</td>
                         <td title="${distinct_chars.join(" ")}">${distinct_chars.length}</td>
                     </tr>
               <tr><td colspan="10" class="graphs">
@@ -912,11 +912,11 @@ function renderLayout(keymap) {
     var effort = precise(keymap[i].penalty + keymap[i].base);
     var effort_bg = d3.interpolatePuBuGn(1 - effort/max_effort);
     var effort_fg = textColorFromBackground(effort_bg);
-    var base = precise(keymap[i].penalty + keymap[i].base);
-    var base_bg = d3.interpolatePuBuGn(1 - base/max_base);
+    var base = precise(keymap[i].base);
+    var base_bg = d3.interpolatePuBuGn(1 - keymap[i].base/max_base);
     var base_fg = textColorFromBackground(base_bg);
-    var penalties = precise(keymap[i].penalty + keymap[i].base);
-    var penalties_bg = d3.interpolatePuBuGn(1 - penalties/max_penalties);
+    var penalties = precise(keymap[i].penalty);
+    var penalties_bg = d3.interpolatePuBuGn(1 - keymap[i].penalty/max_penalties);
     var penalties_fg = textColorFromBackground(penalties_bg);
     inner += `<div id="key-${i}" class="key" style="left: calc(${keymap[i].x} * (var(--key-spacing) + var(--key-unit))); top: calc(${keymap[i].y} * (var(--key-spacing) + var(--key-unit))); width: calc(${keymap[i].w} * var(--key-unit));">${key_html}<div class="heatmap heatmap-0" style="background:${effort_bg}; color: ${effort_fg}; display: ${heatmap_selected == 0 ? "block": "none"}">${effort}</div><div class="heatmap heatmap-1" style="background:${base_bg}; color: ${base_fg}; display: ${heatmap_selected == 1 ? "block": "none"}">${base}</div><div class="heatmap heatmap-2" style="background:${penalties_bg}; color: ${penalties_fg}; display: ${heatmap_selected == 2 ? "block": "none"}">${penalties}</div></div>`;
   }
@@ -1182,8 +1182,8 @@ document.getElementById("compute").onclick = function(event) {
   results[result_id].keyboard = getSelectedResult().keyboard;
   results[result_id].corpus = document.getElementById("corpus").value;
   computeResult(results[result_id]);
-  renderUsage(results[result_id].keyboard.keymap);
   renderLayout(results[result_id].keyboard.keymap);
+  renderUsage(results[result_id].keyboard.keymap);
   drawTable(false);
 };
 
@@ -1348,14 +1348,14 @@ function computeResult(result) {
   var average_finger_penalty = finger_penalty / num_triads;
   var average_stroke_path = total_stroke_path / num_triads;
 
-  result.total_effort = precise(average_total);
-  result.thumb_effort = precise(average_thumb);
-  result.thumb_base = precise(average_thumb_base);
-  result.thumb_penalties = precise(average_thumb_penalty);
-  result.finger_effort = precise(average_finger);
-  result.finger_base = precise(average_finger_base);
-  result.finger_penalties = precise(average_finger_penalty);
-  result.path = precise(average_stroke_path);
+  result.total_effort = average_total;
+  result.thumb_effort = average_thumb;
+  result.thumb_base = average_thumb_base;
+  result.thumb_penalties = average_thumb_penalty;
+  result.finger_effort = average_finger;
+  result.finger_base = average_finger_base;
+  result.finger_penalties = average_finger_penalty;
+  result.path = average_stroke_path;
   result.unknown_chars = unknown_chars.slice(0);
 }
 
