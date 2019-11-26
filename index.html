@@ -796,6 +796,13 @@ function guessHomerow() {
   rm = findKey("e");
   if ((lm.index + 1 == lp.index) && (rp.index + 1 == rm.index))
     return {leftPointer: lp, rightPointer: rp};
+  // test for dvorak
+  lm = findKey("e");
+  lp = findKey("i");
+  rp = findKey("h");
+  rm = findKey("t");
+  if ((lm.index + 1 == lp.index) && (rp.index + 1 == rm.index))
+    return {leftPointer: lp, rightPointer: rp};
   return {leftPointer: { index: 16 }, rightPointer: { index: 19}};
 }
 
