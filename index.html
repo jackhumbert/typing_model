@@ -895,13 +895,19 @@ function renderLayout(keymap) {
   var layout_element = document.getElementById("keymap");
   var inner = "";
 
+  var max_effort = 1;
+  for (var i = 0; i < keymap.length; i++) {
+    var effort = keymap[i].penalty + keymap[i].base;
+    if (max_effort < effort)
+      max_effort = effort;
+  }
   for (var i = 0; i < keymap.length; i++) {
     var key_html = "";
     for (var layer = 0; layer < keymap[i].layers.length; layer++) {
       key_html += `<div class="legend legend-${layer}" title="${keymap[i].layers[layer]}">${keymap[i].layers[layer]}</div>`;
     }
     var effort = precise(keymap[i].penalty + keymap[i].base);
-    var bg_color = d3.interpolateCividis(effort/10);
+    var bg_color = d3.interpolatePuBuGn(1 - effort/max_effort);
     var text_color = textColorFromBackground(bg_color);
     inner += `<div id="key-${i}" class="key" style="left: calc(${keymap[i].x} * (var(--key-spacing) + var(--key-unit))); top: calc(${keymap[i].y} * (var(--key-spacing) + var(--key-unit))); width: calc(${keymap[i].w} * var(--key-unit));">${key_html}<div class="effort" style="background:${bg_color}; color: ${text_color}; display: ${usage_selected ? "none": "block"}">${effort}</div></div>`;
   }
@@ -1292,7 +1298,7 @@ function computeCorpus(text) {
 
   var usage = [];
   for (var i = 0; i < keymap.length; i++) {
-    keymap[i].usage = precise(keymap[i].count / fingers.length);
+    keymap[i].usage = keymap[i].count / fingers.length;
   }
 
   renderUsage(keymap);
