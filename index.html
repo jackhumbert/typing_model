@@ -435,7 +435,8 @@ function textColorFromBackground(bg_color) {
   return d3.lab(bg_color).l >= 50 ? "black": "white";
 }
 
-data = [];
+var results = [];
+var current_result = 0;
 
 let currentFilter = "",
   prevFilter = "",
@@ -485,11 +486,11 @@ const renderTable = tableData => {
 
   return `${tableData
     .map(item => {
-      var relative_scale = item.total_effort / max_total_effort * 100;
+      var relative_scale = 100 / max_total_effort;
       var distinct_chars = getDistinctArray(item.unknown_chars);
-      return `<tr data-item-id="${item.id}" class="${item.selected ? "selected ":""}result">
-                        <td><strong>${item.keyboard.keyboard_name}</strong><br />${item.filename}</td>
-                        <td>${encode(item.corpus)}</td>
+      return `<tr data-item-id="${item.id}" class="${(item.id == current_result) ? "selected ":""}result">
+                        <td><strong>${item.keyboard.keyboard_name}</strong><br />${item.keyboard.filename}</td>
+                        <td>${encode(item.corpus.slice(0, 12))}...</td>
                         <td>${item.total_effort}</td>
                         <td>${item.thumb_effort}</td>
                         <td>${item.finger_effort}</td>
@@ -497,10 +498,10 @@ const renderTable = tableData => {
                         <td>${item.finger_base}</td>
                         <td>${item.finger_penalties}</td>
                         <td>${item.path}</td>
-                        <td title="${distinct_chars.join(" ")}">${distinct_chars.length}</td>
+                        <td 6title="${distinct_chars.join(" ")}">${distinct_chars.length}</td>
                     </tr>
               <tr><td colspan="10" class="graphs">
-                <div class="graph base" title="Finger Base: ${item.finger_base}" style="width:${relative_scale * item.finger_base * K_B / item.total_effort}%"></div><div class="graph base thumb" title="Thumb Base: ${item.thumb_base}" style="width:${relative_scale * item.thumb_base * K_B / item.total_effort}%"></div><div class="graph penalties" title="Finger Penalties: ${item.finger_penalties}" style="width:${relative_scale * item.finger_penalties * K_P / item.total_effort}%"></div><div class="graph penalties thumb" title="Thumb Penalties: ${item.thumb_penalties}" style="width:${relative_scale * item.thumb_penalties * K_P / item.total_effort}%"></div><div class="graph path" title="Stroke Path: ${item.path}" style="width:${relative_scale * item.path * K_S / item.total_effort}%"></div>
+                <div class="graph base" title="Finger Base: ${item.finger_base}" style="width:${relative_scale * item.finger_base * K_B}%"></div><div class="graph base thumb" title="Thumb Base: ${item.thumb_base}" style="width:${relative_scale * item.thumb_base * K_B}%"></div><div class="graph penalties" title="Finger Penalties: ${item.finger_penalties}" style="width:${relative_scale * item.finger_penalties * K_P}%"></div><div class="graph penalties thumb" title="Thumb Penalties: ${item.thumb_penalties}" style="width:${relative_scale * item.thumb_penalties * K_P}%"></div><div class="graph path" title="Stroke Path: ${item.path}" style="width:${relative_scale * item.path * K_S}%"></div>
               </td></tr>`;
     })
     .join("")}`;
@@ -528,13 +529,18 @@ const handleSortClick = () => {
   });
 };
 
+const getSelectedResult = () => {
+  for (var i = 0; i < results.length; i++) {
+    if (results[i].id == current_result)
+      return results[i];
+  }
+}
+
 const drawTable = (selectLast) => {
   if (selectLast) {
-    for (var i = 0; i < data.length; i++) {
-      data[i].selected = (data[i].id == data.length - 1);
-    }
+    current_result = results.length - 1;
   }
-  let newTableData = sortTable(data, currentFilter);
+  let newTableData = sortTable(results, currentFilter);
   let tableOutput = renderTable(newTableData);
 
   appendTable(tableOutput, "#results tbody");
@@ -546,20 +552,12 @@ const drawTable = (selectLast) => {
   Array.prototype.forEach.call(rows, row => {
     row.addEventListener("click", () => {
       if (!row.dataset.itemId) return false;
-      var selected_item;
-      Array.prototype.forEach.call(rows, row_i => {
-        if (!row_i.dataset.itemId) return false;
-        if (data[row_i.dataset.itemId].id == row.dataset.itemId) {
-          selected_item = data[row_i.dataset.itemId]
-          selected_item.selected = true;
-        } else {
-          data[row_i.dataset.itemId].selected = false;
-        }
-      });
+      current_result = row.dataset.itemId;
+      var selected_result = getSelectedResult();
       drawTable(false);
-      renderKeyboard(selected_item.keyboard);
-      renderLayout(selected_item.keymap);
-      renderUsage(selected_item.keymap);
+      renderKeyboard(selected_result.keyboard);
+      renderLayout(selected_result.keyboard.keymap);
+      renderUsage(selected_result.keyboard.keymap);
     });
   });
 
@@ -751,12 +749,10 @@ var shifted_keys = {
 };
 
 var num_layers = 0;
-var current_filename;
 var keyboard = {};
-var keymap = [];
 var HOMEROW_OFFSET = 3;
 
-function findKey(character) {
+function findKey(keymap, character) {
   for (var key = 0; key < keymap.length; key++) {
     for (var layer = 0; layer < num_layers; layer++) {
       if (keymap[key].layers[layer] == character) {
@@ -767,7 +763,7 @@ function findKey(character) {
   return -1;
 }
 
-function findKeyAtCoords(x, y) {
+function findKeyAtCoords(keymap, x, y) {
   var closest_dist = 1000, dist, closest_index;
   for (var key = 0; key < keymap.length; key++) {
     dist = Math.sqrt(Math.pow(keymap[key].x - x, 2) + Math.pow(keymap[key].y - y, 2));
@@ -779,51 +775,51 @@ function findKeyAtCoords(x, y) {
   return {index: closest_index, dist: closest_dist};
 }
 
-function guessHomerow() {
+function guessHomerow(keymap) {
   // assumes that home row keys are all neighbors in the layout
   var lm, lp, rp, rm;
   // test for qwerty
-  lm = findKey("d");
-  lp = findKey("f");
-  rp = findKey("j");
-  rm = findKey("k");
+  lm = findKey(keymap, "d");
+  lp = findKey(keymap, "f");
+  rp = findKey(keymap, "j");
+  rm = findKey(keymap, "k");
   if ((lm.index + 1 == lp.index) && (rp.index + 1 == rm.index))
     return {leftPointer: lp, rightPointer: rp};
   // test for colemak
-  lm = findKey("s");
-  lp = findKey("t");
-  rp = findKey("n");
-  rm = findKey("e");
+  lm = findKey(keymap, "s");
+  lp = findKey(keymap, "t");
+  rp = findKey(keymap, "n");
+  rm = findKey(keymap, "e");
   if ((lm.index + 1 == lp.index) && (rp.index + 1 == rm.index))
     return {leftPointer: lp, rightPointer: rp};
   // test for dvorak
-  lm = findKey("e");
-  lp = findKey("i");
-  rp = findKey("h");
-  rm = findKey("t");
+  lm = findKey(keymap, "e");
+  lp = findKey(keymap, "i");
+  rp = findKey(keymap, "h");
+  rm = findKey(keymap, "t");
   if ((lm.index + 1 == lp.index) && (rp.index + 1 == rm.index))
     return {leftPointer: lp, rightPointer: rp};
   return {leftPointer: { index: 16 }, rightPointer: { index: 19}};
 }
 
-function guessThumbs(homerow) {
+function guessThumbs(keymap, homerow) {
   var key_lp = keymap[homerow.leftPointer.index];
   var key_rp = keymap[homerow.rightPointer.index];
-  var left = findKeyAtCoords(key_lp.x + 0, key_lp.y + 2);
-  var right = findKeyAtCoords(key_rp.x - 0, key_rp.y + 2);
+  var left = findKeyAtCoords(keymap, key_lp.x + 0, key_lp.y + 2);
+  var right = findKeyAtCoords(keymap, key_rp.x - 0, key_rp.y + 2);
   return {left: left, right: right}; 
 }
 
 function calcPenalty(key) {
   if (key.thumb)
-    return W_0 + W_HAND * Math.max((key.hand?2:-2) * (P_HAND - 0.5), 0) + W_THUMB;
+    return (parseFloat(W_0) + W_HAND * Math.max((key.hand?2:-2) * (P_HAND - 0.5), 0) + W_THUMB);
   else
-    return W_0 + W_HAND * Math.max((key.hand?2:-2) * (P_HAND - 0.5), 0) + W_FINGER * P_FINGER[key.finger] + W_ROW * P_ROW[Math.round(key.row)];
+    return (parseFloat(W_0) + W_HAND * Math.max((key.hand?2:-2) * (P_HAND - 0.5), 0) + W_FINGER * P_FINGER[key.finger] + W_ROW * P_ROW[Math.round(key.row)]);
 }
 
-function guessBaseEffort() {
-  var homerow = guessHomerow();
-  var thumbs = guessThumbs(homerow);
+function guessBaseEffort(keymap) {
+  var homerow = guessHomerow(keymap);
+  var thumbs = guessThumbs(keymap, homerow);
   for (var key = 0; key < keymap.length; key++) {
     var closest_dist = 1000;
     var finger = 0;
@@ -878,7 +874,7 @@ function guessBaseEffort() {
 }
 
 function loadLayout(info) {
-  keymap = [];
+  var keymap = [];
 
   for (var i = 0; i < info.layout.length; i++) {
     var w = 1;
@@ -892,6 +888,7 @@ function loadLayout(info) {
     keymap[i].i = i;
     keymap[i].layers = [];
   }
+  return keymap;
 }
 
 function precise(x) {
@@ -924,7 +921,7 @@ function renderLayout(keymap) {
 
 const lsft = /LSFT\((.+)\)/;
 
-function loadLayers(layers) {
+function loadLayers(keyboard, layers) {
   num_layers = layers.length;
   for (var layer = 0; layer < layers.length; layer++) {
     for (var key = 0; key < layers[layer].length; key++) {
@@ -937,7 +934,7 @@ function loadLayers(layers) {
           c = shift_keys[legend_lookup[m[1]]];
         }
       }
-      keymap[key].layers[layer] = c;
+      keyboard.keymap[key].layers[layer] = c;
     }
   }
 }
@@ -961,12 +958,20 @@ function loadKeymap(file, filename) {
     }
     keyboard = response.keyboards[file.keyboard];
     renderKeyboard(keyboard);
-    loadLayout(keyboard.layouts[file.layout]);
-    loadLayers(file.layers)
-    guessBaseEffort();
-    renderLayout(keymap);
-    current_filename = filename;
-    computeCorpus(document.getElementById("corpus").value);
+    keyboard.keymap = loadLayout(keyboard.layouts[file.layout]);
+    loadLayers(keyboard, file.layers)
+    guessBaseEffort(keyboard.keymap);
+    renderLayout(keyboard.keymap);
+    keyboard.filename = filename;
+
+    var result_id = results.length;
+    results[result_id] = {};
+    results[result_id].id = result_id;
+    results[result_id].keyboard = keyboard;
+    results[result_id].corpus = document.getElementById("corpus").value;
+    computeResult(results[result_id]);
+    renderUsage(keyboard.keymap);
+    drawTable(true);
   });
 }
 
@@ -1027,6 +1032,15 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
   alert('The File APIs are not fully supported in this browser.');
 }
 
+function recalculateResults() {
+  for (var i = 0; i < results.length; i++) {
+    computeResult(results[i]);
+    drawTable(false);
+  } 
+  renderLayout(getSelectedResult().keyboard.keymap);
+  renderUsage(getSelectedResult().keyboard.keymap);
+}
+
 function register_param(name, initial) {
   var elements = [];
   var initial_values = [];
@@ -1058,6 +1072,7 @@ function register_param(name, initial) {
       else
         window[id[0]] = e.target.value;
       e.target.title = e.target.value;
+      recalculateResults();
     }
   }
   
@@ -1156,7 +1171,14 @@ function clone(obj) {
 }
 
 document.getElementById("compute").onclick = function(event) { 
-  computeCorpus(document.getElementById("corpus").value);
+  var result_id = results.length;
+  results[result_id] = {};
+  results[result_id].id = result_id;
+  results[result_id].keyboard = getSelectedResult().keyboard;
+  results[result_id].corpus = document.getElementById("corpus").value;
+  computeResult(results[result_id]);
+  renderUsage(results[result_id].keyboard.keymap);
+  drawTable(false);
 };
 
 document.getElementById("usage-button").onclick = function(event) { 
@@ -1187,7 +1209,7 @@ document.getElementById("effort-button").onclick = function(event) {
   });
 };
 
-function computeCorpus(text) {
+function computeResult(result) {
   var finger_effort = 0;
   var thumb_effort = 0;
   var finger_base = 0;
@@ -1197,28 +1219,31 @@ function computeCorpus(text) {
   var total_stroke_path = 0;
   var keys = [], thumbs = [], fingers = [];
   var unknown_chars = [];
+  var keymap = result.keyboard.keymap;
+  var text = result.corpus;
 
   for (var i = 0; i < keymap.length; i++) {
     keymap[i].count = 0;
+    keymap[i].penalty = calcPenalty(keymap[i]);
   } 
 
   // convert to lut/switch eventually
   text = text.replace(/(?:\r\n|\r|\n)/g, '↵');
   for (var i = 0; i < text.length; i++) {
-    var key = findKey(text[i]);
+    var key = findKey(keymap, text[i]);
     // skip keys we can't find
     if (key != -1) {
       if (key.layer != 0) {
-        var layer_key = findKey("▲"+key.layer);
+        var layer_key = findKey(keymap, "▲"+key.layer);
         if (layer_key != -1)
           keys.push(keymap[layer_key.index])
       }
       keys.push(keymap[key.index]);
     } else {
       // check for shifted keys
-      key = findKey(shifted_keys[text[i]]);
+      key = findKey(keymap, shifted_keys[text[i]]);
       if (key != -1) {
-        var shift_key = findKey("⇧");
+        var shift_key = findKey(keymap, "⇧");
         if (shift_key != -1) {
           keys.push(keymap[shift_key.index]);
           keys.push(keymap[key.index]);
@@ -1308,8 +1333,6 @@ function computeCorpus(text) {
     keymap[i].usage = keymap[i].count / fingers.length;
   }
 
-  renderUsage(keymap);
-
   var total_effort = thumb_effort + finger_effort;
 
   var average_total = total_effort / num_triads;
@@ -1321,23 +1344,15 @@ function computeCorpus(text) {
   var average_finger_penalty = finger_penalty / num_triads;
   var average_stroke_path = total_stroke_path / num_triads;
 
-  data.push({
-    id: data.length,
-    filename: current_filename,
-    corpus: text.slice(0, 12)+"...",
-    total_effort: precise(average_total),
-    thumb_effort: precise(average_thumb),
-    thumb_base: precise(average_thumb_base),
-    thumb_penalties: precise(average_thumb_penalty),
-    finger_effort: precise(average_finger),
-    finger_base: precise(average_finger_base),
-    finger_penalties: precise(average_finger_penalty),
-    path: precise(average_stroke_path),
-    keyboard: clone(keyboard),
-    keymap: keymap.slice(0),
-    unknown_chars: unknown_chars.slice(0),
-  });
-  drawTable(true);
+  result.total_effort = precise(average_total);
+  result.thumb_effort = precise(average_thumb);
+  result.thumb_base = precise(average_thumb_base);
+  result.thumb_penalties = precise(average_thumb_penalty);
+  result.finger_effort = precise(average_finger);
+  result.finger_base = precise(average_finger_base);
+  result.finger_penalties = precise(average_finger_penalty);
+  result.path = precise(average_stroke_path);
+  result.unknown_chars = unknown_chars.slice(0);
 }
 
 function renderUsage(keymap) {
