@@ -10,6 +10,11 @@
   <link rel="stylesheet" href="normalize.css">
   <link rel="stylesheet" href="skeleton.css">
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async
+          src="https://cdn.jsdelivr.net/npm/mathjax@3.0.0/es5/tex-mml-chtml.js">
+  </script>
+
 <style>
 
 :root {
@@ -149,8 +154,11 @@ td {
   left: 0px;
   bottom: 0px;
   background: red;
-  height: 10px;
+  height: 20px;
   display: inline-block;
+}
+.graph:hover {
+  opacity: .8;
 }
 
 .base {
@@ -169,6 +177,34 @@ td {
  background: #F3C216;
 }
 
+input[type=range] {
+  width: 100%;
+  margin-bottom: 0px;
+}
+
+input[type=range][orient=vertical]
+{
+    writing-mode: bt-lr; /* IE */
+    -webkit-appearance: slider-vertical; /* WebKit */
+    width: 8px;
+    height: 92px;
+    padding: 0 5px;
+}
+
+.center-cells td {
+  text-align: center;
+}
+.model-parameters th, .model-parameters td {
+    padding: 2px 5px;
+}
+summary {
+  cursor: pointer;
+}
+
+h1, h2, h3, h4 {
+  text-align: center;
+}
+
 </style>
 
 
@@ -178,6 +214,159 @@ td {
       <br />
       <h1>QMK Keymap Carpalx Analyser</h1>
       <p>This attempts to adapt <a href="http://mkweb.bcgsc.ca/carpalx/?typing_effort">Carpalx</a> into a JS system that can analyse QMK keymaps in the form of configurator .json files. <a href="https://github.com/qmk/qmk_configurator/tree/master/public/keymaps">Some default keymaps are available here</a>, which can be dropped any where on this page (drop multiple files for quick comparing). The textarea below is used as a corpus, and is populated by a <a href="http://www.gutenberg.org/files/60750/60750-h/60750-h.htm">section from a book on Project Gutenberg</a>.</p>
+      <details>
+        <summary><strong>Adjust overall weights</strong></summary>
+        <div class="model-parameters">
+
+          <div class="row">
+            <div class="columns six">
+              \[e = {k_{base} \times b_{triad} + k_{penalty} \times p_{triad} + k_{stroke} \times s_{triad} }\]
+              \[b_{triad} = {k_1 \times b_{key,1} \times ( 1 + k_1 \times b_{key,2} \times ( 1 + k_3 \times b_{key,3}))}\]
+              \[b_{key} = \text{distance from closest homerow key in } \frac{1}{2} \text{ key units}\]
+            </div>
+          <div class="columns three">
+            <table class="u-full-width">
+              <tr><td colspan="2" class="center">Effort Component Weights</td></tr>
+              <tr><td>\(k_{base}\)</td><td><input type="range" id="K_B" /></td></tr>
+              <tr><td>\(k_{penalty}\)</td><td><input type="range" id="K_P" /></td></tr>
+              <tr><td>\(k_{stroke}\)</td><td><input type="range" id="K_S" /></td></tr>
+            </table>
+          </div>
+
+          <div class="columns three">
+              <table class="u-full-width">
+                <tr><td colspan="2" class="center">Triad Interaction Weights</td></tr>
+                <tr><td>\(k_{1}\)</td><td><input type="range" id="K_1" /></td></tr>
+                <tr><td>\(k_{2}\)</td><td><input type="range" id="K_2" /></td></tr>
+                <tr><td>\(k_{3}\)</td><td><input type="range" id="K_3" /></td></tr>
+              </table>
+            </div>
+          </div>
+
+          </div>
+
+      </details>
+      <details>
+        <summary><strong>Adjust penalties</strong></summary>
+        <div class="model-parameters">
+
+          <div class="row">
+            <div class="columns six">
+
+              \[p_{triad} = {k_1 \times p_{key,1} \times ( 1 + k_1 \times p_{key,2} \times ( 1 + k_3 \times p_{key,3}))}\]
+              \[p_{fingerkey} = {w_0 + w_{hand} \times p_{hand} + w_{finger} \times p_{finger} + w_{row} \times p_{row}}\]
+              \[p_{thumbkey} = {w_0 + w_{hand} \times p_{hand} + w_{thumb}}\]
+        </div>
+            <div class="columns six">
+              <table class="u-full-width">
+                <tr><td colspan="2" class="center">Penalty Weights</td></tr>
+                <tr><td width="80">\(w_0\)</td><td><input type="range" id="W_0" /></td></tr>
+                <tr><td>\(w_{hand}\)</td><td><input type="range" id="W_HAND" /></td></tr>
+                <tr><td>\(w_{row}\)</td><td><input type="range" id="W_ROW" /></td></tr>
+                <tr><td>\(w_{finger}\)</td><td><input type="range" id="W_FINGER" /></td></tr>
+                <tr><td>\(w_{thumb}\)</td><td><input type="range" id="W_THUMB" /></td></tr>
+              </table>
+            </div>
+      </div>
+
+      <div class="row">
+        <div class="columns five">
+            <table class="u-full-width">
+              <tr><td class="center">Hand Penalty \(p_{hand}\)</td></tr>
+              <tr><td><input type="range" id="P_HAND" /></td></tr>
+            </table>          
+            <table class="center-cells u-full-width">
+            <tr><td colspan="8">Finger Penalty \(p_{finger}\)</td></tr>
+            <tr><td colspan="4">Left</td><td colspan="4">Right</td></tr>
+            <tr>
+              <td>Pinky</td><td>Ring</td><td>Middle</td><td>Pointer</td>
+              <td>Pointer</td><td>Middle</td><td>Ring</td><td>Pinky</td>
+            </tr>
+            <tr>
+              <td><input type="range" orient="vertical" id="P_FINGER.0" /></td>
+              <td><input type="range" orient="vertical" id="P_FINGER.1" /></td>
+              <td><input type="range" orient="vertical" id="P_FINGER.2" /></td>
+              <td><input type="range" orient="vertical" id="P_FINGER.3" /></td>
+              <td><input type="range" orient="vertical" id="P_FINGER.4" /></td>
+              <td><input type="range" orient="vertical" id="P_FINGER.5" /></td>
+              <td><input type="range" orient="vertical" id="P_FINGER.6" /></td>
+              <td><input type="range" orient="vertical" id="P_FINGER.7" /></td>
+            </tr>
+          </table>
+            </div>
+        <div class="columns seven">
+          <table class="u-full-width">
+            <tr><td colspan="2" class="center">Row Penalty \(p_{row}\)</td></tr>
+            <tr><td width="90">3 Above</td><td><input type="range" id="P_ROW.0" /></td></tr>
+            <tr><td>2 Above</td><td><input type="range" id="P_ROW.1" /></td></tr>
+            <tr><td>1 Above</td><td><input type="range" id="P_ROW.2" /></td></tr>
+            <tr><td>Homerow</td><td><input type="range" id="P_ROW.3" /></td></tr>
+            <tr><td>1 Below</td><td><input type="range" id="P_ROW.4" /></td></tr>
+            <tr><td>2 Below</td><td><input type="range" id="P_ROW.5" /></td></tr>
+            <tr><td>3 Below</td><td><input type="range" id="P_ROW.6" /></td></tr>
+          </table>
+        </div>
+      </div>
+
+      </details>
+      <details>
+        <summary><strong>Adjust stroke path</strong></summary>
+        <div class="model-parameters">
+
+      \[s_{triad} = {f_{hand} \times s_{hand} + f_{row} \times s_{row} + f_{finger} \times s_{finger} }\]
+
+      <div class="row">
+        <div class="columns six">
+          <table class="u-full-width">
+            <tr><td colspan="2" class="center">Weights</td></tr>
+            <tr><td>\(f_{hand}\)</td><td><input type="range" id="F_HAND" /></td></tr>
+            <tr><td>\(f_{row}\)</td><td><input type="range" id="F_ROW" /></td></tr>
+            <tr><td>\(f_{finger}\)</td><td><input type="range" id="F_FINGER" /></td></tr>
+          </table>
+        </div>
+        <div class="columns six">
+          <table class="u-full-width">
+            <tr><td colspan="2" class="center">Hand Combination Weight \(s_{hand}\)</td></tr>
+            <tr><td>Both used, not alternating</td><td><input type="range" id="STROKE_PATH_HAND_WEIGHT.0" /></td></tr>
+            <tr><td>Alternating</td><td><input type="range" id="STROKE_PATH_HAND_WEIGHT.1" /></td></tr>
+            <tr><td>Same</td><td><input type="range" id="STROKE_PATH_HAND_WEIGHT.2" /></td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="columns seven">
+          <table class="u-full-width">
+            <tr><td colspan="2" class="center">Row Combination Weight \(s_{row}\)</td></tr>
+            <tr><td>Same</td><td><input type="range" id="STROKE_PATH_ROW_WEIGHT.0" /></td></tr>
+            <tr><td>Downward progression, with repetition</td><td><input type="range" id="STROKE_PATH_ROW_WEIGHT.1" /></td></tr>
+            <tr><td>Upward progression, with repetition</td><td><input type="range" id="STROKE_PATH_ROW_WEIGHT.2" /></td></tr>
+            <tr><td>Some different, not monotonic, max row Δ 1</td><td><input type="range" id="STROKE_PATH_ROW_WEIGHT.3" /></td></tr>
+            <tr><td>Downward progression</td><td><input type="range" id="STROKE_PATH_ROW_WEIGHT.4" /></td></tr>
+            <tr><td>Some different, not monotonic, max row Δ downward >1</td><td><input type="range" id="STROKE_PATH_ROW_WEIGHT.5" /></td></tr>
+            <tr><td>Upward progression</td><td><input type="range" id="STROKE_PATH_ROW_WEIGHT.6" /></td></tr>
+            <tr><td>Some different, not monotonic, max row Δ upward >1</td><td><input type="range" id="STROKE_PATH_ROW_WEIGHT.7" /></td></tr>
+          </table>
+        </div>
+        <div class="columns five">
+          <table class="u-full-width">
+            <tr><td colspan="2" class="center">Finger Combination Weight \(s_{finger}\)</td></tr>
+            <tr><td>Double inner roll</td><td><input type="range" id="STROKE_PATH_FINGER_WEIGHT.0" /></td></tr>
+            <tr><td>Repeat one</td><td><input type="range" id="STROKE_PATH_FINGER_WEIGHT.1" /></td></tr>
+            <tr><td>Single inner roll</td><td><input type="range" id="STROKE_PATH_FINGER_WEIGHT.2" /></td></tr>
+            <tr><td>Single outer roll</td><td><input type="range" id="STROKE_PATH_FINGER_WEIGHT.3" /></td></tr>
+            <tr><td>Double outer roll</td><td><input type="range" id="STROKE_PATH_FINGER_WEIGHT.4" /></td></tr>
+            <tr><td>Same finger</td><td><input type="range" id="STROKE_PATH_FINGER_WEIGHT.5" /></td></tr>
+            <tr><td>Alt hands</td><td><input type="range" id="STROKE_PATH_FINGER_WEIGHT.6" /></td></tr>
+            <tr><td>Bounce</td><td><input type="range" id="STROKE_PATH_FINGER_WEIGHT.7" /></td></tr>
+            <tr><td>Same key advantage</td><td><input type="range" id="STROKE_PATH_SAME_KEY_WEIGHT" /></td></tr>
+          </table>
+        </div>
+      </div>
+
+      </details>
+
+ <p></p>
       <div class="row">
         <div class="columns nine">
   <textarea id="corpus" class="u-full-width">A consciousness of immortality, sometimes dim and vague, sometimes vivid and clear, seems to be characteristic of the human race. However low man may stand he cannot consider death to be the end of his existence. The conviction that he is immortal is innate to him. Annihilation is contrary to the nature and demands of his spirit. It is true that uncertainty and doubt might arise, but man will never be able wholly to uproot either hope or fear as to the possibility of a future life.
@@ -221,12 +410,13 @@ It was also in this conviction that the positive duty of burying the deceased or
               <tr>
                   <th data-filter-value="keyboard" class="active">Keyboard</th>
                   <th data-filter-value="corpus">Corpus</th>
-                  <th data-filter-value="total_effort">Total Effort</th>
-                  <th data-filter-value="thumb_effort">Thumb Effort</th>
-                  <th data-filter-value="finger_effort">Finger Effort</th>
-                  <th data-filter-value="finger_base">Finger Base</th>
-                  <th data-filter-value="finger_penalties">Finger Penalties</th>
-                  <th data-filter-value="path">Path</th>
+                  <th data-filter-value="total_effort" title="Total Effort">\(e\)</th>
+                  <th data-filter-value="thumb_effort" title="Thumb Effort">\(e_{thumb}\)</th>
+                  <th data-filter-value="finger_effort" title="Finger Effort">\(e_{finger}\)</th>
+                  <th data-filter-value="thumb_base" title="Thumb Base">\(b_{thumb}\)</th>
+                  <th data-filter-value="finger_base" title="Finger Base">\(b_{finger}\)</th>
+                  <th data-filter-value="finger_penalties" title="Finger Penalties">\(p_{finger}\)</th>
+                  <th data-filter-value="path" title="Stroke Path">\(s\)</th>
                   <th data-filter-value="unknown_chars" title="Unknown Characters">?</th>
               </tr>
           </thead>
@@ -274,6 +464,16 @@ function encode(r) {
   });
 }
 
+function getDistinctArray(arr) {
+    var dups = {};
+    return arr.filter(function(el) {
+        var hash = el.valueOf();
+        var isDup = dups[hash];
+        dups[hash] = true;
+        return !isDup;
+    });
+}
+
 const renderTable = tableData => {
   
   var max_total_effort = 0;
@@ -286,18 +486,20 @@ const renderTable = tableData => {
   return `${tableData
     .map(item => {
       var relative_scale = item.total_effort / max_total_effort * 100;
+      var distinct_chars = getDistinctArray(item.unknown_chars);
       return `<tr data-item-id="${item.id}" class="${item.selected ? "selected ":""}result">
                         <td><strong>${item.keyboard.keyboard_name}</strong><br />${item.filename}</td>
                         <td>${encode(item.corpus)}</td>
                         <td>${item.total_effort}</td>
                         <td>${item.thumb_effort}</td>
                         <td>${item.finger_effort}</td>
+                        <td>${item.thumb_base}</td>
                         <td>${item.finger_base}</td>
                         <td>${item.finger_penalties}</td>
                         <td>${item.path}</td>
-                        <td title="${item.unknown_chars}">${item.unknown_chars.length}</td>
+                        <td title="${distinct_chars.join(" ")}">${distinct_chars.length}</td>
                     </tr>
-              <tr><td colspan="9" class="graphs">
+              <tr><td colspan="10" class="graphs">
                 <div class="graph base" title="Finger Base: ${item.finger_base}" style="width:${relative_scale * item.finger_base * K_B / item.total_effort}%"></div><div class="graph base thumb" title="Thumb Base: ${item.thumb_base}" style="width:${relative_scale * item.thumb_base * K_B / item.total_effort}%"></div><div class="graph penalties" title="Finger Penalties: ${item.finger_penalties}" style="width:${relative_scale * item.finger_penalties * K_P / item.total_effort}%"></div><div class="graph penalties thumb" title="Thumb Penalties: ${item.thumb_penalties}" style="width:${relative_scale * item.thumb_penalties * K_P / item.total_effort}%"></div><div class="graph path" title="Stroke Path: ${item.path}" style="width:${relative_scale * item.path * K_S / item.total_effort}%"></div>
               </td></tr>`;
     })
@@ -607,9 +809,9 @@ function guessThumbs(homerow) {
 
 function calcPenalty(key) {
   if (key.thumb)
-    return W_0 + W_HAND * P_HAND[key.hand] + W_THUMB;
+    return W_0 + W_HAND * Math.max((key.hand?2:-2) * (P_HAND - 0.5), 0) + W_THUMB;
   else
-    return W_0 + W_HAND * P_HAND[key.hand] + W_FINGER * P_FINGER[key.finger] + W_ROW * P_ROW[Math.round(key.row)];
+    return W_0 + W_HAND * Math.max((key.hand?2:-2) * (P_HAND - 0.5), 0) + W_FINGER * P_FINGER[key.finger] + W_ROW * P_ROW[Math.round(key.row)];
 }
 
 function guessBaseEffort() {
@@ -812,23 +1014,93 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
   alert('The File APIs are not fully supported in this browser.');
 }
 
-var K_1 = 1.000;
-var K_2 = 0.367;
-var K_3 = 0.235;
+function register_param(name, initial) {
+  var elements = [];
+  var initial_values = [];
+  window[name] = initial;
+  if (initial.constructor === Array) {
+    for (var i = 0; i < initial.length; i++) {
+      elements[i] = document.getElementById(name+"."+i);
+      initial_values[i] = initial[i];
+    }
+  } else { 
+    elements[0] = document.getElementById(name);
+    initial_values[0] = initial;
+  }
 
-var P_HAND = [ 0.0, 0.0 ];
-var P_ROW = [ 2.5, 1.5, 0.5, 0.0, 0.5, 1.5, 2.5];
-var P_FINGER = [ 1.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 1.0 ];
+  for (var i = 0; i < elements.length; i++) {
+    if (!elements[i]) {
+      console.log("Loose parameter");
+      continue;
+    }
+    elements[i].min = 0.000;
+    elements[i].max = 1.000;
+    elements[i].step = 0.001;
+    elements[i].value = initial_values[i];
+    elements[i].title = initial_values[i];
+    elements[i].onchange = e => {
+      var id = e.target.id.split(".");
+      if (id.length > 1)
+        window[id[0]][id[1]] = e.target.value;
+      else
+        window[id[0]] = e.target.value;
+      e.target.title = e.target.value;
+    }
+  }
+  
+}
 
-var W_0      = 0.0000;
-var W_HAND   = 1.0000;
-var W_ROW    = 1.3088;
-var W_FINGER = 2.4948;
-var W_THUMB  = 0.0000;
+register_param("K_B", 0.2218);
+register_param("K_P", 1.0000);
+register_param("K_S", 0.2663);
 
-var F_HAND   = 1.0;
-var F_ROW    = 0.3;
-var F_FINGER = 0.3;
+register_param("K_1", 1.000);
+register_param("K_2", 0.367);
+register_param("K_3", 0.235);
+
+register_param("P_HAND", 0.5);
+register_param("P_ROW", [ 1.0, 0.666, 0.333, 0.0, 0.666, 0.8, 1.0]);
+register_param("P_FINGER", [ 1.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 1.0 ]);
+
+register_param("W_0",      0.0000);
+register_param("W_HAND",   0.1142);
+register_param("W_ROW",    0.7869);
+register_param("W_FINGER", 1.0000);
+register_param("W_THUMB",  0.0000);
+
+register_param("F_HAND", 1.0);
+register_param("F_ROW", 0.3);
+register_param("F_FINGER", 0.3);
+
+register_param("STROKE_PATH_HAND_WEIGHT", [
+  0.0,
+  0.5,
+  1.0,
+]);
+
+register_param("STROKE_PATH_ROW_WEIGHT", [
+  0.0000,
+  0.1428,
+  0.2857,
+  0.4285,
+  0.5714,
+  0.7142,
+  0.8571,
+  1.0000 
+]);
+
+register_param("STROKE_PATH_FINGER_WEIGHT", [
+  0.0000, // 0 double inner roll
+  0.2857, // 1 repeat one
+  0.1428, // 2 single inner roll
+  0.4285, // 3 single outer roll
+  0.2857, // 4 double outer roll
+  0.2857, // 5 same finger
+  0.4285, // 6 alt hands
+  0.2857  // 7 bounce
+]);
+
+register_param("STROKE_PATH_SAME_KEY_WEIGHT", 0.5000);
 
 
 // 0b000 format where each bit is a hand, left=0 right=1
@@ -860,22 +1132,6 @@ var STROKE_PATH_ROW_INDEX = [
 // 6 alt hands
 // 7 bounce
 var STROKE_PATH_FINGER_INDEX = [ 5, 1, 1, 1, 1, 1, 1, 1, 7, 1, 0, 0, 2, 2, 2, 2, 7, 3, 1, 0, 2, 2, 2, 2, 7, 3, 3, 1, 2, 2, 2, 2, 6, 6, 6, 6, 1, 3, 3, 3, 6, 6, 6, 6, 2, 1, 3, 3, 6, 6, 6, 6, 2, 2, 1, 3, 6, 6, 6, 6, 2, 2, 2, 1, 1, 7, 3, 3, 3, 3, 3, 3, 1, 5, 1, 1, 1, 1, 1, 1, 2, 7, 1, 0, 2, 2, 2, 2, 2, 7, 3, 1, 2, 2, 2, 2, 6, 6, 6, 6, 1, 3, 3, 3, 6, 6, 6, 6, 2, 1, 3, 3, 6, 6, 6, 6, 2, 2, 1, 3, 6, 6, 6, 6, 2, 2, 2, 1, 1, 3, 7, 3, 3, 3, 3, 3, 4, 1, 7, 3, 3, 3, 3, 3, 1, 1, 5, 1, 1, 1, 1, 1, 2, 2, 7, 1, 2, 2, 2, 2, 6, 6, 6, 6, 1, 3, 3, 3, 6, 6, 6, 6, 2, 1, 3, 3, 6, 6, 6, 6, 2, 2, 1, 3, 6, 6, 6, 6, 2, 2, 2, 1, 1, 3, 3, 7, 3, 3, 3, 3, 4, 1, 3, 7, 3, 3, 3, 3, 4, 4, 1, 7, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 6, 6, 6, 6, 1, 3, 3, 3, 6, 6, 6, 6, 2, 1, 3, 3, 6, 6, 6, 6, 2, 2, 1, 3, 6, 6, 6, 6, 2, 2, 2, 1, 1, 2, 2, 2, 6, 6, 6, 6, 3, 1, 2, 2, 6, 6, 6, 6, 3, 3, 1, 2, 6, 6, 6, 6, 3, 3, 3, 1, 6, 6, 6, 6, 1, 1, 1, 1, 5, 1, 1, 1, 3, 3, 3, 3, 7, 1, 4, 4, 3, 3, 3, 3, 7, 3, 1, 4, 3, 3, 3, 3, 7, 3, 3, 1, 1, 2, 2, 2, 6, 6, 6, 6, 3, 1, 2, 2, 6, 6, 6, 6, 3, 3, 1, 2, 6, 6, 6, 6, 3, 3, 3, 1, 6, 6, 6, 6, 2, 2, 2, 2, 1, 7, 2, 2, 1, 1, 1, 1, 1, 5, 1, 1, 3, 3, 3, 3, 3, 7, 1, 4, 3, 3, 3, 3, 3, 7, 3, 1, 1, 2, 2, 2, 6, 6, 6, 6, 3, 1, 2, 2, 6, 6, 6, 6, 3, 3, 1, 2, 6, 6, 6, 6, 3, 3, 3, 1, 6, 6, 6, 6, 2, 2, 2, 2, 1, 3, 7, 2, 2, 2, 2, 2, 0, 1, 7, 2, 1, 1, 1, 1, 1, 1, 5, 1, 3, 3, 3, 3, 3, 3, 7, 1, 1, 2, 2, 2, 6, 6, 6, 6, 3, 1, 2, 2, 6, 6, 6, 6, 3, 3, 1, 2, 6, 6, 6, 6, 3, 3, 3, 1, 6, 6, 6, 6, 2, 2, 2, 2, 1, 3, 3, 7, 2, 2, 2, 2, 0, 1, 3, 7, 2, 2, 2, 2, 0, 0, 1, 7, 1, 1, 1, 1, 1, 1, 1, 5 ];
-
-// this weights the indexes above, on a scale 0-7
-var STROKE_PATH_FINGER_WEIGHT = [
-  0.0, // 0 double inner roll
-  2.0, // 1 repeat one
-  1.0, // 2 single inner roll
-  3.0, // 3 single outer roll
-  2.0, // 4 double outer roll
-  2.0, // 5 same finger
-  3.0, // 6 alt hands
-  2.0  // 7 bounce
-];
-var K_B = 0.3555;
-var K_P = 0.6423;
-var K_S = 0.4268;
-
 
 function clone(obj) {
     if (null == obj || "object" != typeof obj) return obj;
@@ -1015,9 +1271,9 @@ function computeCorpus(text) {
     var stroke_path_finger = STROKE_PATH_FINGER_WEIGHT[stroke_path_finger_index];
     if (stroke_path_finger_index == 1 || stroke_path_finger_index == 5) {
       if (fingers[i] != fingers[i+1] && fingers[i+1] != fingers[i+2]) {
-        stroke_path_finger *= 3;
+        stroke_path_finger /= (STROKE_PATH_SAME_KEY_WEIGHT * STROKE_PATH_SAME_KEY_WEIGHT);
       } else if (fingers[i] != fingers[i+1] || fingers[i+1] != fingers[i+2]) {
-        stroke_path_finger *= 2;
+        stroke_path_finger /= STROKE_PATH_SAME_KEY_WEIGHT;
       }
     }
 
