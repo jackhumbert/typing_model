@@ -32,10 +32,11 @@
   position: absolute;
   height: calc(var(--key-unit));
   border-radius: 5px;
-  border: 1px rgba(0, 0, 0, 0.5) solid;
+  /*border: 1px rgba(0, 0, 0, 0.5) solid;*/
   padding: 5px;
   box-sizing: border-box;
   overflow: hidden;
+  background: #eee;
 }
 .legend {
   position: absolute;
@@ -482,7 +483,7 @@ What was it, then, that induced these peoples of early times to bestow such extr
 It was also in this conviction that the positive duty of burying the deceased originated. In order to bring rest to the soul in the subterranean dwelling that fitted its new existence, it was necessary that the body, to which, in some way or another, it still clung, should be covered with earth. The soul, denied a grave, had no dwelling. Drifting about, it sought in vain the desired rest after life’s fitful struggle. Without shelter, without offerings or food, it was condemned to everlasting wandering. Therefore, because the deceased was unhappy, he became ill-natured. He tormented the living; sent them diseases; destroyed their harvests; haunted them in uncanny visions in order to remind them of their duty to bury the body and thereby secure peace for himself.</textarea>
 <div class="row">
 <div class="columns six radio">
-  <button class="heatmap-button" id="heatmap-0" data-heatmap-id="0">base + penalties</button><button class="heatmap-button" id="heatmap-1" data-heatmap-id="1">base effort</button><button class="heatmap-button" id="heatmap-2" data-heatmap-id="2">penalties</button><button class="heatmap-button selected" id="heatmap-3" data-heatmap-id="3">usage</button>
+  <button class="heatmap-button" id="heatmap-0" data-heatmap-id="0">base + penalties</button><button class="heatmap-button" id="heatmap-1" data-heatmap-id="1">base</button><button class="heatmap-button" id="heatmap-2" data-heatmap-id="2">penalties</button><button class="heatmap-button selected" id="heatmap-3" data-heatmap-id="3">usage</button>
 </div>
 <div class="columns six" style="text-align: right;">
   <div class="button-wrapper">
@@ -499,10 +500,10 @@ It was also in this conviction that the positive duty of burying the deceased or
                   <th data-filter-value="keyboard" class="active">Keyboard</th>
                   <th data-filter-value="corpus">Corpus</th>
                   <th data-filter-value="total_effort" title="Total Effort">\(e\)</th>
-                  <th data-filter-value="thumb_effort" title="Thumb Effort">\(e_{thumb}\)</th>
                   <th data-filter-value="finger_effort" title="Finger Effort">\(e_{finger}\)</th>
-                  <th data-filter-value="thumb_base" title="Thumb Base">\(b_{thumb}\)</th>
+                  <th data-filter-value="thumb_effort" title="Thumb Effort">\(e_{thumb}\)</th>
                   <th data-filter-value="finger_base" title="Finger Base">\(b_{finger}\)</th>
+                  <th data-filter-value="thumb_base" title="Thumb Base">\(b_{thumb}\)</th>
                   <th data-filter-value="finger_penalties" title="Finger Penalties">\(p_{finger}\)</th>
                   <th data-filter-value="path" title="Stroke Path">\(s\)</th>
                   <th data-filter-value="unknown_chars" title="Unknown Characters">?</th>
@@ -610,16 +611,16 @@ const renderTable = tableData => {
                         <td><strong>${item.keyboard.keyboard_name}</strong><br />${item.keyboard.filename}</td>
                         <td>${encode(item.corpus.slice(0, 12))}...</td>
                         <td>${precise(item.total_effort)}</td>
-                        <td>${precise(item.thumb_effort)}</td>
                         <td>${precise(item.finger_effort)}</td>
-                        <td>${precise(item.thumb_base)}</td>
+                        <td>${precise(item.thumb_effort)}</td>
                         <td>${precise(item.finger_base)}</td>
+                        <td>${precise(item.thumb_base)}</td>
                         <td>${precise(item.finger_penalties)}</td>
                         <td>${precise(item.path)}</td>
                         <td title="${distinct_chars.join(" ")}">${distinct_chars.length}</td>
                     </tr>
               <tr><td colspan="10" class="graphs">
-                <div class="graph base" title="Finger Base: ${item.finger_base}" style="width:${relative_scale * item.finger_base * K_B}%"></div><div class="graph base thumb" title="Thumb Base: ${item.thumb_base}" style="width:${relative_scale * item.thumb_base * K_B}%"></div><div class="graph penalties" title="Finger Penalties: ${item.finger_penalties}" style="width:${relative_scale * item.finger_penalties * K_P}%"></div><div class="graph penalties thumb" title="Thumb Penalties: ${item.thumb_penalties}" style="width:${relative_scale * item.thumb_penalties * K_P}%"></div><div class="graph path" title="Stroke Path: ${item.path}" style="width:${relative_scale * item.path * K_S}%"></div>
+                <div class="graph base" title="Finger Base: ${precise(item.finger_base)}" style="width:${relative_scale * item.finger_base * K_B}%"></div><div class="graph base thumb" title="Thumb Base: ${precise(item.thumb_base)}" style="width:${relative_scale * item.thumb_base * K_B}%"></div><div class="graph penalties" title="Finger Penalties: ${precise(item.finger_penalties)}" style="width:${relative_scale * item.finger_penalties * K_P}%"></div><div class="graph penalties thumb" title="Thumb Penalties: ${precise(item.thumb_penalties)}" style="width:${relative_scale * item.thumb_penalties * K_P}%"></div><div class="graph path" title="Stroke Path: ${precise(item.path)}" style="width:${relative_scale * item.path * K_S}%"></div>
               </td></tr>
               <tr class="finger-row"><td colspan="10">
                 <details data-item-id="${item.id}"${item.details?" open":""}>
