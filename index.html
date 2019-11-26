@@ -120,10 +120,24 @@ tr[data-item-id]:hover {
   background: #eee;
 }
 
+.radio {
+  white-space: nowrap;
+}
+
 button.heatmap-button {
   display: inline-block;
   padding-left: 10px;
   padding-right: 10px;
+  border-radius: 0px;
+  margin-left: -1px;
+}
+
+button.heatmap-button:first-child {
+  border-radius: 5px 0px 0px 5px;
+  margin-left: 0px;
+}
+button.heatmap-button:last-child {
+  border-radius: 0px 5px 5px 0px;
 }
 
 button.selected {
@@ -166,6 +180,66 @@ td {
 }
 .path {
  background: #F3C216;
+}
+
+.finger-usages {
+  padding: 0px;
+  white-space: nowrap;
+  height: 100px;
+}
+
+.finger-wrapper {
+  line-height: 100px;
+  position: relative;
+  display: inline-block;
+  width: 10%;
+  text-align: center;
+}
+
+.finger-name {
+  z-index: 2;
+  position: relative;
+  font-weight: bold;
+}
+
+.finger-usage {
+  position: absolute;
+  bottom: 0px;
+  width: 100%;
+  background: #C5C5C5;
+  z-index: -1px;
+}
+
+.finger-wrapper:hover {
+  cursor: pointer;
+}
+.finger-wrapper:hover .finger-usage {
+  opacity: .8;
+}
+
+.button-wrapper {
+  position: relative;
+  display: inline-block;
+  box-sizing: border-box;
+}
+
+.button-wrapper .button {
+  margin-bottom: 0px;
+}
+.button-wrapper:hover .button {
+  border-color: #888;
+  cursor: pointer;
+}
+
+.button-wrapper input[type=file] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  font-size: 0px;
+  height: 100%;
 }
 
 input[type=range] {
@@ -386,15 +460,15 @@ What was it, then, that induced these peoples of early times to bestow such extr
 
 It was also in this conviction that the positive duty of burying the deceased originated. In order to bring rest to the soul in the subterranean dwelling that fitted its new existence, it was necessary that the body, to which, in some way or another, it still clung, should be covered with earth. The soul, denied a grave, had no dwelling. Drifting about, it sought in vain the desired rest after life’s fitful struggle. Without shelter, without offerings or food, it was condemned to everlasting wandering. Therefore, because the deceased was unhappy, he became ill-natured. He tormented the living; sent them diseases; destroyed their harvests; haunted them in uncanny visions in order to remind them of their duty to bury the body and thereby secure peace for himself.</textarea>
 <div class="row">
-<div class="columns eight">
-
-  <button class="heatmap-button" id="heatmap-0" data-heatmap-id="0">base + penalties</button>
-  <button class="heatmap-button" id="heatmap-1" data-heatmap-id="1">base effort</button>
-  <button class="heatmap-button" id="heatmap-2" data-heatmap-id="2">penalties</button>
-  <button class="heatmap-button selected" id="heatmap-3" data-heatmap-id="3">usage</button>
+<div class="columns six radio">
+  <button class="heatmap-button" id="heatmap-0" data-heatmap-id="0">base + penalties</button><button class="heatmap-button" id="heatmap-1" data-heatmap-id="1">base effort</button><button class="heatmap-button" id="heatmap-2" data-heatmap-id="2">penalties</button><button class="heatmap-button selected" id="heatmap-3" data-heatmap-id="3">usage</button>
 </div>
-<div class="columns four">
-  <button id="compute" class="u-full-width">Compute with selected</button>
+<div class="columns six" style="text-align: right;">
+  <div class="button-wrapper">
+    <button class="button">Upload and compute</button>
+    <input id="file" type="file" multiple="multiple" />
+  </div>
+  <button id="compute">Compute with selected</button>
 </div>
 </div>
   <div id="keymap"></div>
@@ -468,6 +542,19 @@ function getDistinctArray(arr) {
     });
 }
 
+var finger_names = [
+  "L Pinky",
+  "L Ring",
+  "L Middle",
+  "L Index",
+  "L Thumb",
+  "R Thumb",
+  "R Index",
+  "R Middle",
+  "R Ring",
+  "R Pinky",
+];
+
 const renderTable = tableData => {
   
   var max_total_effort = 0;
@@ -481,6 +568,17 @@ const renderTable = tableData => {
     .map(item => {
       var relative_scale = 100 / max_total_effort;
       var distinct_chars = getDistinctArray(item.unknown_chars);
+      var max_finger_usage = 0;
+      var total_finger_usage = 0;
+      Array.prototype.forEach.call(item.usage_fingers, finger => {
+        if (max_finger_usage < finger)
+          max_finger_usage = finger;
+        total_finger_usage += finger;
+      });
+      var finger_usage_string = "";
+      Array.prototype.forEach.call(item.usage_fingers, (finger, index) => {
+        finger_usage_string += `<div class="finger-wrapper" title="${finger}, ${precise(finger/total_finger_usage*100)}%"><div class="finger-name">${finger_names[index]}</div><div class="finger-usage" style="height:${finger/max_finger_usage*100}%"></div></div>`;
+      });
       return `<tr data-item-id="${item.id}" class="${(item.id == current_result) ? "selected ":""}result">
                         <td><strong>${item.keyboard.keyboard_name}</strong><br />${item.keyboard.filename}</td>
                         <td>${encode(item.corpus.slice(0, 12))}...</td>
@@ -495,6 +593,14 @@ const renderTable = tableData => {
                     </tr>
               <tr><td colspan="10" class="graphs">
                 <div class="graph base" title="Finger Base: ${item.finger_base}" style="width:${relative_scale * item.finger_base * K_B}%"></div><div class="graph base thumb" title="Thumb Base: ${item.thumb_base}" style="width:${relative_scale * item.thumb_base * K_B}%"></div><div class="graph penalties" title="Finger Penalties: ${item.finger_penalties}" style="width:${relative_scale * item.finger_penalties * K_P}%"></div><div class="graph penalties thumb" title="Thumb Penalties: ${item.thumb_penalties}" style="width:${relative_scale * item.thumb_penalties * K_P}%"></div><div class="graph path" title="Stroke Path: ${item.path}" style="width:${relative_scale * item.path * K_S}%"></div>
+              </td></tr>
+              <tr><td colspan="10">
+                <details>
+                <summary><strong>Finger Usage</strong></summary>
+                <div class="finger-usages">
+                  ${finger_usage_string}
+                </div>
+                </details>
               </td></tr>`;
     })
     .join("")}`;
@@ -985,56 +1091,50 @@ function renderKeyboard(keyboard) {
     var padding = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--key-padding'));
     var spacing = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--key-spacing'));
     var scale = width / keyboard.width;
-    document.documentElement.style.setProperty('--key-unit', (scale-padding)+'px');
+    document.documentElement.style.setProperty('--key-unit', (scale-padding+(padding/keyboard.width))+'px');
     document.documentElement.style.setProperty('--keyboard-height', keyboard.height);
     document.documentElement.style.setProperty('--keyboard-width', keyboard.width);
 }
 
 if (window.File && window.FileReader && window.FileList && window.Blob) {
-  // Great success!
-  function handleJSONDrop(evt) {
-    evt.stopPropagation();
-    evt.preventDefault();
-    var files = evt.dataTransfer.files;
-      // Loop through the FileList and read
-      for (var i = 0, f; f = files[i]; i++) {
-  
-        // Only process json files.
-          if (!f.type.match('application/json')) {
+
+  function handleFiles(files) {
+    for (var i = 0, f; f = files[i]; i++) {
+        if (!f.type.match('application/json'))
           continue;
+      var reader = new FileReader();
+      reader.onload = (function(file) {
+        return function(e) {
+          var obj = JSON.parse(e.target.result);
+          loadKeymap(obj, file.name);
         }
-  
-        var reader = new FileReader();
-  
-        // Closure to capture the file information.
-        reader.onload = (function(theFile) {
-          return function(e) {
-            p = JSON.parse(e.target.result);
-            loadKeymap(p, theFile.name);
-            // var span = document.createElement('span');
-            // span.innerHTML = p.keyboard;
-            // document.getElementById('div').insertBefore(span, null);
-          };
-        })(f);
-  
-        reader.readAsText(f);
-      }
+      })(f);
+      reader.readAsText(f);
+    }
   }
 
-  function handleDragOver(evt) {
-    evt.stopPropagation();
-    evt.preventDefault();
-    evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+  function handleChooseFile(event) {
+    handleFiles(event.target.files);
+  }
+
+  function handleJSONDrop(event) {
+    event.stopPropagation();
+    event.preventDefault();
+    handleFiles(event.dataTransfer.files);
+  }
+
+  function handleDragOver(event) {
+    event.stopPropagation();
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
   }
 
   // Setup the dnd listeners.
   var dropZone = document.getElementsByTagName('body')[0];
   dropZone.addEventListener('dragover', handleDragOver, false);
   dropZone.addEventListener('drop', handleJSONDrop, false);
-  
-
-} else {
-  alert('The File APIs are not fully supported in this browser.');
+  document.getElementById('file').addEventListener('change', handleChooseFile);
+ 
 }
 
 function recalculateResults() {
@@ -1176,6 +1276,8 @@ function clone(obj) {
 }
 
 document.getElementById("compute").onclick = function(event) { 
+  if (results.length == 0)
+    return; 
   var result_id = results.length;
   results[result_id] = {};
   results[result_id].id = result_id;
@@ -1225,6 +1327,7 @@ function computeResult(result) {
   var unknown_chars = [];
   var keymap = result.keyboard.keymap;
   var text = result.corpus;
+  var usage_fingers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   for (var i = 0; i < keymap.length; i++) {
     keymap[i].count = 0;
@@ -1261,8 +1364,13 @@ function computeResult(result) {
     keys[i].count++;
     if (keys[i].thumb) {
       thumbs[fingers.length] = keys[i];
+      usage_fingers[keys[i].hand + 4]++;
     } else {
       fingers.push(keys[i]);
+      if (keys[i].hand)
+        usage_fingers[keys[i].finger + 2]++;
+      else
+        usage_fingers[keys[i].finger]++;
     }
   }
   // save for later incase we need to remove some for calculations
@@ -1339,24 +1447,16 @@ function computeResult(result) {
 
   var total_effort = thumb_effort + finger_effort;
 
-  var average_total = total_effort / num_triads;
-  var average_thumb = thumb_effort / num_triads;
-  var average_thumb_base = thumb_base / num_triads;
-  var average_thumb_penalty = thumb_penalty / num_triads;
-  var average_finger = finger_effort / num_triads;
-  var average_finger_base = finger_base / num_triads;
-  var average_finger_penalty = finger_penalty / num_triads;
-  var average_stroke_path = total_stroke_path / num_triads;
-
-  result.total_effort = average_total;
-  result.thumb_effort = average_thumb;
-  result.thumb_base = average_thumb_base;
-  result.thumb_penalties = average_thumb_penalty;
-  result.finger_effort = average_finger;
-  result.finger_base = average_finger_base;
-  result.finger_penalties = average_finger_penalty;
-  result.path = average_stroke_path;
+  result.total_effort = total_effort / num_triads;
+  result.thumb_effort = thumb_effort / num_triads;
+  result.thumb_base = thumb_base / num_triads;
+  result.thumb_penalties = thumb_penalty / num_triads;
+  result.finger_effort = finger_effort / num_triads;
+  result.finger_base = finger_base / num_triads;
+  result.finger_penalties = finger_penalty / num_triads;
+  result.path = total_stroke_path / num_triads;
   result.unknown_chars = unknown_chars.slice(0);
+  result.usage_fingers = usage_fingers;
 }
 
 function renderUsage(keymap) {
