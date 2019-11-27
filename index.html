@@ -316,6 +316,42 @@ h1, h2, h3, h4 {
   text-align: center;
 }
 
+#overall summary {
+    left: 0px;
+    position: relative;
+    width: 33%;
+}
+
+#overall[open] {
+  padding-bottom: 24px;
+}
+
+#penalties summary {
+    left: calc(50% - 16.666%);
+    position: relative;
+    margin-top: -24px;
+    width: 33%;
+}
+
+#penalties[open] {
+  padding-bottom: 24px;
+}
+
+#path summary {
+    left: calc(100% - 33%);
+    position: relative;
+    margin-top: -24px;
+    width: 33%;
+}
+
+#configurator-keyboard {
+    margin-top: -1px;
+}
+
+.button, button, input[type="submit"], input[type="reset"], input[type="button"] {
+    padding: 0 15px;
+}
+
 </style>
 
 
@@ -325,7 +361,7 @@ h1, h2, h3, h4 {
       <br />
       <h1>QMK Keymap Carpalx Analyser</h1>
       <p>This attempts to adapt <a href="http://mkweb.bcgsc.ca/carpalx/?typing_effort">Carpalx</a> into a JS system that can analyse QMK keymaps in the form of configurator .json files. <a href="https://github.com/qmk/qmk_configurator/tree/master/public/keymaps">Some default keymaps are available here</a>, which can be dropped any where on this page (drop multiple files for quick comparing). The textarea below is used as a corpus, and is populated by a <a href="http://www.gutenberg.org/files/60750/60750-h/60750-h.htm">section from a book on Project Gutenberg</a>.</p>
-      <details>
+      <details id="overall">
         <summary><strong>Adjust overall weights</strong></summary>
         <div class="model-parameters">
 
@@ -357,7 +393,7 @@ h1, h2, h3, h4 {
           </div>
 
       </details>
-      <details>
+      <details id="penalties">
         <summary><strong>Adjust penalties</strong></summary>
         <div class="model-parameters">
 
@@ -420,7 +456,7 @@ h1, h2, h3, h4 {
       </div>
 
       </details>
-      <details>
+      <details id="path">
         <summary><strong>Adjust stroke path</strong></summary>
         <div class="model-parameters">
 
@@ -478,6 +514,21 @@ h1, h2, h3, h4 {
       </details>
 
  <p></p>
+  <div class="row">
+    <div class="columns six">
+      <select id="configurator-keyboard">
+      </select>
+      <button id="load-default">Load Keymap</button>
+    </div>
+    <div class="columns six" style="text-align: right;">
+      <div class="button-wrapper">
+        <button class="button">Upload Keymap</button>
+        <input id="file" type="file" multiple="multiple" />
+      </div>
+      <button id="compute">Compute with selected</button>
+    </div>
+  </div>
+
   <textarea id="corpus" class="u-full-width">A consciousness of immortality, sometimes dim and vague, sometimes vivid and clear, seems to be characteristic of the human race. However low man may stand he cannot consider death to be the end of his existence. The conviction that he is immortal is innate to him. Annihilation is contrary to the nature and demands of his spirit. It is true that uncertainty and doubt might arise, but man will never be able wholly to uproot either hope or fear as to the possibility of a future life.
 
 Experiencing such feelings and presentiments, man finds himself amidst a world where death and dissolution everywhere surround him. He sees the objects of his love or fear pass away, and he knows that sooner or later the same fate will befall himself. When he beholds the lifeless body of some near relative, his presentiment of immortality tells him that the selfsame soul that once animated that body is still alive. In such moments even the man of low cultivation is forced into more or less profound contemplation. The following reflection impresses itself with might and wonder upon him: "I feel convinced that the dead is living, but how can he live without his body and what form does his new life take?"
@@ -508,13 +559,6 @@ It was also in this conviction that the positive duty of burying the deceased or
 <div class="row">
 <div class="columns six radio">
   <button class="heatmap-button" id="heatmap-0" data-heatmap-id="0">base + penalties</button><button class="heatmap-button" id="heatmap-1" data-heatmap-id="1">base</button><button class="heatmap-button" id="heatmap-2" data-heatmap-id="2">penalties</button><button class="heatmap-button selected" id="heatmap-3" data-heatmap-id="3">usage</button>
-</div>
-<div class="columns six" style="text-align: right;">
-  <div class="button-wrapper">
-    <button class="button">Upload and compute</button>
-    <input id="file" type="file" multiple="multiple" />
-  </div>
-  <button id="compute">Compute with selected</button>
 </div>
 </div>
   <div id="keymap"></div>
@@ -1001,8 +1045,8 @@ var keyboard = {};
 var HOMEROW_OFFSET = 3;
 
 function findKey(keyboard, character) {
-  for (var key = 0; key < keyboard.keymap.length; key++) {
-    for (var layer = 0; layer < num_layers; layer++) {
+  for (var layer = 0; layer < num_layers; layer++) {
+    for (var key = 0; key < keyboard.keymap.length; key++) {
       var c = keyLookup(keyboard.keymap[key].layers[layer], keyboard.layout);
       if (c == character) {
         return {index: key, layer: layer};
@@ -1448,6 +1492,34 @@ document.getElementById("compute").onclick = function(event) {
   renderUsage(results[result_id].keyboard.keymap);
   drawTable(false);
 };
+
+function loadConfiguratorKeyboards() {
+  fetch("https://api.qmk.fm/v1/keyboards").then(promise => {
+    return promise.json();
+  }).then(response => {
+    var select = document.getElementById("configurator-keyboard");
+    Array.prototype.forEach.call(response, keyboard => {
+      var opt = document.createElement('option');
+      opt.value = keyboard;
+      opt.innerHTML = keyboard;
+      select.appendChild(opt);
+    });
+  });
+}
+
+loadConfiguratorKeyboards();
+
+document.getElementById("load-default").onclick = function(event) { 
+  var keyboard = document.getElementById("configurator-keyboard").value;
+  var filename = keyboard.replace(/\//gi, "_") + "_default.json";
+  fetch("https://config.qmk.fm/keymaps/" + filename).then(promise => {
+    return promise.json();
+  }).then(keyboard => {
+    loadKeymap(keyboard, filename);
+  }).catch(error => {
+    alert("No default keymap found for "+keyboard+" in the QMK Configurator repo.");
+  });
+}
 
 const heatmaps = document.querySelectorAll(".heatmap-button");
 
