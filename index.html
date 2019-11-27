@@ -351,6 +351,11 @@ h1, h2, h3, h4 {
     padding: 0 15px;
 }
 
+#corpus {
+  margin-bottom: 0px;
+  max-width: 100%;
+}
+
 </style>
 
 
@@ -514,17 +519,16 @@ h1, h2, h3, h4 {
 
  <p></p>
   <div class="row">
-    <div class="columns six">
+    <div class="columns nine">
       <select id="configurator-keyboard">
       </select>
       <button id="load-default">Load Keymap</button>
     </div>
-    <div class="columns six" style="text-align: right;">
+    <div class="columns three" style="text-align: right;">
       <div class="button-wrapper">
         <button class="button">Upload Keymap</button>
         <input id="file" type="file" multiple="multiple" />
       </div>
-      <button id="compute">Compute with selected</button>
     </div>
   </div>
 
@@ -555,11 +559,19 @@ In olden times men were more fully convinced of a continued personal existence a
 What was it, then, that induced these peoples of early times to bestow such extraordinary labor on the places of their last rest? It certainly was their belief that the graves contained not only the lifeless body, but also the living soul. The funeral ceremonies evidently show, as Fustel de Coulanges says, that when the body was laid in the grave it was thought that something yet alive was placed there at the same time. The soul was born simultaneously with the body; death did not separate them; they were both enclosed together in the grave. In olden times people felt so fully assured that a man lived in the tomb, that they never failed to bury with him the things of which he was thought to be in want. They poured wine on the grave in order to quench his thirst; they brought food to his tomb in order to appease his hunger; they killed horses and slaves, believing that, if enclosed with the dead, these would serve him in his grave as they had served him during his life.
 
 It was also in this conviction that the positive duty of burying the deceased originated. In order to bring rest to the soul in the subterranean dwelling that fitted its new existence, it was necessary that the body, to which, in some way or another, it still clung, should be covered with earth. The soul, denied a grave, had no dwelling. Drifting about, it sought in vain the desired rest after life's fitful struggle. Without shelter, without offerings or food, it was condemned to everlasting wandering. Therefore, because the deceased was unhappy, he became ill-natured. He tormented the living; sent them diseases; destroyed their harvests; haunted them in uncanny visions in order to remind them of their duty to bury the body and thereby secure peace for himself.</textarea>
-<div class="row">
-<div class="columns six radio">
-  <button class="heatmap-button" id="heatmap-0" data-heatmap-id="0">base + penalties</button><button class="heatmap-button" id="heatmap-1" data-heatmap-id="1">base</button><button class="heatmap-button" id="heatmap-2" data-heatmap-id="2">penalties</button><button class="heatmap-button selected" id="heatmap-3" data-heatmap-id="3">usage</button>
-</div>
-</div>
+
+  <div class="row">
+    <div class="columns twelve" style="text-align: right;">
+      <button id="recompute-all">Recompute all</button>
+      <button id="recompute-selected">Recompute selected</button>
+      <button id="compute">Compute selected</button>
+    </div>
+  </div>
+  <div class="row">
+    <div class="columns six radio">
+      <button class="heatmap-button" id="heatmap-0" data-heatmap-id="0">base + penalties</button><button class="heatmap-button" id="heatmap-1" data-heatmap-id="1">base</button><button class="heatmap-button" id="heatmap-2" data-heatmap-id="2">penalties</button><button class="heatmap-button selected" id="heatmap-3" data-heatmap-id="3">usage</button>
+    </div>
+  </div>
   <div id="keymap"></div>
   <table id="results" class="u-full-width">
           <thead>
@@ -1003,6 +1015,16 @@ var shift_keys = {
   "x": "X",
   "y": "Y",
   "z": "Z",
+  "1": "!",
+  "2": "@",
+  "3": "#",
+  "4": "$",
+  "5": "%",
+  "6": "^",
+  "7": "&",
+  "8": "*",
+  "9": "(",
+  "0": ")",
 };
 
 var shifted_keys = {
@@ -1037,6 +1059,16 @@ var shifted_keys = {
   "X": "x",
   "Y": "y",
   "Z": "z",
+  "!": "1",
+  "@": "2",
+  "#": "3",
+  "$": "4",
+  "%": "5",
+  "^": "6",
+  "&": "7",
+  "*": "8",
+  "(": "9",
+  ")": "0",
 };
 
 var num_layers = 0;
@@ -1477,6 +1509,16 @@ function clone(obj) {
     }
     return copy;
 }
+
+document.getElementById("recompute-all").onclick = function(event) { 
+  for (var i = 0; i < results.length; i++) {
+    results[i].corpus = document.getElementById("corpus").value;
+    computeResult(results[i]);
+  }
+  renderLayout(getSelectedResult().keyboard);
+  renderUsage(getSelectedResult().keyboard.keymap);
+  drawTable(false);
+};
 
 document.getElementById("compute").onclick = function(event) { 
   if (results.length == 0)
