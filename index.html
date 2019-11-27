@@ -186,7 +186,24 @@ td {
 
 .finger-row td {
   padding-top: 0px;
+  position: relative;
 } 
+
+.finger-row summary {
+  width: 200px;
+}
+
+.finger-row .buttons {
+  position: absolute;
+  right: 0px;
+}
+
+button.small {
+    height: 24px;
+    line-height: 24px;
+    padding: 0px 12px;
+    font-size: 10px;
+}
 
 .finger-usages {
   position: relative;
@@ -623,6 +640,11 @@ const renderTable = tableData => {
                 <div class="graph base" title="Finger Base: ${precise(item.finger_base)}" style="width:${relative_scale * item.finger_base * K_B}%"></div><div class="graph base thumb" title="Thumb Base: ${precise(item.thumb_base)}" style="width:${relative_scale * item.thumb_base * K_B}%"></div><div class="graph penalties" title="Finger Penalties: ${precise(item.finger_penalties)}" style="width:${relative_scale * item.finger_penalties * K_P}%"></div><div class="graph penalties thumb" title="Thumb Penalties: ${precise(item.thumb_penalties)}" style="width:${relative_scale * item.thumb_penalties * K_P}%"></div><div class="graph path" title="Stroke Path: ${precise(item.path)}" style="width:${relative_scale * item.path * K_S}%"></div>
               </td></tr>
               <tr class="finger-row"><td colspan="10">
+                <div class="buttons">
+                  <button data-item-id="${item.id}" data-layout="0" class="layout-button small${item.keyboard.layout==0?" selected":""}">Qwerty</button>
+                  <button data-item-id="${item.id}" data-layout="1" class="layout-button small${item.keyboard.layout==1?" selected":""}">Colemak</button>
+                  <button data-item-id="${item.id}" data-layout="2" class="layout-button small${item.keyboard.layout==2?" selected":""}">Dvorak</button>
+                </div>
                 <details data-item-id="${item.id}"${item.details?" open":""}>
                 <summary><strong>Usage stats</strong></summary>
                 <div class="finger-usages">
@@ -689,7 +711,7 @@ const drawTable = (selectLast) => {
       var selected_result = getSelectedResult();
       drawTable(false);
       renderKeyboard(selected_result.keyboard);
-      renderLayout(selected_result.keyboard.keymap);
+      renderLayout(selected_result.keyboard);
       renderUsage(selected_result.keyboard.keymap);
     });
   });
@@ -703,9 +725,55 @@ const drawTable = (selectLast) => {
     });
   });
 
+  const buttons = document.querySelectorAll("#results tr .layout-button");
+  Array.prototype.forEach.call(buttons, button => {
+    button.addEventListener("click", () => {
+      if (!button.dataset.itemId) return false;
+      var result = getResult(button.dataset.itemId);
+      result.keyboard.layout = button.dataset.layout;
+      drawTable(false);
+      recalculateResults();
+    });
+  });
+
 };
 
 handleSortClick();
+
+// layout lookup - qwerty, colemak, dvorak
+var keyboard_layout = {
+  "q": ["q","q","'"],
+  "w": ["w","w",","],
+  "e": ["e","f","."],
+  "r": ["r","p","p"],
+  "t": ["t","g","y"],
+  "y": ["y","j","f"],
+  "u": ["u","l","g"],
+  "i": ["i","u","c"],
+  "o": ["o","y","r"],
+  "p": ["p",";","m"],
+  "a": ["a","a","a"],
+  "s": ["s","r","o"],
+  "d": ["d","s","e"],
+  "f": ["f","t","i"],
+  "g": ["g","d","u"],
+  "h": ["h","h","d"],
+  "j": ["j","n","h"],
+  "k": ["k","e","t"],
+  "l": ["l","i","n"],
+  ";": [";","o","s"],
+  "'": ["'","'","-"],
+  "z": ["z","z",";"],
+  "x": ["x","x","q"],
+  "c": ["c","c","j"],
+  "v": ["v","v","k"],
+  "b": ["b","b","x"],
+  "n": ["n","k","b"],
+  "m": ["m","m","l"],
+  ",": [",",",","w"],
+  ".": [".",".","v"],
+  "/": ["/","/","z"]
+};
 
 var legend_lookup = {
   "KC_NO": "",
@@ -894,10 +962,11 @@ var num_layers = 0;
 var keyboard = {};
 var HOMEROW_OFFSET = 3;
 
-function findKey(keymap, character) {
-  for (var key = 0; key < keymap.length; key++) {
+function findKey(keyboard, character) {
+  for (var key = 0; key < keyboard.keymap.length; key++) {
     for (var layer = 0; layer < num_layers; layer++) {
-      if (keymap[key].layers[layer] == character) {
+      var c = keyLookup(keyboard.keymap[key].layers[layer], keyboard.layout);
+      if (c == character) {
         return {index: key, layer: layer};
       }
     }
@@ -905,10 +974,10 @@ function findKey(keymap, character) {
   return -1;
 }
 
-function findKeyAtCoords(keymap, x, y) {
+function findKeyAtCoords(keyboard, x, y) {
   var closest_dist = 1000, dist, closest_index;
-  for (var key = 0; key < keymap.length; key++) {
-    dist = Math.sqrt(Math.pow(keymap[key].x - x, 2) + Math.pow(keymap[key].y - y, 2));
+  for (var key = 0; key < keyboard.keymap.length; key++) {
+    dist = Math.sqrt(Math.pow(keyboard.keymap[key].x - x, 2) + Math.pow(keyboard.keymap[key].y - y, 2));
     if (dist < closest_dist) {
       closest_dist = dist;
       closest_index = key;
@@ -917,38 +986,38 @@ function findKeyAtCoords(keymap, x, y) {
   return {index: closest_index, dist: closest_dist};
 }
 
-function guessHomerow(keymap) {
+function guessHomerow(keyboard) {
   // assumes that home row keys are all neighbors in the layout
   var lm, lp, rp, rm;
   // test for qwerty
-  lm = findKey(keymap, "d");
-  lp = findKey(keymap, "f");
-  rp = findKey(keymap, "j");
-  rm = findKey(keymap, "k");
+  lm = findKey(keyboard, "d");
+  lp = findKey(keyboard, "f");
+  rp = findKey(keyboard, "j");
+  rm = findKey(keyboard, "k");
   if ((lm.index + 1 == lp.index) && (rp.index + 1 == rm.index))
     return {leftPointer: lp, rightPointer: rp};
   // test for colemak
-  lm = findKey(keymap, "s");
-  lp = findKey(keymap, "t");
-  rp = findKey(keymap, "n");
-  rm = findKey(keymap, "e");
+  lm = findKey(keyboard, "s");
+  lp = findKey(keyboard, "t");
+  rp = findKey(keyboard, "n");
+  rm = findKey(keyboard, "e");
   if ((lm.index + 1 == lp.index) && (rp.index + 1 == rm.index))
     return {leftPointer: lp, rightPointer: rp};
   // test for dvorak
-  lm = findKey(keymap, "e");
-  lp = findKey(keymap, "i");
-  rp = findKey(keymap, "h");
-  rm = findKey(keymap, "t");
+  lm = findKey(keyboard, "e");
+  lp = findKey(keyboard, "i");
+  rp = findKey(keyboard, "h");
+  rm = findKey(keyboard, "t");
   if ((lm.index + 1 == lp.index) && (rp.index + 1 == rm.index))
     return {leftPointer: lp, rightPointer: rp};
   return {leftPointer: { index: 16 }, rightPointer: { index: 19}};
 }
 
-function guessThumbs(keymap, homerow) {
-  var key_lp = keymap[homerow.leftPointer.index];
-  var key_rp = keymap[homerow.rightPointer.index];
-  var left = findKeyAtCoords(keymap, key_lp.x + 0, key_lp.y + 2);
-  var right = findKeyAtCoords(keymap, key_rp.x - 0, key_rp.y + 2);
+function guessThumbs(keyboard, homerow) {
+  var key_lp = keyboard.keymap[homerow.leftPointer.index];
+  var key_rp = keyboard.keymap[homerow.rightPointer.index];
+  var left = findKeyAtCoords(keyboard, key_lp.x + 0, key_lp.y + 2);
+  var right = findKeyAtCoords(keyboard, key_rp.x - 0, key_rp.y + 2);
   return {left: left, right: right}; 
 }
 
@@ -959,9 +1028,10 @@ function calcPenalty(key) {
     return (parseFloat(W_0) + W_HAND * Math.max((key.hand?2:-2) * (P_HAND - 0.5), 0) + W_FINGER * P_FINGER[key.finger] + W_ROW * P_ROW[Math.max(Math.min(Math.round(key.row), 6), 0)]);
 }
 
-function guessBaseEffort(keymap) {
-  var homerow = guessHomerow(keymap);
-  var thumbs = guessThumbs(keymap, homerow);
+function guessBaseEffort(keyboard) {
+  var homerow = guessHomerow(keyboard);
+  var thumbs = guessThumbs(keyboard, homerow);
+  var keymap = keyboard.keymap;
   for (var key = 0; key < keymap.length; key++) {
     var closest_dist = 1000;
     var finger = 0;
@@ -1037,9 +1107,16 @@ function precise(x) {
   return Number.parseFloat(x).toPrecision(4);
 }
 
-function renderLayout(keymap) {
+function keyLookup(character, layout) {
+  if (keyboard_layout[character])
+    return keyboard_layout[character][layout];
+  return character;
+}
+
+function renderLayout(keyboard) {
   var layout_element = document.getElementById("keymap");
   var inner = "";
+  var keymap = keyboard.keymap;
 
   var max_effort = 1;
   var max_base = 1;
@@ -1056,7 +1133,8 @@ function renderLayout(keymap) {
   for (var i = 0; i < keymap.length; i++) {
     var key_html = "";
     for (var layer = 0; layer < keymap[i].layers.length; layer++) {
-      key_html += `<div class="legend legend-${layer}" title="${keymap[i].layers[layer]}">${keymap[i].layers[layer]}</div>`;
+      var c = keyLookup(keymap[i].layers[layer], keyboard.layout);
+      key_html += `<div class="legend legend-${layer}" title="${c}">${c}</div>`;
     }
     var effort = precise(keymap[i].penalty + keymap[i].base);
     var effort_bg = d3.interpolatePuBuGn(1 - effort/max_effort);
@@ -1111,11 +1189,12 @@ function loadKeymap(file, filename) {
       return;
     }
     keyboard = response.keyboards[file.keyboard];
+    keyboard.layout = 0;
     renderKeyboard(keyboard);
     keyboard.keymap = loadLayout(keyboard.layouts[file.layout]);
     loadLayers(keyboard, file.layers)
-    guessBaseEffort(keyboard.keymap);
-    renderLayout(keyboard.keymap);
+    guessBaseEffort(keyboard);
+    renderLayout(keyboard);
     keyboard.filename = filename;
 
     var result_id = results.length;
@@ -1185,7 +1264,7 @@ function recalculateResults() {
     computeResult(results[i]);
     drawTable(false);
   } 
-  renderLayout(getSelectedResult().keyboard.keymap);
+  renderLayout(getSelectedResult().keyboard);
   renderUsage(getSelectedResult().keyboard.keymap);
 }
 
@@ -1327,7 +1406,7 @@ document.getElementById("compute").onclick = function(event) {
   results[result_id].keyboard = getSelectedResult().keyboard;
   results[result_id].corpus = document.getElementById("corpus").value;
   computeResult(results[result_id]);
-  renderLayout(results[result_id].keyboard.keymap);
+  renderLayout(results[result_id].keyboard);
   renderUsage(results[result_id].keyboard.keymap);
   drawTable(false);
 };
@@ -1368,7 +1447,8 @@ function computeResult(result) {
   var total_stroke_path = 0;
   var keys = [], thumbs = [], fingers = [];
   var unknown_chars = [];
-  var keymap = result.keyboard.keymap;
+  var keyboard = result.keyboard;
+  var keymap = keyboard.keymap;
   var text = result.corpus;
   var usage_fingers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
@@ -1380,20 +1460,20 @@ function computeResult(result) {
   // convert to lut/switch eventually
   text = text.replace(/(?:\r\n|\r|\n)/g, '↵');
   for (var i = 0; i < text.length; i++) {
-    var key = findKey(keymap, text[i]);
+    var key = findKey(keyboard, text[i]);
     // skip keys we can't find
     if (key != -1) {
       if (key.layer != 0) {
-        var layer_key = findKey(keymap, "▲"+key.layer);
+        var layer_key = findKey(keyboard, "▲"+key.layer);
         if (layer_key != -1)
           keys.push(keymap[layer_key.index])
       }
       keys.push(keymap[key.index]);
     } else {
       // check for shifted keys
-      key = findKey(keymap, shifted_keys[text[i]]);
+      key = findKey(keyboard, shifted_keys[text[i]]);
       if (key != -1) {
-        var shift_key = findKey(keymap, "⇧");
+        var shift_key = findKey(keyboard, "⇧");
         if (shift_key != -1) {
           keys.push(keymap[shift_key.index]);
           keys.push(keymap[key.index]);
