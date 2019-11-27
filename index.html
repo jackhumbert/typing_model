@@ -696,7 +696,7 @@ const renderTable = tableData => {
                         <td>${precise(item.thumb_base)}</td>
                         <td>${precise(item.finger_penalties)}</td>
                         <td>${precise(item.path)}</td>
-                        <td title="${distinct_chars.join(" ")}">${distinct_chars.length}</td>
+                        <td title="${encode(distinct_chars.join(" "))}">${distinct_chars.length}</td>
                     </tr>
               <tr><td colspan="10" class="graphs">
                 <div class="graph base" title="Finger Base: ${precise(item.finger_base)}" style="width:${relative_scale * item.finger_base * K_B}%"></div><div class="graph base thumb" title="Thumb Base: ${precise(item.thumb_base)}" style="width:${relative_scale * item.thumb_base * K_B}%"></div><div class="graph penalties" title="Finger Penalties: ${precise(item.finger_penalties)}" style="width:${relative_scale * item.finger_penalties * K_P}%"></div><div class="graph penalties thumb" title="Thumb Penalties: ${precise(item.thumb_penalties)}" style="width:${relative_scale * item.thumb_penalties * K_P}%"></div><div class="graph path" title="Stroke Path: ${precise(item.path)}" style="width:${relative_scale * item.path * K_S}%"></div>
@@ -1025,6 +1025,12 @@ var shift_keys = {
   "8": "*",
   "9": "(",
   "0": ")",
+  "[": "{",
+  "]": "}",
+  "-": "_",
+  "=": "+",
+  "`": "~",
+  "\\": "|",
 };
 
 var shifted_keys = {
@@ -1069,6 +1075,12 @@ var shifted_keys = {
   "*": "8",
   "(": "9",
   ")": "0",
+  "{": "[",
+  "}": "]",
+  "_": "-",
+  "+": "=",
+  "~": "`",
+  "|": "\\",
 };
 
 var num_layers = 0;
