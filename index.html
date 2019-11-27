@@ -731,8 +731,12 @@ const drawTable = (selectLast) => {
       if (!button.dataset.itemId) return false;
       var result = getResult(button.dataset.itemId);
       result.keyboard.layout = button.dataset.layout;
+      computeResult(result);
       drawTable(false);
-      recalculateResults();
+      if (current_result == result.id) {
+        renderLayout(result.keyboard);
+        renderUsage(result.keyboard.keymap);
+      }
     });
   });
 
