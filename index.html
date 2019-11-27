@@ -125,7 +125,7 @@ tr[data-item-id]:hover {
   white-space: nowrap;
 }
 
-button.heatmap-button {
+.radio button {
   display: inline-block;
   padding-left: 10px;
   padding-right: 10px;
@@ -133,11 +133,11 @@ button.heatmap-button {
   margin-left: -1px;
 }
 
-button.heatmap-button:first-child {
+.radio button:first-child {
   border-radius: 5px 0px 0px 5px;
   margin-left: 0px;
 }
-button.heatmap-button:last-child {
+.radio button:last-child {
   border-radius: 0px 5px 5px 0px;
 }
 
@@ -201,14 +201,13 @@ td {
 button.small {
   height: 24px;
   line-height: 24px;
-  padding: 0px 12px;
+  padding: 0px 8px;
   font-size: 10px;
 }
 
 .item-button.red {
   background: red;
   color: white;
-  padding: 0px 10px;
   border-color: #900;
 }
 
@@ -692,9 +691,9 @@ const renderTable = tableData => {
               </td></tr>
               <tr class="finger-row"><td colspan="10">
                 <div class="buttons">
-                  <button data-item-id="${item.id}" data-function="changeLayout" data-layout="0" class="item-button small${item.keyboard.layout==0?" selected":""}">Qwerty</button>
-                  <button data-item-id="${item.id}" data-function="changeLayout" data-layout="1" class="item-button small${item.keyboard.layout==1?" selected":""}">Colemak</button>
-                  <button data-item-id="${item.id}" data-function="changeLayout" data-layout="2" class="item-button small${item.keyboard.layout==2?" selected":""}">Dvorak</button>
+                  <span class="radio">
+                  <button data-item-id="${item.id}" data-function="changeLayout" data-layout="0" class="item-button small${item.keyboard.layout==0?" selected":""}">Qwerty</button><button data-item-id="${item.id}" data-function="changeLayout" data-layout="1" class="item-button small${item.keyboard.layout==1?" selected":""}">Colemak</button><button data-item-id="${item.id}" data-function="changeLayout" data-layout="2" class="item-button small${item.keyboard.layout==2?" selected":""}">Dvorak</button>
+                  </span>
                   <button data-item-id="${item.id}" data-function="removeResult" class="item-button small red">X</button>
                 </div>
                 <details data-item-id="${item.id}"${item.details?" open":""}>
