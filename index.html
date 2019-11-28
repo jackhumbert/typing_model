@@ -214,7 +214,7 @@ button.small {
 .item-button.red {
   background: red;
   color: white;
-  border-color: #900;
+  border-color: #c00;
 }
 
 .finger-usages {
@@ -361,6 +361,7 @@ h1, h2, h3, h4 {
   background: #eee;
   color: #ccc;
   border-color: #ccc;
+  border-radius: 5px;
 }
 
 #corpus {
@@ -1162,6 +1163,13 @@ function guessHomerow(keyboard) {
   rm = findKey(keyboard, "t");
   if ((lm.index + 1 == lp.index) && (rp.index + 1 == rm.index))
     return {leftPointer: lp, rightPointer: rp};
+  // test for beakl
+  lm = findKey(keyboard, "e");
+  lp = findKey(keyboard, "a");
+  rp = findKey(keyboard, "s");
+  rm = findKey(keyboard, "t");
+  if ((lm.index + 1 == lp.index) && (rp.index + 1 == rm.index))
+    return {leftPointer: lp, rightPointer: rp};
   return {leftPointer: { index: 3 }, rightPointer: { index: 4}};
 }
 
@@ -1310,7 +1318,7 @@ function renderLayout(keyboard) {
     key.addEventListener("click", () => {
       if (!selecting_keys) return false;
       var keyboard = getSelectedResult().keyboard;
-      keyboard.fingers[selecting_home_position] = key.dataset.key;
+      keyboard.fingers[selecting_home_position] = parseInt(key.dataset.key);
       selecting_home_position++;
       document.getElementById("home-positions").innerHTML = `Selecting ${finger_names[selecting_home_position]}`;
       if (selecting_home_position == 10) {
