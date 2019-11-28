@@ -1291,8 +1291,8 @@ function renderLayout(keyboard) {
     var usage = precise(keymap[i].usage * 100);
     var usage_bg = d3.interpolatePuBuGn(keymap[i].count / max_count);
     var usage_fg = textColorFromBackground(usage_bg);
-    var finger = keymap[i].raw_finger;
-    var finger_bg = d3.schemeCategory10[finger];
+    var finger = (keyboard.fingers.includes(i)?`<strong>( ${keymap[i].raw_finger} )</strong>`:keymap[i].raw_finger);
+    var finger_bg = d3.schemeCategory10[keymap[i].raw_finger];
     var finger_fg = textColorFromBackground(finger_bg);
     inner += `<div id="key-${i}" class="key${selecting_keys?" selectable":""}" data-key="${i}" style="left: calc(${keymap[i].x} * (var(--key-spacing) + var(--key-unit))); top: calc(${keymap[i].y} * (var(--key-spacing) + var(--key-unit))); width: calc(${keymap[i].w} * var(--key-unit));">${key_html}
     <div class="heatmap heatmap-0" style="background:${effort_bg}; color: ${effort_fg}; display: ${heatmap_selected == 0 ? "block": "none"}">${effort}</div>
