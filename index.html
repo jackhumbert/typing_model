@@ -14,6 +14,7 @@
   <script id="MathJax-script" async
           src="https://cdn.jsdelivr.net/npm/mathjax@3.0.0/es5/tex-mml-chtml.js">
   </script>
+  <script src="https://kit.fontawesome.com/36961e11b2.js" crossorigin="anonymous"></script>
 
 <style>
 
@@ -37,6 +38,19 @@
   box-sizing: border-box;
   overflow: hidden;
   background: #eee;
+}
+
+.key .layer-0 {
+  color: rgb(31, 119, 180);
+}
+.key .layer-1 {
+  color: rgb(255, 127, 14);
+}
+.key .layer-2 {
+  color: rgb(44, 160, 44);
+}
+.key .layer-3 {
+  color: rgb(214, 39, 40);
 }
 
 .key.selectable:hover {
@@ -100,10 +114,6 @@
   font-size: 12px;
 }
 
-.layer-2 {
-  background: red;
-  color: white;
-}
 html, body {
   height: 100%;
 }
@@ -377,6 +387,70 @@ h1, h2, h3, h4 {
   right: 0px;
   font-size: 65%;
 }
+
+.color-legends {
+  top: 0px;
+  text-align: left;
+  height: 100%;
+  line-height: 0;
+}
+
+.color-legends .legend {
+  width: 50%;
+  height: 50%;
+  display: inline-block;
+  position: static;
+  text-align: center;
+  font-size: calc(var(--key-unit) / 3);
+  line-height: calc(var(--key-unit) / 2);
+}
+
+.color-legends small {
+  vertical-align: bottom;
+}
+
+.color-legends .legend-0 {
+  background: #eee;
+  color: rgb(31, 119, 180);
+}
+.color-legends .legend-1 {
+  background: #e8e8e8;
+  color: rgb(255, 127, 14);
+}
+.color-legends .legend-2 {
+  background: #e8e8e8;
+  color: rgb(44, 160, 44);
+}
+.color-legends .legend-3 {
+  background: #eee;
+  color: rgb(214, 39, 40);
+}
+.color-legends .legend-4 {
+  background: #eee;
+  color: rgb(148, 103, 189);
+}
+
+.color-legends .layer-0 {
+  background: rgb(31, 119, 180);
+  color: white;
+}
+.color-legends .layer-1 {
+  background: rgb(255, 127, 14);
+  color: white;
+}
+.color-legends .layer-2 {
+  background: rgb(44, 160, 44);
+  color: white;
+}
+.color-legends .layer-3 {
+  background: rgb(214, 39, 40);
+  color: white;
+}
+.color-legends .layer-4 {
+  background: rgb(148, 103, 189);
+  color: white;
+}
+
 </style>
 
 
@@ -590,7 +664,7 @@ It was also in this conviction that the positive duty of burying the deceased or
   </div>
   <div class="row">
     <div class="columns six radio">
-      <button class="heatmap-button" id="heatmap-0" data-heatmap-id="0">base + penalties</button><button class="heatmap-button" id="heatmap-1" data-heatmap-id="1">base</button><button class="heatmap-button" id="heatmap-2" data-heatmap-id="2">penalties</button><button class="heatmap-button selected" id="heatmap-4" data-heatmap-id="3">usage</button><button class="heatmap-button" id="heatmap-4" data-heatmap-id="4">finger</button>
+      <button class="heatmap-button" id="heatmap-0" data-heatmap-id="0">base + penalties</button><button class="heatmap-button" id="heatmap-1" data-heatmap-id="1">base</button><button class="heatmap-button" id="heatmap-2" data-heatmap-id="2">penalties</button><button class="heatmap-button selected" id="heatmap-4" data-heatmap-id="3">usage</button><button class="heatmap-button" id="heatmap-4" data-heatmap-id="4">finger</button><button class="heatmap-button" id="heatmap-5" data-heatmap-id="5">layer</button>
     </div>
     <div class="columns six" style="text-align: right;">
       <button id="home-positions" class="needs-keyboard">Select Home Positions</button>
@@ -894,6 +968,32 @@ var keyboard_layout = {
 };
 
 var legend_lookup = {
+  "KC_LEFT": "<i class='fas fa-arrow-left'></i>",
+  "KC_DOWN": "<i class='fas fa-arrow-down'></i>",
+  "KC_UP": "<i class='fas fa-arrow-up'></i>",
+  "KC_RGHT": "<i class='fas fa-arrow-right'></i>",
+  "KC_BSPC": "<i class='fas fa-backspace'></i>",
+  "KC_DEL": "<small>Del</small>",
+  "KC_LALT": "<small>Alt</small>",
+  "KC_LCTL": "<small>Ctrl</small>",
+  "KC_LGUI": "<small>Os</small>",
+  "KC_LSFT": "<small>Shft</small>",
+  "KC_ESC": "<small>Esc</small>",
+  "KC_F1": "<small>F1</small>",
+  "KC_F2": "<small>F2</small>",
+  "KC_F3": "<small>F3</small>",
+  "KC_F4": "<small>F4</small>",
+  "KC_F5": "<small>F5</small>",
+  "KC_F6": "<small>F6</small>",
+  "KC_F7": "<small>F7</small>",
+  "KC_F8": "<small>F8</small>",
+  "KC_F9": "<small>F9</small>",
+  "KC_F10": "<small>F10</small>",
+  "KC_F11": "<small>F11</small>",
+  "KC_F12": "<small>F12</small>",
+};
+
+var unicode_lookup = {
   "KC_NO": "",
   "KC_TRNS": "",
   "KC_SPC": " ",
@@ -1118,7 +1218,7 @@ var HOMEROW_OFFSET = 3;
 function findKey(keyboard, character) {
   for (var layer = 0; layer < num_layers; layer++) {
     for (var key = 0; key < keyboard.keymap.length; key++) {
-      var c = keyLookup(keyboard.keymap[key].layers[layer], keyboard.layout);
+      var c = keyLookup(keyboard.keymap[key].layers[layer].unicode, keyboard.layout);
       if (c == character) {
         return {index: key, layer: layer};
       }
@@ -1284,30 +1384,38 @@ function renderLayout(keyboard) {
   for (var i = 0; i < keymap.length; i++) {
     var key_html = "";
     for (var layer = 0; layer < keymap[i].layers.length; layer++) {
-      var c = keyLookup(keymap[i].layers[layer], keyboard.layout);
-      key_html += `<div class="legend legend-${layer}" title="${c}">${c}</div>`;
+      var k = keymap[i].layers[layer].keycode;
+      var l = keyLookup(keymap[i].layers[layer].legend, keyboard.layout);
+      var u = keyLookup(keymap[i].layers[layer].unicode, keyboard.layout);
+      key_html += `<div class="legend legend-${layer}${l && l.includes("▲")?` layer-${l.substring(1, 2)}`:""}" title="${u}, ${k}">${l && l.includes("▲")?"▲":l}</div>`;
     }
     var effort = precise(keymap[i].penalty + keymap[i].base);
     var effort_bg = d3.interpolatePuBuGn(1 - effort/max_effort);
     var effort_fg = textColorFromBackground(effort_bg);
+
     var base = precise(keymap[i].base);
     var base_bg = d3.interpolatePuBuGn(1 - keymap[i].base/max_base);
     var base_fg = textColorFromBackground(base_bg);
+
     var penalties = precise(keymap[i].penalty);
     var penalties_bg = d3.interpolatePuBuGn(1 - keymap[i].penalty/max_penalties);
     var penalties_fg = textColorFromBackground(penalties_bg);
+
     var usage = precise(keymap[i].usage * 100);
     var usage_bg = d3.interpolatePuBuGn(keymap[i].count / max_count);
     var usage_fg = textColorFromBackground(usage_bg);
+
     var finger = (keyboard.fingers.includes(i)?`<strong>( ${keymap[i].raw_finger} )</strong>`:keymap[i].raw_finger);
     var finger_bg = d3.schemeCategory10[keymap[i].raw_finger];
     var finger_fg = textColorFromBackground(finger_bg);
-    inner += `<div id="key-${i}" class="key${selecting_keys?" selectable":""}" data-key="${i}" style="left: calc(${keymap[i].x} * (var(--key-spacing) + var(--key-unit))); top: calc(${keymap[i].y} * (var(--key-spacing) + var(--key-unit))); width: calc(${keymap[i].w} * var(--key-unit));">${key_html}
+
+    inner += `<div id="key-${i}" class="key${selecting_keys?" selectable":""}" data-key="${i}" style="left: calc(${keymap[i].x} * (var(--key-spacing) + var(--key-unit))); top: calc(${keymap[i].y} * (var(--key-spacing) + var(--key-unit))); width: calc(${keymap[i].w} * (var(--key-unit) + var(--key-spacing)) - var(--key-spacing));">${key_html}
     <div class="heatmap heatmap-0" style="background:${effort_bg}; color: ${effort_fg}; display: ${heatmap_selected == 0 ? "block": "none"}">${effort}</div>
     <div class="heatmap heatmap-1" style="background:${base_bg}; color: ${base_fg}; display: ${heatmap_selected == 1 ? "block": "none"}">${base}</div>
     <div class="heatmap heatmap-2" style="background:${penalties_bg}; color: ${penalties_fg}; display: ${heatmap_selected == 2 ? "block": "none"}">${penalties}</div>
     <div class="heatmap heatmap-3" style="background:${usage_bg}; color: ${usage_fg}; display: ${heatmap_selected == 3 ? "block": "none"}">${usage}</div>
     <div class="heatmap heatmap-4" style="background:${finger_bg}; color: ${finger_fg}; display: ${heatmap_selected == 4 ? "block": "none"}">${finger}</div>
+    <div class="heatmap heatmap-5 color-legends" style="display: ${heatmap_selected == 5 ? "block": "none"}">${key_html}</div>
     </div>`;
   }
 
@@ -1341,16 +1449,28 @@ function loadLayers(keyboard, layers) {
   num_layers = layers.length;
   for (var layer = 0; layer < layers.length; layer++) {
     for (var key = 0; key < layers[layer].length; key++) {
-      var c = layers[layer][key];
-      if (legend_lookup[c] != null) {
-        c = legend_lookup[c];
-      } else {
-        let m;
-        if ((m = lsft.exec(c)) != null) {
-          c = shift_keys[legend_lookup[m[1]]];
+      var m, unicode, legend, keycode = layers[layer][key];
+      if (unicode_lookup[keycode] != null) {
+        unicode = unicode_lookup[keycode];
+      } else if ((m = lsft.exec(keycode)) != null) {
+        if (shift_keys[unicode_lookup[m[1]]]) {
+          unicode = shift_keys[unicode_lookup[m[1]]];
+        } else {
+          unicode = unicode_lookup[m[1]];
         }
       }
-      keyboard.keymap[key].layers[layer] = c;
+      if (legend_lookup[keycode] != null) {
+        legend = legend_lookup[keycode];
+      } else if ((m = lsft.exec(keycode)) != null && shift_keys[legend_lookup[m[1]]]) {
+        legend = shift_keys[legend_lookup[m[1]]];
+      } else {
+        legend = unicode;
+      }
+      
+      keyboard.keymap[key].layers[layer] = {};
+      keyboard.keymap[key].layers[layer].keycode = layers[layer][key];
+      keyboard.keymap[key].layers[layer].unicode = unicode;
+      keyboard.keymap[key].layers[layer].legend = legend;
     }
   }
 }
