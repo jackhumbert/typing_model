@@ -367,7 +367,15 @@ h1, h2, h3, h4 {
   margin-bottom: 0px;
   max-width: 100%;
 }
-
+.result td {
+  position: relative;
+}
+.result td sup {
+  position: absolute;
+  top: 16px;
+  right: 0px;
+  font-size: 65%;
+}
 </style>
 
 
@@ -682,6 +690,8 @@ const renderTable = tableData => {
     }
   });
 
+  var sr = getSelectedResult();
+
   return `${tableData
     .map(item => {
       var relative_scale = 100 / max_total_effort;
@@ -703,20 +713,21 @@ const renderTable = tableData => {
         finger_usage_string += `<div class="finger-wrapper" title="${finger}"><div class="finger-name">${finger_names[index]}<br />${precise(finger/total_finger_usage*100)}%</div><div class="finger-usage" style="height:${finger/max_finger_usage*100}%"></div></div>`;
       });
       finger_usage_string += `<div class="hand-usage" title="${precise(total_hand_usage[0]/total_finger_usage*100)}%" style="height:${total_hand_usage[0]/total_finger_usage*50}%"></div><div class="hand-usage" title="${precise(total_hand_usage[1]/total_finger_usage*100)}%" style="height:${total_hand_usage[1]/total_finger_usage*50}%"></div>`;
-      return `<tr data-item-id="${item.id}" class="${(item.id == current_result) ? "selected ":""}result">
-                        <td><strong>${item.keyboard.keyboard_name}</strong><br />${item.keyboard.filename}</td>
-                        <td>${encode(item.corpus.slice(0, 12))}...</td>
-                        <td>${precise(item.total_effort)}</td>
-                        <td>${precise(item.finger_effort)}</td>
-                        <td>${precise(item.thumb_effort)}</td>
-                        <td>${precise(item.finger_base)}</td>
-                        <td>${precise(item.thumb_base)}</td>
-                        <td>${precise(item.finger_penalties)}</td>
-                        <td>${precise(item.path)}</td>
-                        <td title="${encode(distinct_chars.join(" "))}">${distinct_chars.length}</td>
-                    </tr>
-              <tr><td colspan="10" class="graphs">
-                <div class="graph base" title="Finger Base: ${precise(item.finger_base)}" style="width:${relative_scale * item.finger_base * K_B}%"></div><div class="graph base thumb" title="Thumb Base: ${precise(item.thumb_base)}" style="width:${relative_scale * item.thumb_base * K_B}%"></div><div class="graph penalties" title="Finger Penalties: ${precise(item.finger_penalties)}" style="width:${relative_scale * item.finger_penalties * K_P}%"></div><div class="graph penalties thumb" title="Thumb Penalties: ${precise(item.thumb_penalties)}" style="width:${relative_scale * item.thumb_penalties * K_P}%"></div><div class="graph path" title="Stroke Path: ${precise(item.path)}" style="width:${relative_scale * item.path * K_S}%"></div>
+      return `
+        <tr data-item-id="${item.id}" class="${(item.id == current_result) ? "selected ":""}result">
+          <td><strong>${item.keyboard.keyboard_name}</strong><br />${item.keyboard.filename}</td>
+          <td>${encode(item.corpus.slice(0, 12))}...</td>
+          <td>${precise(item.total_effort)}${item.id!=current_result?`<sup>${precise(item.total_effort/sr.total_effort*100)}%</sup>`:""}</td>
+          <td>${precise(item.finger_effort)}${item.id!=current_result?`<sup>${precise(item.finger_effort/sr.finger_effort*100)}%</sup>`:""}</td>
+          <td>${precise(item.thumb_effort)}${item.id!=current_result?`<sup>${precise(item.thumb_effort/sr.thumb_effort*100)}%</sup>`:""}</td>
+          <td>${precise(item.finger_base)}${item.id!=current_result?`<sup>${precise(item.finger_base/sr.finger_base*100)}%</sup>`:""}</td>
+          <td>${precise(item.thumb_base)}${item.id!=current_result?`<sup>${precise(item.thumb_base/sr.thumb_base*100)}%</sup>`:""}</td>
+          <td>${precise(item.finger_penalties)}${item.id!=current_result?`<sup>${precise(item.finger_penalties/sr.finger_penalties*100)}%</sup>`:""}</td>
+          <td>${precise(item.path)}${item.id!=current_result?`<sup>${precise(item.path/sr.path*100)}%</sup>`:""}</td>
+          <td title="${encode(distinct_chars.join(" "))}">${distinct_chars.length}</td>
+        </tr>
+        <tr><td colspan="10" class="graphs">
+          <div class="graph base" title="Finger Base: ${precise(item.finger_base)}" style="width:${relative_scale * item.finger_base * K_B}%"></div><div class="graph base thumb" title="Thumb Base: ${precise(item.thumb_base)}" style="width:${relative_scale * item.thumb_base * K_B}%"></div><div class="graph penalties" title="Finger Penalties: ${precise(item.finger_penalties)}" style="width:${relative_scale * item.finger_penalties * K_P}%"></div><div class="graph penalties thumb" title="Thumb Penalties: ${precise(item.thumb_penalties)}" style="width:${relative_scale * item.thumb_penalties * K_P}%"></div><div class="graph path" title="Stroke Path: ${precise(item.path)}" style="width:${relative_scale * item.path * K_S}%"></div>
               </td></tr>
               <tr class="finger-row"><td colspan="10">
                 <div class="buttons">
@@ -993,6 +1004,9 @@ var legend_lookup = {
   "MO(1)": "▲1",
   "MO(2)": "▲2",
   "MO(3)": "▲3",
+  "MO(4)": "▲4",
+  "MO(5)": "▲5",
+  "MO(6)": "▲6",
   "LT(1,KC_GRV)": "▲1",
 };
 
