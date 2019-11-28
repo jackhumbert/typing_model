@@ -964,7 +964,47 @@ var keyboard_layout = {
   "m": ["m","m","l"],
   ",": [",",",","w"],
   ".": [".",".","v"],
-  "/": ["/","/","z"]
+  "/": ["/","/","z"],
+  "[": ["[","[","/"],
+  "]": ["]","]","="],
+  "-": ["-","-","["],
+  "=": ["=","=","]"],
+
+  "Q": ["Q","Q","\""],
+  "W": ["W","W","<"],
+  "E": ["E","F",">"],
+  "R": ["R","P","P"],
+  "T": ["T","G","Y"],
+  "Y": ["Y","J","F"],
+  "U": ["U","L","G"],
+  "I": ["I","U","C"],
+  "O": ["O","Y","R"],
+  "P": ["P",":","M"],
+  "A": ["A","A","A"],
+  "S": ["S","R","O"],
+  "D": ["D","S","E"],
+  "F": ["F","T","I"],
+  "G": ["G","D","U"],
+  "H": ["H","H","D"],
+  "J": ["J","N","H"],
+  "K": ["K","E","T"],
+  "L": ["L","I","N"],
+  ":": [":","O","S"],
+  "\"": ["\"","\"","_"],
+  "Z": ["Z","Z",";"],
+  "X": ["X","X","Q"],
+  "C": ["C","C","J"],
+  "V": ["V","V","K"],
+  "B": ["B","B","X"],
+  "N": ["N","K","B"],
+  "M": ["M","M","L"],
+  "<": ["<","<","W"],
+  ">": [">",">","V"],
+  "|": ["|","|","Z"],
+  "{": ["{","{","|"],
+  "}": ["}","}","+"],
+  "_": ["_","_","{"],
+  "+": ["+","+","}"],
 };
 
 var legend_lookup = {
@@ -1211,12 +1251,11 @@ var shifted_keys = {
   "|": "\\",
 };
 
-var num_layers = 0;
 var keyboard = {};
 var HOMEROW_OFFSET = 3;
 
 function findKey(keyboard, character) {
-  for (var layer = 0; layer < num_layers; layer++) {
+  for (var layer = 0; layer < keyboard.layers; layer++) {
     for (var key = 0; key < keyboard.keymap.length; key++) {
       var c = keyLookup(keyboard.keymap[key].layers[layer].unicode, keyboard.layout);
       if (c == character) {
@@ -1225,6 +1264,19 @@ function findKey(keyboard, character) {
     }
   }
   return -1;
+}
+
+function findKeys(keyboard, character) {
+  var keys = [];
+  for (var layer = 0; layer < keyboard.layers; layer++) {
+    for (var key = 0; key < keyboard.keymap.length; key++) {
+      var c = keyLookup(keyboard.keymap[key].layers[layer].unicode, keyboard.layout);
+      if (c == character) {
+        keys.push({index: key, layer: layer});
+      }
+    }
+  }
+  return keys;
 }
 
 function findKeyAtCoords(keyboard, x, y) {
@@ -1446,7 +1498,7 @@ var selecting_home_position = 0;
 const lsft = /LSFT\((.+)\)/;
 
 function loadLayers(keyboard, layers) {
-  num_layers = layers.length;
+  keyboard.layers = layers.length;
   for (var layer = 0; layer < layers.length; layer++) {
     for (var key = 0; key < layers[layer].length; key++) {
       var m, unicode, legend, keycode = layers[layer][key];
