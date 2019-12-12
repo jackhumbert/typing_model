@@ -663,10 +663,10 @@ It was also in this conviction that the positive duty of burying the deceased or
     </div>
   </div>
   <div class="row">
-    <div class="columns six radio">
-      <button class="heatmap-button" id="heatmap-0" data-heatmap-id="0">base + penalties</button><button class="heatmap-button" id="heatmap-1" data-heatmap-id="1">base</button><button class="heatmap-button" id="heatmap-2" data-heatmap-id="2">penalties</button><button class="heatmap-button selected" id="heatmap-4" data-heatmap-id="3">usage</button><button class="heatmap-button" id="heatmap-4" data-heatmap-id="4">finger</button><button class="heatmap-button" id="heatmap-5" data-heatmap-id="5">layer</button>
+    <div class="columns eight radio">
+      <button class="heatmap-button" id="heatmap-0" data-heatmap-id="0">base + penalties</button><button class="heatmap-button" id="heatmap-1" data-heatmap-id="1">base</button><button class="heatmap-button" id="heatmap-2" data-heatmap-id="2">penalties</button><button class="heatmap-button selected" id="heatmap-4" data-heatmap-id="3">usage</button><button class="heatmap-button" id="heatmap-4" data-heatmap-id="4">finger</button><button class="heatmap-button" id="heatmap-5" data-heatmap-id="5">layer</button><button class="heatmap-button" id="heatmap-6" data-heatmap-id="6">ghost</button>
     </div>
-    <div class="columns six" style="text-align: right;">
+    <div class="columns four" style="text-align: right;">
       <button id="home-positions" class="needs-keyboard">Select Home Positions</button>
     </div>
   </div>
@@ -1291,6 +1291,15 @@ function findKeyAtCoords(keyboard, x, y) {
   return {index: closest_index, dist: closest_dist};
 }
 
+function findKeyInMatrix(keyboard, row, col) {
+  for (var key = 0; key < keyboard.keymap.length; key++) {
+    if (keyboard.keymap[key].matrix_row == row && keyboard.keymap[key].matrix_col == col) {
+      return {index: key};
+    }
+  }
+  return -1;
+}
+
 function guessHomerow(keyboard) {
   // assumes that home row keys are all neighbors in the layout
   var lm, lp, rp, rm;
@@ -1395,6 +1404,8 @@ function loadLayout(info) {
     keymap[i] = info.layout[i];
     keymap[i].x = parseFloat(keymap[i].x);
     keymap[i].y = parseFloat(keymap[i].y);
+    keymap[i].matrix_row = parseInt(keymap[i].y);
+    keymap[i].matrix_col = parseInt(keymap[i].x);
     keymap[i].w = parseFloat(w);
     keymap[i].h = parseFloat(h);
     keymap[i].i = i;
@@ -1422,6 +1433,7 @@ function renderLayout(keyboard) {
   var max_base = 1;
   var max_penalties = 1;
   var max_count = 0;
+  var max_ghost = 0;
   for (var i = 0; i < keymap.length; i++) {
     var effort = keymap[i].penalty + keymap[i].base;
     if (max_effort < effort)
@@ -1432,6 +1444,8 @@ function renderLayout(keyboard) {
       max_penalties = keymap[i].penalty;
     if (max_count < keymap[i].count)
       max_count = keymap[i].count;
+    if (max_ghost < keymap[i].ghost)
+      max_ghost = keymap[i].ghost;
   }
   for (var i = 0; i < keymap.length; i++) {
     var key_html = "";
@@ -1461,6 +1475,10 @@ function renderLayout(keyboard) {
     var finger_bg = d3.schemeCategory10[keymap[i].raw_finger];
     var finger_fg = textColorFromBackground(finger_bg);
 
+    var ghosts =  keymap[i].ghost;
+    var ghosts_bg = d3.interpolatePuBuGn(keymap[i].ghost / max_ghost);
+    var ghosts_fg = textColorFromBackground(ghosts_bg);
+
     inner += `<div id="key-${i}" class="key${selecting_keys?" selectable":""}" data-key="${i}" style="left: calc(${keymap[i].x} * (var(--key-spacing) + var(--key-unit))); top: calc(${keymap[i].y} * (var(--key-spacing) + var(--key-unit))); width: calc(${keymap[i].w} * (var(--key-unit) + var(--key-spacing)) - var(--key-spacing));">${key_html}
     <div class="heatmap heatmap-0" style="background:${effort_bg}; color: ${effort_fg}; display: ${heatmap_selected == 0 ? "block": "none"}">${effort}</div>
     <div class="heatmap heatmap-1" style="background:${base_bg}; color: ${base_fg}; display: ${heatmap_selected == 1 ? "block": "none"}">${base}</div>
@@ -1468,6 +1486,7 @@ function renderLayout(keyboard) {
     <div class="heatmap heatmap-3" style="background:${usage_bg}; color: ${usage_fg}; display: ${heatmap_selected == 3 ? "block": "none"}">${usage}</div>
     <div class="heatmap heatmap-4" style="background:${finger_bg}; color: ${finger_fg}; display: ${heatmap_selected == 4 ? "block": "none"}">${finger}</div>
     <div class="heatmap heatmap-5 color-legends" style="display: ${heatmap_selected == 5 ? "block": "none"}">${key_html}</div>
+    <div class="heatmap heatmap-6" style="background:${ghosts_bg}; color: ${ghosts_fg}; display: ${heatmap_selected == 6 ? "block": "none"}">${ghosts}</div>
     </div>`;
   }
 
@@ -1850,6 +1869,29 @@ Array.prototype.forEach.call(heatmaps, heatmap => {
   });
 });
 
+function checkForPhantom(keyboard, key_1, key_2, key_3) {
+  var phantom_key = -1;
+  if (key_1.matrix_row == key_2.matrix_row && key_1.matrix_col == key_3.matrix_col) {
+    phantom_key = findKeyInMatrix(keyboard, key_3.matrix_row, key_2.matrix_col);
+  }
+  if (key_1.matrix_row == key_2.matrix_row && key_2.matrix_col == key_3.matrix_col) {
+    phantom_key = findKeyInMatrix(keyboard, key_3.matrix_row, key_1.matrix_col);
+  }
+  if (key_1.matrix_row == key_3.matrix_row && key_1.matrix_col == key_2.matrix_col) {
+    phantom_key = findKeyInMatrix(keyboard, key_2.matrix_row, key_3.matrix_col);
+  }
+  if (key_1.matrix_row == key_3.matrix_row && key_2.matrix_col == key_3.matrix_col) {
+    phantom_key = findKeyInMatrix(keyboard, key_2.matrix_row, key_1.matrix_col);
+  }
+  if (key_2.matrix_row == key_3.matrix_row && key_1.matrix_col == key_3.matrix_col) {
+    phantom_key = findKeyInMatrix(keyboard, key_1.matrix_row, key_2.matrix_col);
+  }
+  if (phantom_key != -1) {
+    keyboard.keymap[phantom_key.index].ghost++;
+  }
+}
+
+
 function computeResult(result) {
   var finger_effort = 0;
   var thumb_effort = 0;
@@ -1867,6 +1909,7 @@ function computeResult(result) {
 
   for (var i = 0; i < keymap.length; i++) {
     keymap[i].count = 0;
+    keymap[i].ghost = 0;
     keymap[i].penalty = calcPenalty(keymap[i]);
   } 
 
@@ -1912,6 +1955,7 @@ function computeResult(result) {
   // save for later incase we need to remove some for calculations
   var num_triads = fingers.length - 2;
   for (var i = 0; i < fingers.length - 2; i++) {
+
     // very basic thumb model. should account for previous states
     if (thumbs[i] != null && thumbs[i+1] != null && thumbs[i+2] != null) {
       var t_base = thumbs[i].base * K_1 *
@@ -1938,6 +1982,12 @@ function computeResult(result) {
       thumb_penalty += t_penalty;
       thumb_effort += K_B * t_base + K_P * t_penalty;
     }
+
+    if (thumbs[i+1])
+      checkForPhantom(keyboard, fingers[i], thumbs[i+1], fingers[i+1]);
+    if (thumbs[i] && thumbs[i+1])
+      checkForPhantom(keyboard, thumbs[i], fingers[i], thumbs[i+1]);
+
 
     var base = fingers[i].base * K_1 *
                       (1 + fingers[i+1].base * K_2 * 
