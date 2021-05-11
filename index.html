@@ -1834,7 +1834,8 @@ loadConfiguratorKeyboards();
 document.getElementById("load-default").onclick = event => { 
   var keyboard = document.getElementById("configurator-keyboard").value;
   var filename = keyboard.replace(/\//gi, "_") + "_default.json";
-  fetch("https://config.qmk.fm/keymaps/" + filename).then(promise => {
+  var prefix = keyboard[0]
+  fetch(`https://config.qmk.fm/keymaps/${prefix}/${filename}`).then(promise => {
     return promise.json();
   }).then(keyboard => {
     loadKeymap(keyboard, filename);
