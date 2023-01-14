@@ -1816,7 +1816,7 @@ document.getElementById("compute").onclick = event => {
 };
 
 function loadConfiguratorKeyboards() {
-  fetch("https://keyboards.qmk.fm/v1/keyboards").then(promise => {
+  fetch("https://api.qmk.fm/v1/keyboards").then(promise => {
     return promise.json();
   }).then(response => {
     var select = document.getElementById("configurator-keyboard");
