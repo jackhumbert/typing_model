@@ -1431,8 +1431,13 @@ function loadLayout(info) {
     keymap[i] = info.layout[i];
     keymap[i].x = parseFloat(keymap[i].x);
     keymap[i].y = parseFloat(keymap[i].y);
-    keymap[i].matrix_row = parseInt(keymap[i].y);
-    keymap[i].matrix_col = parseInt(keymap[i].x);
+    if (keymap[i].matrix) {
+      keymap[i].matrix_row = parseInt(keymap[i].matrix[0]);
+      keymap[i].matrix_col = parseInt(keymap[i].matrix[1]);
+    } else {
+      keymap[i].matrix_row = parseInt(keymap[i].y);
+      keymap[i].matrix_col = parseInt(keymap[i].x);
+    }
     keymap[i].w = parseFloat(w);
     keymap[i].h = parseFloat(h);
     keymap[i].i = i;
