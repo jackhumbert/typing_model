@@ -1551,7 +1551,7 @@ function loadKeymap(file, filename) {
     console.log("No keyboard defined");
     return;
   }
-  const fetchPromise = fetch('https://keyboards.qmk.fm/v1/keyboards/' + file.keyboard);
+  const fetchPromise = fetch('https://keyboards.qmk.fm/v1/keyboards/' + file.keyboard + '/info.json');
   fetchPromise.then(promise => {
     return promise.json();
   }).then(response => {
