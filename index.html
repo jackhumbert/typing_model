@@ -1559,21 +1559,17 @@ function loadKeymap(file, filename) {
       console.log("Keyboard not found");
       return;
     }
-    var layout = {};
+    if (file.layouts && file.layouts[file.layout]) {
+      response.keyboards[file.keyboard].layouts[file.layout] = file.layouts[file.layout];
+    }
     if (!response.keyboards[file.keyboard].layouts[file.layout]) {
-      if (file.layouts && file.layouts[file.layout]) {
-        layout = file.layouts[file.layout];
-      } else {
         console.log("Layout not found");
         return;
-      }
-    } else {
-      layout = keyboard.layouts[file.layout];
     }
     keyboard = response.keyboards[file.keyboard];
     keyboard.layout = 0;
     renderKeyboard(keyboard);
-    keyboard.keymap = loadLayout(layout);
+    keyboard.keymap = loadLayout(keyboard.layouts[file.layout]);
     loadLayers(keyboard, file.layers)
     guessBaseEffort(keyboard);
     keyboard.filename = filename;
