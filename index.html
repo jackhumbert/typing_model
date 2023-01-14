@@ -1568,7 +1568,7 @@ function loadKeymap(file, filename) {
     }
     keyboard = response.keyboards[file.keyboard];
     keyboard.layout = 0;
-    renderKeyboard(keyboard);
+    renderKeyboard(keyboard.layouts[file.layout]);
     keyboard.keymap = loadLayout(keyboard.layouts[file.layout]);
     loadLayers(keyboard, file.layers)
     guessBaseEffort(keyboard);
