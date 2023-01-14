@@ -103,6 +103,33 @@
   left: calc(var(--key-unit) * 2 / 3);
 }
 
+.label {
+  width: 100%;
+  text-align: center;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  background: aliceblue;
+}
+
+.matrix-col {
+  color: white;
+  position: absolute;
+left: 50%;
+top: 33%;
+width: 50%;
+text-align: center;
+}
+
+.matrix-row {
+  color: white;
+  position: absolute;
+left: 0px;
+top: 33%;
+width: 50%;
+text-align: center;
+}
+
 
 .heatmap {
   position: absolute;
@@ -1479,7 +1506,13 @@ function renderLayout(keyboard) {
     var ghosts_bg = d3.interpolatePuBuGn(keymap[i].ghost / max_ghost);
     var ghosts_fg = textColorFromBackground(ghosts_bg);
 
+    var matrix_col_bg = d3.interpolateSinebow(keymap[i].matrix_col / (keyboard.matrix_size.cols + keyboard.matrix_size.rows));
+    var matrix_row_bg = d3.interpolateSinebow((keyboard.matrix_size.cols + keymap[i].matrix_row) / (keyboard.matrix_size.cols + keyboard.matrix_size.rows));
+
     inner += `<div id="key-${i}" class="key${selecting_keys?" selectable":""}" data-key="${i}" style="left: calc(${keymap[i].x} * (var(--key-spacing) + var(--key-unit))); top: calc(${keymap[i].y} * (var(--key-spacing) + var(--key-unit))); width: calc(${keymap[i].w} * (var(--key-unit) + var(--key-spacing)) - var(--key-spacing));">${key_html}
+      <div class="heatmap-6 label" style="display: ${heatmap_selected == 6 ? "block": "none"}">${keymap[i].label}</div>
+      <div class="heatmap-6 matrix-row" style="background:${matrix_row_bg}; display: ${heatmap_selected == 6 ? "block": "none"}">${keymap[i].matrix_row}</div>
+      <div class="heatmap-6 matrix-col" style="background:${matrix_col_bg}; display: ${heatmap_selected == 6 ? "block": "none"}">${keymap[i].matrix_col}</div>
     <div class="heatmap heatmap-0" style="background:${effort_bg}; color: ${effort_fg}; display: ${heatmap_selected == 0 ? "block": "none"}">${effort}</div>
     <div class="heatmap heatmap-1" style="background:${base_bg}; color: ${base_fg}; display: ${heatmap_selected == 1 ? "block": "none"}">${base}</div>
     <div class="heatmap heatmap-2" style="background:${penalties_bg}; color: ${penalties_fg}; display: ${heatmap_selected == 2 ? "block": "none"}">${penalties}</div>
@@ -1567,8 +1600,22 @@ function loadKeymap(file, filename) {
         return;
     }
     keyboard = response.keyboards[file.keyboard];
+    if (file.extra) {
+      if (file.extra.matrix_cols) {
+        keyboard.matrix_size.cols = file.extra.matrix_cols;
+      }
+      if (file.extra.matrix_rows) {
+        keyboard.matrix_size.rows = file.extra.matrix_rows;
+      }
+    }
     keyboard.layout = 0;
-    renderKeyboard(keyboard.layouts[file.layout]);
+    if (keyboard.layouts[file.layout].width) {
+      keyboard.width = keyboard.layouts[file.layout].width;
+    }
+    if (keyboard.layouts[file.layout].height) {
+      keyboard.height = keyboard.layouts[file.layout].height;
+    }
+    renderKeyboard(keyboard);
     keyboard.keymap = loadLayout(keyboard.layouts[file.layout]);
     loadLayers(keyboard, file.layers)
     guessBaseEffort(keyboard);
@@ -1891,6 +1938,7 @@ function checkForPhantom(keyboard, key_1, key_2, key_3) {
     phantom_key = findKeyInMatrix(keyboard, key_1.matrix_row, key_2.matrix_col);
   }
   if (phantom_key != -1) {
+    console.log(key_1.label + " & " + key_2.label + " & " + key_3.label + " => " + keyboard.keymap[phantom_key.index].label);
     keyboard.keymap[phantom_key.index].ghost++;
   }
 }
