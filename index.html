@@ -486,7 +486,7 @@ h1, h2, h3, h4 {
     <div class="container" id="main-container">
       <br />
       <h1>QMK Keymap Carpalx Analyser</h1>
-      <p>This attempts to adapt <a href="http://mkweb.bcgsc.ca/carpalx/?typing_effort">Carpalx</a> into a JS system that can analyse QMK keymaps in the form of configurator .json files. <a href="https://github.com/qmk/qmk_configurator/tree/master/public/keymaps">Some default keymaps are available here</a>, which can be dropped any where on this page (drop multiple files for quick comparing). The textarea below is used as a corpus, and is populated by a <a href="http://www.gutenberg.org/files/60750/60750-h/60750-h.htm">section from a book on Project Gutenberg</a>.</p>
+      <p>This attempts to adapt <a href="http://mkweb.bcgsc.ca/carpalx/?typing_effort">Carpalx</a> into a JS system that can analyse QMK keymaps in the form of configurator .json files. <a href="https://github.com/qmk/qmk_configurator/tree/master/public/keymaps">Some default keymaps are available here</a>, which can be dropped any where on this page (drop multiple files for quick comparing). The textarea below is used as a corpus, and is populated by a <a href="http://www.gutenberg.org/files/60750/60750-h/60750-h.htm">section from a book on Project Gutenberg</a>, along with some of the source code for this page.</p>
       <details id="overall">
         <summary><strong>Adjust overall weights</strong></summary>
         <div class="model-parameters">
@@ -680,7 +680,2123 @@ In olden times men were more fully convinced of a continued personal existence a
 
 What was it, then, that induced these peoples of early times to bestow such extraordinary labor on the places of their last rest? It certainly was their belief that the graves contained not only the lifeless body, but also the living soul. The funeral ceremonies evidently show, as Fustel de Coulanges says, that when the body was laid in the grave it was thought that something yet alive was placed there at the same time. The soul was born simultaneously with the body; death did not separate them; they were both enclosed together in the grave. In olden times people felt so fully assured that a man lived in the tomb, that they never failed to bury with him the things of which he was thought to be in want. They poured wine on the grave in order to quench his thirst; they brought food to his tomb in order to appease his hunger; they killed horses and slaves, believing that, if enclosed with the dead, these would serve him in his grave as they had served him during his life.
 
-It was also in this conviction that the positive duty of burying the deceased originated. In order to bring rest to the soul in the subterranean dwelling that fitted its new existence, it was necessary that the body, to which, in some way or another, it still clung, should be covered with earth. The soul, denied a grave, had no dwelling. Drifting about, it sought in vain the desired rest after life's fitful struggle. Without shelter, without offerings or food, it was condemned to everlasting wandering. Therefore, because the deceased was unhappy, he became ill-natured. He tormented the living; sent them diseases; destroyed their harvests; haunted them in uncanny visions in order to remind them of their duty to bury the body and thereby secure peace for himself.</textarea>
+It was also in this conviction that the positive duty of burying the deceased originated. In order to bring rest to the soul in the subterranean dwelling that fitted its new existence, it was necessary that the body, to which, in some way or another, it still clung, should be covered with earth. The soul, denied a grave, had no dwelling. Drifting about, it sought in vain the desired rest after life's fitful struggle. Without shelter, without offerings or food, it was condemned to everlasting wandering. Therefore, because the deceased was unhappy, he became ill-natured. He tormented the living; sent them diseases; destroyed their harvests; haunted them in uncanny visions in order to remind them of their duty to bury the body and thereby secure peace for himself.
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+
+  &lt;meta charset=&quot;utf-8&quot;&gt;
+  &lt;title&gt;Typing Model&lt;/title&gt;
+
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+
+  &lt;link rel=&quot;stylesheet&quot; href=&quot;normalize.css&quot;&gt;
+  &lt;link rel=&quot;stylesheet&quot; href=&quot;skeleton.css&quot;&gt;
+
+  &lt;script src=&quot;https://polyfill.io/v3/polyfill.min.js?features=es6&quot;&gt;&lt;/script&gt;
+  &lt;script id=&quot;MathJax-script&quot; async
+          src=&quot;https://cdn.jsdelivr.net/npm/mathjax@3.0.0/es5/tex-mml-chtml.js&quot;&gt;
+  &lt;/script&gt;
+  &lt;script src=&quot;https://kit.fontawesome.com/36961e11b2.js&quot; crossorigin=&quot;anonymous&quot;&gt;&lt;/script&gt;
+
+&lt;style&gt;
+
+:root {
+  --key-unit: 80px;
+  --key-padding: 5px;
+  --key-spacing: calc(var(--key-padding));
+  --keyboard-width: 0;
+  --keyboard-height: 0;
+}
+#keymap {
+  position: relative;
+  height: calc(var(--keyboard-height) * (var(--key-unit) + var(--key-spacing)) - var(--key-spacing));
+}
+.key {
+  position: absolute;
+  height: calc(var(--key-unit));
+  border-radius: 5px;
+  /*border: 1px rgba(0, 0, 0, 0.5) solid;*/
+  padding: 5px;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: #eee;
+}
+
+.key .layer-0 {
+  color: rgb(31, 119, 180);
+}
+.key .layer-1 {
+  color: rgb(255, 127, 14);
+}
+.key .layer-2 {
+  color: rgb(44, 160, 44);
+}
+.key .layer-3 {
+  color: rgb(214, 39, 40);
+}
+
+.key.selectable:hover {
+  background: #ddd;
+  cursor: pointer;
+}
+
+.legend {
+  position: absolute;
+  width: calc((var(--key-unit) - 10px) / 3);
+  line-height: calc(var(--key-unit) / 3);
+  font-size: 12px;
+  text-align: center;
+  overflow: hidden;
+}
+.legend-0 {
+  top: 0px;
+  left: 0px;
+}
+.legend-1 {
+  top: 0px;
+  left: calc(var(--key-unit) / 3);
+}
+.legend-2 {
+  top: 0px;
+  left: calc(var(--key-unit) * 2 / 3);
+}
+.legend-3 {
+  top: calc(var(--key-unit) / 3);
+  left: 0px;
+}
+.legend-4 {
+  top: calc(var(--key-unit) / 3);
+  left: calc(var(--key-unit) / 3);
+}
+.legend-5 {
+  top: calc(var(--key-unit) / 3);
+  left: calc(var(--key-unit) * 2 / 3);
+}
+.legend-6 {
+  top: calc(var(--key-unit) * 2 / 3);
+  left: 0px;
+}
+.legend-7 {
+  top: calc(var(--key-unit) * 2 / 3);
+  left: calc(var(--key-unit) / 3);
+}
+.legend-8 {
+  top: calc(var(--key-unit) * 2 / 3);
+  left: calc(var(--key-unit) * 2 / 3);
+}
+
+.label {
+  width: 100%;
+  text-align: center;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  background: aliceblue;
+}
+
+.matrix-col {
+  color: white;
+  position: absolute;
+left: 50%;
+top: 33%;
+width: 50%;
+text-align: center;
+}
+
+.matrix-row {
+  color: white;
+  position: absolute;
+left: 0px;
+top: 33%;
+width: 50%;
+text-align: center;
+}
+
+
+.heatmap {
+  position: absolute;
+  width: 100%;
+  left: 0px;
+  top: calc(var(--key-unit) * 2 / 3);
+  text-align: center;
+  line-height: calc(var(--key-unit) / 3);
+  font-size: 12px;
+}
+
+html, body {
+  height: 100%;
+}
+
+th[data-filter-value]:hover {
+  cursor: pointer;
+  background: #eee;
+}
+
+th[data-filter-value].active {
+  color: red;
+}
+
+tr[data-item-id].selected {
+  color: red;
+  background: #f7f7f7;
+}
+
+tr[data-item-id]:hover {
+  cursor: pointer;
+  background: #eee;
+}
+
+.radio {
+  white-space: nowrap;
+}
+
+.radio button {
+  display: inline-block;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-radius: 0px;
+  margin-left: -1px;
+}
+
+.radio button:first-child {
+  border-radius: 5px 0px 0px 5px;
+  margin-left: 0px;
+}
+.radio button:last-child {
+  border-radius: 0px 5px 5px 0px;
+}
+
+button.selected {
+  background: #333;
+  color: white;
+  border-color : #111;
+}
+
+td {
+    border-bottom: none;
+  }
+
+.graphs {
+  padding: 0px;
+  white-space: nowrap;
+  height: 20px;
+}
+
+.graph {
+  left: 0px;
+  bottom: 0px;
+  background: red;
+  height: 20px;
+  display: inline-block;
+}
+.graph:hover {
+  opacity: .8;
+}
+
+.base {
+ background: #C5C5C5;
+}
+.base.thumb {
+ background: #787878;
+}
+.penalties {
+ background: #168EF3;
+}
+.penalties.thumb {
+ background: #074E89;
+}
+.path {
+ background: #F3C216;
+}
+
+.finger-row td {
+  padding-top: 0px;
+  position: relative;
+} 
+
+.finger-row summary {
+  width: 200px;
+}
+
+.finger-row .buttons {
+  position: absolute;
+  right: 0px;
+}
+
+button.small {
+  height: 24px;
+  line-height: 24px;
+  padding: 0px 8px;
+  font-size: 10px;
+}
+
+.item-button.red {
+  background: red;
+  color: white;
+  border-color: #c00;
+}
+
+.finger-usages {
+  position: relative;
+  padding: 0px;
+  white-space: nowrap;
+  height: 100px;
+}
+
+.hand-usage {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  width: 50%;
+  background: red;
+  z-index: 1;
+  opacity: .1;
+}
+.hand-usage:last-child {
+  left: 50%;
+}
+
+.hand-usage:hover {
+  opacity: .2;
+}
+
+.finger-wrapper {
+  height: 100px;
+  position: relative;
+  display: inline-block;
+  width: 10%;
+  text-align: center;
+}
+
+.finger-name {
+  z-index: 2;
+  position: relative;
+  font-weight: bold;
+  padding: 10px;
+}
+
+.finger-usage {
+  position: absolute;
+  bottom: 0px;
+  width: 100%;
+  background: #eee;
+  z-index: 0;
+}
+
+.finger-wrapper:hover .finger-usage {
+  background: #ddd;
+}
+
+.button-wrapper {
+  position: relative;
+  display: inline-block;
+  box-sizing: border-box;
+}
+
+.button-wrapper .button {
+  margin-bottom: 0px;
+}
+.button-wrapper:hover .button {
+  border-color: #888;
+  cursor: pointer;
+}
+
+.button-wrapper input[type=file] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  font-size: 0px;
+  height: 100%;
+}
+
+input[type=range] {
+  width: 100%;
+  margin-bottom: 0px;
+}
+
+input[type=range][orient=vertical]
+{
+    writing-mode: bt-lr; /* IE */
+    -webkit-appearance: slider-vertical; /* WebKit */
+    width: 8px;
+    height: 92px;
+    padding: 0 5px;
+}
+
+.center-cells td {
+  text-align: center;
+}
+.model-parameters th, .model-parameters td {
+    padding: 2px 5px;
+}
+summary {
+  cursor: pointer;
+}
+
+h1, h2, h3, h4 {
+  text-align: center;
+}
+
+#overall summary {
+    left: 0px;
+    position: relative;
+    width: 33%;
+}
+
+#overall[open] {
+  padding-bottom: 24px;
+}
+
+#penalties summary {
+    left: calc(50% - 16.666%);
+    position: relative;
+    margin-top: -24px;
+    width: 33%;
+}
+
+#penalties[open] {
+  padding-bottom: 24px;
+}
+
+#path summary {
+    left: calc(100% - 33%);
+    position: relative;
+    margin-top: -24px;
+    width: 33%;
+}
+
+#configurator-keyboard {
+    margin-top: -1px;
+}
+
+.button, button, input[type=&quot;submit&quot;], input[type=&quot;reset&quot;], input[type=&quot;button&quot;] {
+    padding: 0 15px;
+}
+
+.button[disabled], button[disabled], input[type=&quot;submit&quot;][disabled], input[type=&quot;reset&quot;][disabled], input[type=&quot;button&quot;][disabled] {
+  background: #eee;
+  color: #ccc;
+  border-color: #ccc;
+  border-radius: 5px;
+}
+
+#corpus {
+  margin-bottom: 0px;
+  max-width: 100%;
+}
+.result td {
+  position: relative;
+}
+.result td sup {
+  position: absolute;
+  top: 16px;
+  right: 0px;
+  font-size: 65%;
+}
+
+.color-legends {
+  top: 0px;
+  text-align: left;
+  height: 100%;
+  line-height: 0;
+}
+
+.color-legends .legend {
+  width: 50%;
+  height: 50%;
+  display: inline-block;
+  position: static;
+  text-align: center;
+  font-size: calc(var(--key-unit) / 3);
+  line-height: calc(var(--key-unit) / 2);
+}
+
+.color-legends small {
+  vertical-align: bottom;
+}
+
+.color-legends .legend-0 {
+  background: #eee;
+  color: rgb(31, 119, 180);
+}
+.color-legends .legend-1 {
+  background: #e8e8e8;
+  color: rgb(255, 127, 14);
+}
+.color-legends .legend-2 {
+  background: #e8e8e8;
+  color: rgb(44, 160, 44);
+}
+.color-legends .legend-3 {
+  background: #eee;
+  color: rgb(214, 39, 40);
+}
+.color-legends .legend-4 {
+  background: #eee;
+  color: rgb(148, 103, 189);
+}
+
+.color-legends .layer-0 {
+  background: rgb(31, 119, 180);
+  color: white;
+}
+.color-legends .layer-1 {
+  background: rgb(255, 127, 14);
+  color: white;
+}
+.color-legends .layer-2 {
+  background: rgb(44, 160, 44);
+  color: white;
+}
+.color-legends .layer-3 {
+  background: rgb(214, 39, 40);
+  color: white;
+}
+.color-legends .layer-4 {
+  background: rgb(148, 103, 189);
+  color: white;
+}
+
+&lt;/style&gt;
+
+
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div class=&quot;container&quot; id=&quot;main-container&quot;&gt;
+      &lt;br /&gt;
+      &lt;h1&gt;QMK Keymap Carpalx Analyser&lt;/h1&gt;
+      &lt;p&gt;This attempts to adapt &lt;a href=&quot;http://mkweb.bcgsc.ca/carpalx/?typing_effort&quot;&gt;Carpalx&lt;/a&gt; into a JS system that can analyse QMK keymaps in the form of configurator .json files. &lt;a href=&quot;https://github.com/qmk/qmk_configurator/tree/master/public/keymaps&quot;&gt;Some default keymaps are available here&lt;/a&gt;, which can be dropped any where on this page (drop multiple files for quick comparing). The textarea below is used as a corpus, and is populated by a &lt;a href=&quot;http://www.gutenberg.org/files/60750/60750-h/60750-h.htm&quot;&gt;section from a book on Project Gutenberg&lt;/a&gt;.&lt;/p&gt;
+      &lt;details id=&quot;overall&quot;&gt;
+        &lt;summary&gt;&lt;strong&gt;Adjust overall weights&lt;/strong&gt;&lt;/summary&gt;
+        &lt;div class=&quot;model-parameters&quot;&gt;
+
+          &lt;div class=&quot;row&quot;&gt;
+            &lt;div class=&quot;columns six&quot;&gt;
+              \[e = {k_{base} \times b_{triad} + k_{penalty} \times p_{triad} + k_{stroke} \times s_{triad} }\]
+              \[b_{triad} = {k_1 \times b_{key,1} \times ( 1 + k_1 \times b_{key,2} \times ( 1 + k_3 \times b_{key,3}))}\]
+              \[b_{key} = \text{distance from closest homerow key in } \frac{1}{2} \text{ key units}\]
+            &lt;/div&gt;
+          &lt;div class=&quot;columns three&quot;&gt;
+            &lt;table class=&quot;u-full-width&quot;&gt;
+              &lt;tr&gt;&lt;td colspan=&quot;2&quot; class=&quot;center&quot;&gt;Effort Component Weights&lt;/td&gt;&lt;/tr&gt;
+              &lt;tr&gt;&lt;td&gt;\(k_{base}\)&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;K_B&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+              &lt;tr&gt;&lt;td&gt;\(k_{penalty}\)&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;K_P&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+              &lt;tr&gt;&lt;td&gt;\(k_{stroke}\)&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;K_S&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;
+          &lt;/div&gt;
+
+          &lt;div class=&quot;columns three&quot;&gt;
+              &lt;table class=&quot;u-full-width&quot;&gt;
+                &lt;tr&gt;&lt;td colspan=&quot;2&quot; class=&quot;center&quot;&gt;Triad Interaction Weights&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;td&gt;\(k_{1}\)&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;K_1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;td&gt;\(k_{2}\)&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;K_2&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;td&gt;\(k_{3}\)&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;K_3&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+              &lt;/table&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+
+          &lt;/div&gt;
+
+      &lt;/details&gt;
+      &lt;details id=&quot;penalties&quot;&gt;
+        &lt;summary&gt;&lt;strong&gt;Adjust penalties&lt;/strong&gt;&lt;/summary&gt;
+        &lt;div class=&quot;model-parameters&quot;&gt;
+
+          &lt;div class=&quot;row&quot;&gt;
+            &lt;div class=&quot;columns six&quot;&gt;
+
+              \[p_{triad} = {k_1 \times p_{key,1} \times ( 1 + k_1 \times p_{key,2} \times ( 1 + k_3 \times p_{key,3}))}\]
+              \[p_{fingerkey} = {w_0 + w_{hand} \times p_{hand} + w_{finger} \times p_{finger} + w_{row} \times p_{row}}\]
+              \[p_{thumbkey} = {w_0 + w_{hand} \times p_{hand} + w_{thumb}}\]
+        &lt;/div&gt;
+            &lt;div class=&quot;columns six&quot;&gt;
+              &lt;table class=&quot;u-full-width&quot;&gt;
+                &lt;tr&gt;&lt;td colspan=&quot;2&quot; class=&quot;center&quot;&gt;Penalty Weights&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;td width=&quot;80&quot;&gt;\(w_0\)&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;W_0&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;td&gt;\(w_{hand}\)&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;W_HAND&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;td&gt;\(w_{row}\)&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;W_ROW&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;td&gt;\(w_{finger}\)&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;W_FINGER&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+                &lt;tr&gt;&lt;td&gt;\(w_{thumb}\)&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;W_THUMB&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+              &lt;/table&gt;
+            &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;row&quot;&gt;
+        &lt;div class=&quot;columns five&quot;&gt;
+            &lt;table class=&quot;u-full-width&quot;&gt;
+              &lt;tr&gt;&lt;td class=&quot;center&quot;&gt;Hand Penalty \(p_{hand}\)&lt;/td&gt;&lt;/tr&gt;
+              &lt;tr&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;P_HAND&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;/table&gt;          
+            &lt;table class=&quot;center-cells u-full-width&quot;&gt;
+            &lt;tr&gt;&lt;td colspan=&quot;8&quot;&gt;Finger Penalty \(p_{finger}\)&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td colspan=&quot;4&quot;&gt;Left&lt;/td&gt;&lt;td colspan=&quot;4&quot;&gt;Right&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;
+              &lt;td&gt;Pinky&lt;/td&gt;&lt;td&gt;Ring&lt;/td&gt;&lt;td&gt;Middle&lt;/td&gt;&lt;td&gt;Pointer&lt;/td&gt;
+              &lt;td&gt;Pointer&lt;/td&gt;&lt;td&gt;Middle&lt;/td&gt;&lt;td&gt;Ring&lt;/td&gt;&lt;td&gt;Pinky&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+              &lt;td&gt;&lt;input type=&quot;range&quot; orient=&quot;vertical&quot; id=&quot;P_FINGER.0&quot; /&gt;&lt;/td&gt;
+              &lt;td&gt;&lt;input type=&quot;range&quot; orient=&quot;vertical&quot; id=&quot;P_FINGER.1&quot; /&gt;&lt;/td&gt;
+              &lt;td&gt;&lt;input type=&quot;range&quot; orient=&quot;vertical&quot; id=&quot;P_FINGER.2&quot; /&gt;&lt;/td&gt;
+              &lt;td&gt;&lt;input type=&quot;range&quot; orient=&quot;vertical&quot; id=&quot;P_FINGER.3&quot; /&gt;&lt;/td&gt;
+              &lt;td&gt;&lt;input type=&quot;range&quot; orient=&quot;vertical&quot; id=&quot;P_FINGER.4&quot; /&gt;&lt;/td&gt;
+              &lt;td&gt;&lt;input type=&quot;range&quot; orient=&quot;vertical&quot; id=&quot;P_FINGER.5&quot; /&gt;&lt;/td&gt;
+              &lt;td&gt;&lt;input type=&quot;range&quot; orient=&quot;vertical&quot; id=&quot;P_FINGER.6&quot; /&gt;&lt;/td&gt;
+              &lt;td&gt;&lt;input type=&quot;range&quot; orient=&quot;vertical&quot; id=&quot;P_FINGER.7&quot; /&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+          &lt;/table&gt;
+            &lt;/div&gt;
+        &lt;div class=&quot;columns seven&quot;&gt;
+          &lt;table class=&quot;u-full-width&quot;&gt;
+            &lt;tr&gt;&lt;td colspan=&quot;2&quot; class=&quot;center&quot;&gt;Row Penalty \(p_{row}\)&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td width=&quot;90&quot;&gt;3 Above&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;P_ROW.0&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;2 Above&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;P_ROW.1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;1 Above&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;P_ROW.2&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Homerow&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;P_ROW.3&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;1 Below&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;P_ROW.4&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;2 Below&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;P_ROW.5&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;3 Below&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;P_ROW.6&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+          &lt;/table&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;/details&gt;
+      &lt;details id=&quot;path&quot;&gt;
+        &lt;summary&gt;&lt;strong&gt;Adjust stroke path&lt;/strong&gt;&lt;/summary&gt;
+        &lt;div class=&quot;model-parameters&quot;&gt;
+
+      \[s_{triad} = {f_{hand} \times s_{hand} + f_{row} \times s_{row} + f_{finger} \times s_{finger} }\]
+
+      &lt;div class=&quot;row&quot;&gt;
+        &lt;div class=&quot;columns six&quot;&gt;
+          &lt;table class=&quot;u-full-width&quot;&gt;
+            &lt;tr&gt;&lt;td colspan=&quot;2&quot; class=&quot;center&quot;&gt;Weights&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;\(f_{hand}\)&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;F_HAND&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;\(f_{row}\)&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;F_ROW&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;\(f_{finger}\)&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;F_FINGER&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+          &lt;/table&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;columns six&quot;&gt;
+          &lt;table class=&quot;u-full-width&quot;&gt;
+            &lt;tr&gt;&lt;td colspan=&quot;2&quot; class=&quot;center&quot;&gt;Hand Combination Weight \(s_{hand}\)&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Both used, not alternating&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_HAND_WEIGHT.0&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Alternating&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_HAND_WEIGHT.1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Same&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_HAND_WEIGHT.2&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+          &lt;/table&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;row&quot;&gt;
+        &lt;div class=&quot;columns seven&quot;&gt;
+          &lt;table class=&quot;u-full-width&quot;&gt;
+            &lt;tr&gt;&lt;td colspan=&quot;2&quot; class=&quot;center&quot;&gt;Row Combination Weight \(s_{row}\)&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Same&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_ROW_WEIGHT.0&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Downward progression, with repetition&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_ROW_WEIGHT.1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Upward progression, with repetition&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_ROW_WEIGHT.2&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Some different, not monotonic, max row Δ 1&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_ROW_WEIGHT.3&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Downward progression&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_ROW_WEIGHT.4&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Some different, not monotonic, max row Δ downward &gt;1&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_ROW_WEIGHT.5&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Upward progression&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_ROW_WEIGHT.6&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Some different, not monotonic, max row Δ upward &gt;1&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_ROW_WEIGHT.7&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+          &lt;/table&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;columns five&quot;&gt;
+          &lt;table class=&quot;u-full-width&quot;&gt;
+            &lt;tr&gt;&lt;td colspan=&quot;2&quot; class=&quot;center&quot;&gt;Finger Combination Weight \(s_{finger}\)&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Double inner roll&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_FINGER_WEIGHT.0&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Repeat one&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_FINGER_WEIGHT.1&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Single inner roll&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_FINGER_WEIGHT.2&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Single outer roll&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_FINGER_WEIGHT.3&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Double outer roll&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_FINGER_WEIGHT.4&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Same finger&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_FINGER_WEIGHT.5&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Alt hands&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_FINGER_WEIGHT.6&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Bounce&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_FINGER_WEIGHT.7&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;Same key advantage&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;range&quot; id=&quot;STROKE_PATH_SAME_KEY_WEIGHT&quot; /&gt;&lt;/td&gt;&lt;/tr&gt;
+          &lt;/table&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;/details&gt;
+
+ &lt;p&gt;&lt;/p&gt;
+  &lt;div class=&quot;row&quot;&gt;
+    &lt;div class=&quot;columns nine&quot;&gt;
+      &lt;select id=&quot;configurator-keyboard&quot;&gt;
+      &lt;/select&gt;
+      &lt;button id=&quot;load-default&quot;&gt;Load Keymap&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;columns three&quot; style=&quot;text-align: right;&quot;&gt;
+      &lt;div class=&quot;button-wrapper&quot;&gt;
+        &lt;button class=&quot;button&quot;&gt;Upload Keymap&lt;/button&gt;
+        &lt;input id=&quot;file&quot; type=&quot;file&quot; multiple=&quot;multiple&quot; /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;textarea id=&quot;corpus&quot; class=&quot;u-full-width&quot;&gt;A consciousness of immortality, sometimes dim and vague, sometimes vivid and clear, seems to be characteristic of the human race. However low man may stand he cannot consider death to be the end of his existence. The conviction that he is immortal is innate to him. Annihilation is contrary to the nature and demands of his spirit. It is true that uncertainty and doubt might arise, but man will never be able wholly to uproot either hope or fear as to the possibility of a future life.
+
+Experiencing such feelings and presentiments, man finds himself amidst a world where death and dissolution everywhere surround him. He sees the objects of his love or fear pass away, and he knows that sooner or later the same fate will befall himself. When he beholds the lifeless body of some near relative, his presentiment of immortality tells him that the selfsame soul that once animated that body is still alive. In such moments even the man of low cultivation is forced into more or less profound contemplation. The following reflection impresses itself with might and wonder upon him: &quot;I feel convinced that the dead is living, but how can he live without his body and what form does his new life take?&quot;
+
+In all ages and stages, men have asked the same or similar questions, and they will go on asking them as long as belief in a future life obtains.
+
+But man does not confine himself to questioning, he wants answers, and especially must this be true where the reply is so intimately connected with himself. And these answers have not been lacking; we find them formulated in those opinions and theories respecting a future life which throughout the ages have gradually appeared and prevailed.
+
+The critically thinking public of the present day takes a decidedly skeptical attitude toward all these theories. They assert, and not without strong arguments, that it is impossible to know anything. But, however convinced the public may be of the fruitlessness of discussing the topic, no one will succeed in pushing it entirely aside. Time and again the same questions reappear as dark and threatening clouds on the horizon of our consciousness; they occupy our thoughts, take hold upon our feelings and color our sentiments. It would undoubtedly be sufficient at such moments to have, were it only one fixed point to stand upon; one established fact to start from and which we could trust would lead our thoughts in the right direction. But such a basis to set out from we have not hitherto been able to find. Will this remain the case forever? Will science concerning a future life always fail to attain aught but negative results? Let us say at once that humanity will probably be able to ascertain as much as it may be necessary or useful for us to know in this world. This hope is founded on our firm belief that at this time a basis such as that above mentioned really exists. Natural science has furnished this basis, though nobody as yet has happened to reflect that the facts upon which this basis rests may have any bearing upon our attitude toward a future life, much less give answer to questions such as the following: How, and in what way, is man to pass from this life into another?
+
+It will be the object of the following pages, then, to develop further the view just intimated.
+
+In prehistoric times men believed in a close relationship between the soul of the deceased and his body in the grave, and this purely instinctive faith is the more remarkable, as it prevailed during stages of civilization when differentiation between spiritual qualities and physical matter was almost unknown.
+
+The contradistinction between soul and body is certainly a fact, a general experience. But neither the individual nor the race realizes this fact suddenly or all at once. The knowledge of the distinction between the physical and the spiritual sphere, with their different characteristics and qualities, proceeds step by step, being the result of slowly advancing evolution.
+
+The child and the savage remain unconscious of any discrimination between soul and body, and even for the more cultivated man, the border between the two is vague and undetermined. According to the psychologic order of man&#39;s evolution we might therefore expect that the problem as to this relationship would appear at a comparatively late date, and even then be of importance only to a reduced number of more cultivated individuals. But, on the contrary, experience shows that this question occupies the thoughts of men in very low stages of civilization, and, in fact, that it is of the most general interest.
+
+The reason for this evidently lies in the instinctive belief that the body contains something which is immortal, and which in the life hereafter the soul cannot dispense with.
+
+In its first historic form the question concerning the soul&#39;s relation to the body deals with this relation after, not before, the separation of the soul and body. This latter problem emerges only in very high stages of civilization, and even then is of scientific interest to an insignificant minority only, while the question of our existence after death is religious in its nature and of interest to all.
+
+In olden times men were more fully convinced of a continued personal existence after death than civilized mankind seems to be nowadays. The same vivid conviction we find even in our age among people in the natural state. From the prehistoric peoples we have no written communication, but from their graves they speak to the present day intelligibly and plainly of their belief in a life to come. Behold the monuments defying time and decay, which these people have erected in memory of their deceased. The sepulchres of the Egyptian kings to this very day arouse our amazement and admiration.
+
+What was it, then, that induced these peoples of early times to bestow such extraordinary labor on the places of their last rest? It certainly was their belief that the graves contained not only the lifeless body, but also the living soul. The funeral ceremonies evidently show, as Fustel de Coulanges says, that when the body was laid in the grave it was thought that something yet alive was placed there at the same time. The soul was born simultaneously with the body; death did not separate them; they were both enclosed together in the grave. In olden times people felt so fully assured that a man lived in the tomb, that they never failed to bury with him the things of which he was thought to be in want. They poured wine on the grave in order to quench his thirst; they brought food to his tomb in order to appease his hunger; they killed horses and slaves, believing that, if enclosed with the dead, these would serve him in his grave as they had served him during his life.
+
+It was also in this conviction that the positive duty of burying the deceased originated. In order to bring rest to the soul in the subterranean dwelling that fitted its new existence, it was necessary that the body, to which, in some way or another, it still clung, should be covered with earth. The soul, denied a grave, had no dwelling. Drifting about, it sought in vain the desired rest after life&#39;s fitful struggle. Without shelter, without offerings or food, it was condemned to everlasting wandering. Therefore, because the deceased was unhappy, he became ill-natured. He tormented the living; sent them diseases; destroyed their harvests; haunted them in uncanny visions in order to remind them of their duty to bury the body and thereby secure peace for himself.&lt;/textarea&gt;
+
+  &lt;div class=&quot;row&quot;&gt;
+    &lt;div class=&quot;columns twelve&quot; style=&quot;text-align: right;&quot;&gt;
+      &lt;button id=&quot;recompute-all&quot; class=&quot;needs-keyboard&quot;&gt;Recompute all&lt;/button&gt;
+      &lt;button id=&quot;recompute-selected&quot; class=&quot;needs-keyboard&quot;&gt;Recompute selected&lt;/button&gt;
+      &lt;button id=&quot;compute&quot; class=&quot;needs-keyboard&quot;&gt;Compute selected&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;row&quot;&gt;
+    &lt;div class=&quot;columns eight radio&quot;&gt;
+      &lt;button class=&quot;heatmap-button&quot; id=&quot;heatmap-0&quot; data-heatmap-id=&quot;0&quot;&gt;base + penalties&lt;/button&gt;&lt;button class=&quot;heatmap-button&quot; id=&quot;heatmap-1&quot; data-heatmap-id=&quot;1&quot;&gt;base&lt;/button&gt;&lt;button class=&quot;heatmap-button&quot; id=&quot;heatmap-2&quot; data-heatmap-id=&quot;2&quot;&gt;penalties&lt;/button&gt;&lt;button class=&quot;heatmap-button selected&quot; id=&quot;heatmap-4&quot; data-heatmap-id=&quot;3&quot;&gt;usage&lt;/button&gt;&lt;button class=&quot;heatmap-button&quot; id=&quot;heatmap-4&quot; data-heatmap-id=&quot;4&quot;&gt;finger&lt;/button&gt;&lt;button class=&quot;heatmap-button&quot; id=&quot;heatmap-5&quot; data-heatmap-id=&quot;5&quot;&gt;layer&lt;/button&gt;&lt;button class=&quot;heatmap-button&quot; id=&quot;heatmap-6&quot; data-heatmap-id=&quot;6&quot;&gt;ghost&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;columns four&quot; style=&quot;text-align: right;&quot;&gt;
+      &lt;button id=&quot;home-positions&quot; class=&quot;needs-keyboard&quot;&gt;Select Home Positions&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div id=&quot;keymap&quot;&gt;&lt;/div&gt;
+  &lt;table id=&quot;results&quot; class=&quot;u-full-width&quot;&gt;
+          &lt;thead&gt;
+              &lt;tr&gt;
+                  &lt;th data-filter-value=&quot;keyboard&quot; class=&quot;active&quot;&gt;Keyboard&lt;/th&gt;
+                  &lt;th data-filter-value=&quot;corpus&quot;&gt;Corpus&lt;/th&gt;
+                  &lt;th data-filter-value=&quot;total_effort&quot; title=&quot;Total Effort&quot;&gt;\(e\)&lt;/th&gt;
+                  &lt;th data-filter-value=&quot;finger_effort&quot; title=&quot;Finger Effort&quot;&gt;\(e_{finger}\)&lt;/th&gt;
+                  &lt;th data-filter-value=&quot;thumb_effort&quot; title=&quot;Thumb Effort&quot;&gt;\(e_{thumb}\)&lt;/th&gt;
+                  &lt;th data-filter-value=&quot;finger_base&quot; title=&quot;Finger Base&quot;&gt;\(b_{finger}\)&lt;/th&gt;
+                  &lt;th data-filter-value=&quot;thumb_base&quot; title=&quot;Thumb Base&quot;&gt;\(b_{thumb}\)&lt;/th&gt;
+                  &lt;th data-filter-value=&quot;finger_penalties&quot; title=&quot;Finger Penalties&quot;&gt;\(p_{finger}\)&lt;/th&gt;
+                  &lt;th data-filter-value=&quot;path&quot; title=&quot;Stroke Path&quot;&gt;\(s\)&lt;/th&gt;
+                  &lt;th data-filter-value=&quot;unknown_chars&quot; title=&quot;Unknown Characters&quot;&gt;?&lt;/th&gt;
+              &lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody&gt;
+  &lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;!-- &lt;script src=&quot;https://d3js.org/d3-color.v1.min.js&quot;&gt;&lt;/script&gt; --&gt;
+&lt;script src=&quot;https://d3js.org/d3.v5.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+
+var heatmap_selected = 3;
+
+function textColorFromBackground(bg_color) {
+  return d3.lab(bg_color).l &gt;= 50 ? &quot;black&quot;: &quot;white&quot;;
+}
+
+var results = [];
+var current_result = 0;
+
+let currentFilter = &quot;&quot;,
+  prevFilter = &quot;&quot;,
+  orderAsc = true;
+
+const toggleOrder = () =&gt; {
+  if (currentFilter === prevFilter) {
+    orderAsc = !orderAsc;
+  } else {
+    orderAsc = true;
+  }
+};
+
+const sortTable = (array, sortKey) =&gt; {
+  return array.sort((a, b) =&gt; {
+    let x = a[sortKey],
+      y = b[sortKey];
+
+    return orderAsc ? x - y : y - x;
+  });
+};
+
+function encode(r) {
+  return r.replace(/[\x26\x0A\x3c\x3e\x22\x27]/g, function(r) {
+  return &quot;&amp;#&quot; + r.charCodeAt(0) + &quot;;&quot;;
+  });
+}
+
+function getDistinctArray(arr) {
+    var dups = {};
+    return arr.filter(function(el) {
+        var hash = el.valueOf();
+        var isDup = dups[hash];
+        dups[hash] = true;
+        return !isDup;
+    });
+}
+
+var finger_names = [
+  &quot;L Pinky&quot;,
+  &quot;L Ring&quot;,
+  &quot;L Middle&quot;,
+  &quot;L Index&quot;,
+  &quot;L Thumb&quot;,
+  &quot;R Thumb&quot;,
+  &quot;R Index&quot;,
+  &quot;R Middle&quot;,
+  &quot;R Ring&quot;,
+  &quot;R Pinky&quot;,
+];
+
+const renderTable = tableData =&gt; {
+  
+  updateNeedsKeyboard(tableData.length &gt; 0);
+
+  var max_total_effort = 0;
+  Array.prototype.forEach.call(tableData, result =&gt; {
+    if (max_total_effort &lt; result.total_effort) {
+      max_total_effort = result.total_effort;
+    }
+  });
+
+  var sr = getSelectedResult();
+
+  return `${tableData
+    .map(item =&gt; {
+      var relative_scale = 100 / max_total_effort;
+      var distinct_chars = getDistinctArray(item.unknown_chars);
+      var max_finger_usage = 0;
+      var total_finger_usage = 0;
+      var total_hand_usage = [0, 0];
+      Array.prototype.forEach.call(item.usage_fingers, (finger, index) =&gt; {
+        if (max_finger_usage &lt; finger)
+          max_finger_usage = finger;
+        total_finger_usage += finger;
+        if (index &lt; 5)
+          total_hand_usage[0] += finger;
+        else 
+          total_hand_usage[1] += finger;
+      });
+      var finger_usage_string = &quot;&quot;;
+      Array.prototype.forEach.call(item.usage_fingers, (finger, index) =&gt; {
+        finger_usage_string += `&lt;div class=&quot;finger-wrapper&quot; title=&quot;${finger}&quot;&gt;&lt;div class=&quot;finger-name&quot;&gt;${finger_names[index]}&lt;br /&gt;${precise(finger/total_finger_usage*100)}%&lt;/div&gt;&lt;div class=&quot;finger-usage&quot; style=&quot;height:${finger/max_finger_usage*100}%&quot;&gt;&lt;/div&gt;&lt;/div&gt;`;
+      });
+      finger_usage_string += `&lt;div class=&quot;hand-usage&quot; title=&quot;${precise(total_hand_usage[0]/total_finger_usage*100)}%&quot; style=&quot;height:${total_hand_usage[0]/total_finger_usage*50}%&quot;&gt;&lt;/div&gt;&lt;div class=&quot;hand-usage&quot; title=&quot;${precise(total_hand_usage[1]/total_finger_usage*100)}%&quot; style=&quot;height:${total_hand_usage[1]/total_finger_usage*50}%&quot;&gt;&lt;/div&gt;`;
+      return `
+        &lt;tr data-item-id=&quot;${item.id}&quot; class=&quot;${(item.id == current_result) ? &quot;selected &quot;:&quot;&quot;}result&quot;&gt;
+          &lt;td&gt;&lt;strong&gt;${item.keyboard.keyboard_name}&lt;/strong&gt;&lt;br /&gt;${item.keyboard.filename}&lt;/td&gt;
+          &lt;td&gt;${encode(item.corpus.slice(0, 12))}...&lt;/td&gt;
+          &lt;td&gt;${precise(item.total_effort)}${item.id!=current_result?`&lt;sup&gt;${precise(item.total_effort/sr.total_effort*100)}%&lt;/sup&gt;`:&quot;&quot;}&lt;/td&gt;
+          &lt;td&gt;${precise(item.finger_effort)}${item.id!=current_result?`&lt;sup&gt;${precise(item.finger_effort/sr.finger_effort*100)}%&lt;/sup&gt;`:&quot;&quot;}&lt;/td&gt;
+          &lt;td&gt;${precise(item.thumb_effort)}${item.id!=current_result?`&lt;sup&gt;${precise(item.thumb_effort/sr.thumb_effort*100)}%&lt;/sup&gt;`:&quot;&quot;}&lt;/td&gt;
+          &lt;td&gt;${precise(item.finger_base)}${item.id!=current_result?`&lt;sup&gt;${precise(item.finger_base/sr.finger_base*100)}%&lt;/sup&gt;`:&quot;&quot;}&lt;/td&gt;
+          &lt;td&gt;${precise(item.thumb_base)}${item.id!=current_result?`&lt;sup&gt;${precise(item.thumb_base/sr.thumb_base*100)}%&lt;/sup&gt;`:&quot;&quot;}&lt;/td&gt;
+          &lt;td&gt;${precise(item.finger_penalties)}${item.id!=current_result?`&lt;sup&gt;${precise(item.finger_penalties/sr.finger_penalties*100)}%&lt;/sup&gt;`:&quot;&quot;}&lt;/td&gt;
+          &lt;td&gt;${precise(item.path)}${item.id!=current_result?`&lt;sup&gt;${precise(item.path/sr.path*100)}%&lt;/sup&gt;`:&quot;&quot;}&lt;/td&gt;
+          &lt;td title=&quot;${encode(distinct_chars.join(&quot; &quot;))}&quot;&gt;${distinct_chars.length}&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;&lt;td colspan=&quot;10&quot; class=&quot;graphs&quot;&gt;
+          &lt;div class=&quot;graph base&quot; title=&quot;Finger Base: ${precise(item.finger_base)}&quot; style=&quot;width:${relative_scale * item.finger_base * K_B}%&quot;&gt;&lt;/div&gt;&lt;div class=&quot;graph base thumb&quot; title=&quot;Thumb Base: ${precise(item.thumb_base)}&quot; style=&quot;width:${relative_scale * item.thumb_base * K_B}%&quot;&gt;&lt;/div&gt;&lt;div class=&quot;graph penalties&quot; title=&quot;Finger Penalties: ${precise(item.finger_penalties)}&quot; style=&quot;width:${relative_scale * item.finger_penalties * K_P}%&quot;&gt;&lt;/div&gt;&lt;div class=&quot;graph penalties thumb&quot; title=&quot;Thumb Penalties: ${precise(item.thumb_penalties)}&quot; style=&quot;width:${relative_scale * item.thumb_penalties * K_P}%&quot;&gt;&lt;/div&gt;&lt;div class=&quot;graph path&quot; title=&quot;Stroke Path: ${precise(item.path)}&quot; style=&quot;width:${relative_scale * item.path * K_S}%&quot;&gt;&lt;/div&gt;
+              &lt;/td&gt;&lt;/tr&gt;
+              &lt;tr class=&quot;finger-row&quot;&gt;&lt;td colspan=&quot;10&quot;&gt;
+                &lt;div class=&quot;buttons&quot;&gt;
+                  &lt;span class=&quot;radio&quot;&gt;
+                  &lt;button data-item-id=&quot;${item.id}&quot; data-function=&quot;changeLayout&quot; data-layout=&quot;0&quot; class=&quot;item-button small${item.keyboard.layout==0?&quot; selected&quot;:&quot;&quot;}&quot;&gt;Qwerty&lt;/button&gt;&lt;button data-item-id=&quot;${item.id}&quot; data-function=&quot;changeLayout&quot; data-layout=&quot;1&quot; class=&quot;item-button small${item.keyboard.layout==1?&quot; selected&quot;:&quot;&quot;}&quot;&gt;Colemak&lt;/button&gt;&lt;button data-item-id=&quot;${item.id}&quot; data-function=&quot;changeLayout&quot; data-layout=&quot;2&quot; class=&quot;item-button small${item.keyboard.layout==2?&quot; selected&quot;:&quot;&quot;}&quot;&gt;Dvorak&lt;/button&gt;
+                  &lt;/span&gt;
+                  &lt;button data-item-id=&quot;${item.id}&quot; data-function=&quot;removeResult&quot; class=&quot;item-button small red&quot;&gt;X&lt;/button&gt;
+                &lt;/div&gt;
+                &lt;details data-item-id=&quot;${item.id}&quot;${item.details?&quot; open&quot;:&quot;&quot;}&gt;
+                &lt;summary&gt;&lt;strong&gt;Usage stats&lt;/strong&gt;&lt;/summary&gt;
+                &lt;div class=&quot;finger-usages&quot;&gt;
+                  ${finger_usage_string}
+                &lt;/div&gt;
+                &lt;/details&gt;
+              &lt;/td&gt;&lt;/tr&gt;`;
+    })
+    .join(&quot;&quot;)}`;
+};
+  
+const appendTable = (table, destination) =&gt; {
+  document.querySelector(destination).innerHTML = table;
+};
+
+const handleSortClick = () =&gt; {
+  const filters = document.querySelectorAll(&quot;#results th&quot;);
+
+  Array.prototype.forEach.call(filters, filter =&gt; {
+    filter.addEventListener(&quot;click&quot;, () =&gt; {
+      if (!filter.dataset.filterValue) return false;
+
+      Array.prototype.forEach.call(filters, filter =&gt; {
+        filter.classList.remove(&quot;active&quot;);
+      });
+      filter.classList.add(&quot;active&quot;);
+      currentFilter = filter.dataset.filterValue;
+      toggleOrder();
+      drawTable(false);
+    });
+  });
+};
+
+const getSelectedResult = () =&gt; {
+  for (var i = 0; i &lt; results.length; i++) {
+    if (results[i].id == current_result)
+      return results[i];
+  }
+}
+
+const getResult = (id) =&gt; {
+  for (var i = 0; i &lt; results.length; i++) {
+    if (results[i].id == id)
+      return results[i];
+  }
+}
+const getResultCurrentIndex = (id) =&gt; {
+  for (var i = 0; i &lt; results.length; i++) {
+    if (results[i].id == id)
+      return i;
+  }
+}
+
+const drawTable = (selectLast) =&gt; {
+  if (selectLast) {
+    current_result = results.length - 1;
+  }
+  let newTableData = sortTable(results, currentFilter);
+  let tableOutput = renderTable(newTableData);
+
+  appendTable(tableOutput, &quot;#results tbody&quot;);
+
+  prevFilter = currentFilter;
+
+  const rows = document.querySelectorAll(&quot;#results tr&quot;);
+  Array.prototype.forEach.call(rows, row =&gt; {
+    row.addEventListener(&quot;click&quot;, () =&gt; {
+      if (!row.dataset.itemId) return false;
+      current_result = row.dataset.itemId;
+      var selected_result = getSelectedResult();
+      drawTable(false);
+      renderKeyboard(selected_result.keyboard);
+      renderLayout(selected_result.keyboard);
+    });
+  });
+
+  const details = document.querySelectorAll(&quot;#results tr details&quot;);
+  Array.prototype.forEach.call(details, detail =&gt; {
+    detail.addEventListener(&quot;click&quot;, () =&gt; {
+      if (!detail.dataset.itemId) return false;
+      var result = getResult(detail.dataset.itemId);
+      result.details = !detail.open;
+    });
+  });
+
+  const buttons = document.querySelectorAll(&quot;#results tr .item-button&quot;);
+  Array.prototype.forEach.call(buttons, button =&gt; {
+    button.addEventListener(&quot;click&quot;, () =&gt; {
+      if (!button.dataset.function) return false;
+      window[button.dataset.function](button);
+    });
+  });
+
+};
+
+function changeLayout(element) {
+  var result = getResult(element.dataset.itemId);
+  result.keyboard.layout = element.dataset.layout;
+  computeResult(result);
+  drawTable(false);
+  if (current_result == result.id) {
+    renderLayout(result.keyboard);
+  }
+} 
+
+function removeResult(element) {
+  var result = getResult(element.dataset.itemId);
+  var id = result.id;
+
+  results.splice(getResultCurrentIndex(id), 1);
+  
+  if (current_result == id) {
+    current_result = 0;
+    renderKeyboard(getSelectedResult().keyboard);
+    renderLayout(getSelectedResult().keyboard);
+  }
+  drawTable(false);
+} 
+
+handleSortClick();
+
+// layout lookup - qwerty, colemak, dvorak
+var keyboard_layout = {
+  &quot;q&quot;: [&quot;q&quot;,&quot;q&quot;,&quot;&#39;&quot;],
+  &quot;w&quot;: [&quot;w&quot;,&quot;w&quot;,&quot;,&quot;],
+  &quot;e&quot;: [&quot;e&quot;,&quot;f&quot;,&quot;.&quot;],
+  &quot;r&quot;: [&quot;r&quot;,&quot;p&quot;,&quot;p&quot;],
+  &quot;t&quot;: [&quot;t&quot;,&quot;g&quot;,&quot;y&quot;],
+  &quot;y&quot;: [&quot;y&quot;,&quot;j&quot;,&quot;f&quot;],
+  &quot;u&quot;: [&quot;u&quot;,&quot;l&quot;,&quot;g&quot;],
+  &quot;i&quot;: [&quot;i&quot;,&quot;u&quot;,&quot;c&quot;],
+  &quot;o&quot;: [&quot;o&quot;,&quot;y&quot;,&quot;r&quot;],
+  &quot;p&quot;: [&quot;p&quot;,&quot;;&quot;,&quot;m&quot;],
+  &quot;a&quot;: [&quot;a&quot;,&quot;a&quot;,&quot;a&quot;],
+  &quot;s&quot;: [&quot;s&quot;,&quot;r&quot;,&quot;o&quot;],
+  &quot;d&quot;: [&quot;d&quot;,&quot;s&quot;,&quot;e&quot;],
+  &quot;f&quot;: [&quot;f&quot;,&quot;t&quot;,&quot;i&quot;],
+  &quot;g&quot;: [&quot;g&quot;,&quot;d&quot;,&quot;u&quot;],
+  &quot;h&quot;: [&quot;h&quot;,&quot;h&quot;,&quot;d&quot;],
+  &quot;j&quot;: [&quot;j&quot;,&quot;n&quot;,&quot;h&quot;],
+  &quot;k&quot;: [&quot;k&quot;,&quot;e&quot;,&quot;t&quot;],
+  &quot;l&quot;: [&quot;l&quot;,&quot;i&quot;,&quot;n&quot;],
+  &quot;;&quot;: [&quot;;&quot;,&quot;o&quot;,&quot;s&quot;],
+  &quot;&#39;&quot;: [&quot;&#39;&quot;,&quot;&#39;&quot;,&quot;-&quot;],
+  &quot;z&quot;: [&quot;z&quot;,&quot;z&quot;,&quot;;&quot;],
+  &quot;x&quot;: [&quot;x&quot;,&quot;x&quot;,&quot;q&quot;],
+  &quot;c&quot;: [&quot;c&quot;,&quot;c&quot;,&quot;j&quot;],
+  &quot;v&quot;: [&quot;v&quot;,&quot;v&quot;,&quot;k&quot;],
+  &quot;b&quot;: [&quot;b&quot;,&quot;b&quot;,&quot;x&quot;],
+  &quot;n&quot;: [&quot;n&quot;,&quot;k&quot;,&quot;b&quot;],
+  &quot;m&quot;: [&quot;m&quot;,&quot;m&quot;,&quot;l&quot;],
+  &quot;,&quot;: [&quot;,&quot;,&quot;,&quot;,&quot;w&quot;],
+  &quot;.&quot;: [&quot;.&quot;,&quot;.&quot;,&quot;v&quot;],
+  &quot;/&quot;: [&quot;/&quot;,&quot;/&quot;,&quot;z&quot;],
+  &quot;[&quot;: [&quot;[&quot;,&quot;[&quot;,&quot;/&quot;],
+  &quot;]&quot;: [&quot;]&quot;,&quot;]&quot;,&quot;=&quot;],
+  &quot;-&quot;: [&quot;-&quot;,&quot;-&quot;,&quot;[&quot;],
+  &quot;=&quot;: [&quot;=&quot;,&quot;=&quot;,&quot;]&quot;],
+
+  &quot;Q&quot;: [&quot;Q&quot;,&quot;Q&quot;,&quot;\&quot;&quot;],
+  &quot;W&quot;: [&quot;W&quot;,&quot;W&quot;,&quot;&lt;&quot;],
+  &quot;E&quot;: [&quot;E&quot;,&quot;F&quot;,&quot;&gt;&quot;],
+  &quot;R&quot;: [&quot;R&quot;,&quot;P&quot;,&quot;P&quot;],
+  &quot;T&quot;: [&quot;T&quot;,&quot;G&quot;,&quot;Y&quot;],
+  &quot;Y&quot;: [&quot;Y&quot;,&quot;J&quot;,&quot;F&quot;],
+  &quot;U&quot;: [&quot;U&quot;,&quot;L&quot;,&quot;G&quot;],
+  &quot;I&quot;: [&quot;I&quot;,&quot;U&quot;,&quot;C&quot;],
+  &quot;O&quot;: [&quot;O&quot;,&quot;Y&quot;,&quot;R&quot;],
+  &quot;P&quot;: [&quot;P&quot;,&quot;:&quot;,&quot;M&quot;],
+  &quot;A&quot;: [&quot;A&quot;,&quot;A&quot;,&quot;A&quot;],
+  &quot;S&quot;: [&quot;S&quot;,&quot;R&quot;,&quot;O&quot;],
+  &quot;D&quot;: [&quot;D&quot;,&quot;S&quot;,&quot;E&quot;],
+  &quot;F&quot;: [&quot;F&quot;,&quot;T&quot;,&quot;I&quot;],
+  &quot;G&quot;: [&quot;G&quot;,&quot;D&quot;,&quot;U&quot;],
+  &quot;H&quot;: [&quot;H&quot;,&quot;H&quot;,&quot;D&quot;],
+  &quot;J&quot;: [&quot;J&quot;,&quot;N&quot;,&quot;H&quot;],
+  &quot;K&quot;: [&quot;K&quot;,&quot;E&quot;,&quot;T&quot;],
+  &quot;L&quot;: [&quot;L&quot;,&quot;I&quot;,&quot;N&quot;],
+  &quot;:&quot;: [&quot;:&quot;,&quot;O&quot;,&quot;S&quot;],
+  &quot;\&quot;&quot;: [&quot;\&quot;&quot;,&quot;\&quot;&quot;,&quot;_&quot;],
+  &quot;Z&quot;: [&quot;Z&quot;,&quot;Z&quot;,&quot;;&quot;],
+  &quot;X&quot;: [&quot;X&quot;,&quot;X&quot;,&quot;Q&quot;],
+  &quot;C&quot;: [&quot;C&quot;,&quot;C&quot;,&quot;J&quot;],
+  &quot;V&quot;: [&quot;V&quot;,&quot;V&quot;,&quot;K&quot;],
+  &quot;B&quot;: [&quot;B&quot;,&quot;B&quot;,&quot;X&quot;],
+  &quot;N&quot;: [&quot;N&quot;,&quot;K&quot;,&quot;B&quot;],
+  &quot;M&quot;: [&quot;M&quot;,&quot;M&quot;,&quot;L&quot;],
+  &quot;&lt;&quot;: [&quot;&lt;&quot;,&quot;&lt;&quot;,&quot;W&quot;],
+  &quot;&gt;&quot;: [&quot;&gt;&quot;,&quot;&gt;&quot;,&quot;V&quot;],
+  &quot;|&quot;: [&quot;|&quot;,&quot;|&quot;,&quot;Z&quot;],
+  &quot;{&quot;: [&quot;{&quot;,&quot;{&quot;,&quot;|&quot;],
+  &quot;}&quot;: [&quot;}&quot;,&quot;}&quot;,&quot;+&quot;],
+  &quot;_&quot;: [&quot;_&quot;,&quot;_&quot;,&quot;{&quot;],
+  &quot;+&quot;: [&quot;+&quot;,&quot;+&quot;,&quot;}&quot;],
+};
+
+var legend_lookup = {
+  &quot;KC_LEFT&quot;: &quot;&lt;i class=&#39;fas fa-arrow-left&#39;&gt;&lt;/i&gt;&quot;,
+  &quot;KC_DOWN&quot;: &quot;&lt;i class=&#39;fas fa-arrow-down&#39;&gt;&lt;/i&gt;&quot;,
+  &quot;KC_UP&quot;: &quot;&lt;i class=&#39;fas fa-arrow-up&#39;&gt;&lt;/i&gt;&quot;,
+  &quot;KC_RGHT&quot;: &quot;&lt;i class=&#39;fas fa-arrow-right&#39;&gt;&lt;/i&gt;&quot;,
+  &quot;KC_BSPC&quot;: &quot;&lt;i class=&#39;fas fa-backspace&#39;&gt;&lt;/i&gt;&quot;,
+  &quot;KC_DEL&quot;: &quot;&lt;small&gt;Del&lt;/small&gt;&quot;,
+  &quot;KC_LALT&quot;: &quot;&lt;small&gt;Alt&lt;/small&gt;&quot;,
+  &quot;KC_LCTL&quot;: &quot;&lt;small&gt;Ctrl&lt;/small&gt;&quot;,
+  &quot;KC_LGUI&quot;: &quot;&lt;small&gt;Os&lt;/small&gt;&quot;,
+  &quot;KC_LSFT&quot;: &quot;&lt;small&gt;Shft&lt;/small&gt;&quot;,
+  &quot;KC_ESC&quot;: &quot;&lt;small&gt;Esc&lt;/small&gt;&quot;,
+  &quot;KC_F1&quot;: &quot;&lt;small&gt;F1&lt;/small&gt;&quot;,
+  &quot;KC_F2&quot;: &quot;&lt;small&gt;F2&lt;/small&gt;&quot;,
+  &quot;KC_F3&quot;: &quot;&lt;small&gt;F3&lt;/small&gt;&quot;,
+  &quot;KC_F4&quot;: &quot;&lt;small&gt;F4&lt;/small&gt;&quot;,
+  &quot;KC_F5&quot;: &quot;&lt;small&gt;F5&lt;/small&gt;&quot;,
+  &quot;KC_F6&quot;: &quot;&lt;small&gt;F6&lt;/small&gt;&quot;,
+  &quot;KC_F7&quot;: &quot;&lt;small&gt;F7&lt;/small&gt;&quot;,
+  &quot;KC_F8&quot;: &quot;&lt;small&gt;F8&lt;/small&gt;&quot;,
+  &quot;KC_F9&quot;: &quot;&lt;small&gt;F9&lt;/small&gt;&quot;,
+  &quot;KC_F10&quot;: &quot;&lt;small&gt;F10&lt;/small&gt;&quot;,
+  &quot;KC_F11&quot;: &quot;&lt;small&gt;F11&lt;/small&gt;&quot;,
+  &quot;KC_F12&quot;: &quot;&lt;small&gt;F12&lt;/small&gt;&quot;,
+};
+
+var unicode_lookup = {
+  &quot;KC_NO&quot;: &quot;&quot;,
+  &quot;KC_TRNS&quot;: &quot;&quot;,
+  &quot;KC_SPC&quot;: &quot; &quot;,
+  &quot;KC_TAB&quot;: &quot;⭾&quot;,
+  &quot;KC_A&quot;: &quot;a&quot;,
+  &quot;KC_B&quot;: &quot;b&quot;,
+  &quot;KC_C&quot;: &quot;c&quot;,
+  &quot;KC_D&quot;: &quot;d&quot;,
+  &quot;KC_E&quot;: &quot;e&quot;,
+  &quot;KC_F&quot;: &quot;f&quot;,
+  &quot;KC_G&quot;: &quot;g&quot;,
+  &quot;KC_H&quot;: &quot;h&quot;,
+  &quot;KC_I&quot;: &quot;i&quot;,
+  &quot;KC_J&quot;: &quot;j&quot;,
+  &quot;KC_K&quot;: &quot;k&quot;,
+  &quot;KC_L&quot;: &quot;l&quot;,
+  &quot;KC_M&quot;: &quot;m&quot;,
+  &quot;KC_N&quot;: &quot;n&quot;,
+  &quot;KC_O&quot;: &quot;o&quot;,
+  &quot;KC_P&quot;: &quot;p&quot;,
+  &quot;KC_Q&quot;: &quot;q&quot;,
+  &quot;KC_R&quot;: &quot;r&quot;,
+  &quot;KC_S&quot;: &quot;s&quot;,
+  &quot;KC_T&quot;: &quot;t&quot;,
+  &quot;KC_U&quot;: &quot;u&quot;,
+  &quot;KC_V&quot;: &quot;v&quot;,
+  &quot;KC_W&quot;: &quot;w&quot;,
+  &quot;KC_X&quot;: &quot;x&quot;,
+  &quot;KC_Y&quot;: &quot;y&quot;,
+  &quot;KC_Z&quot;: &quot;z&quot;,
+  &quot;KC_SCLN&quot;: &quot;;&quot;,
+  &quot;KC_COMM&quot;: &quot;,&quot;,
+  &quot;KC_DOT&quot;: &quot;.&quot;,
+  &quot;KC_SLSH&quot;: &quot;/&quot;,
+  &quot;KC_GRV&quot;: &quot;`&quot;,
+  &quot;KC_TILD&quot;: &quot;~&quot;,
+  &quot;KC_BSLS&quot;: &quot;\\&quot;,
+  &quot;KC_PIPE&quot;: &quot;|&quot;,
+  &quot;KC_QUOT&quot;: &quot;&#39;&quot;,
+  &quot;KC_LSFT&quot;: &quot;⇧&quot;,
+  &quot;KC_RSFT&quot;: &quot;⇧&quot;,
+  &quot;KC_ENT&quot;: &quot;↵&quot;,
+  &quot;KC_BSPC&quot;: &quot;⌫&quot;,
+  &quot;KC_DEL&quot;: &quot;⌦&quot;,
+  &quot;KC_ESC&quot;: &quot;⎋&quot;,
+  &quot;KC_F1&quot;: &quot;F1&quot;,
+  &quot;KC_F2&quot;: &quot;F2&quot;,
+  &quot;KC_F3&quot;: &quot;F3&quot;,
+  &quot;KC_F4&quot;: &quot;F4&quot;,
+  &quot;KC_F5&quot;: &quot;F5&quot;,
+  &quot;KC_F6&quot;: &quot;F6&quot;,
+  &quot;KC_F7&quot;: &quot;F7&quot;,
+  &quot;KC_F8&quot;: &quot;F8&quot;,
+  &quot;KC_F9&quot;: &quot;F9&quot;,
+  &quot;KC_F10&quot;: &quot;F10&quot;,
+  &quot;KC_F11&quot;: &quot;F11&quot;,
+  &quot;KC_F12&quot;: &quot;F12&quot;,
+  &quot;KC_1&quot;: &quot;1&quot;,
+  &quot;KC_2&quot;: &quot;2&quot;,
+  &quot;KC_3&quot;: &quot;3&quot;,
+  &quot;KC_4&quot;: &quot;4&quot;,
+  &quot;KC_5&quot;: &quot;5&quot;,
+  &quot;KC_6&quot;: &quot;6&quot;,
+  &quot;KC_7&quot;: &quot;7&quot;,
+  &quot;KC_8&quot;: &quot;8&quot;,
+  &quot;KC_9&quot;: &quot;9&quot;,
+  &quot;KC_0&quot;: &quot;0&quot;,
+  &quot;KC_EXLM&quot;: &quot;!&quot;,
+  &quot;KC_AT&quot;: &quot;@&quot;,
+  &quot;KC_HASH&quot;: &quot;#&quot;,
+  &quot;KC_DLR&quot;: &quot;$&quot;,
+  &quot;KC_PERC&quot;: &quot;%&quot;,
+  &quot;KC_CIRC&quot;: &quot;^&quot;,
+  &quot;KC_AMPR&quot;: &quot;&amp;&quot;,
+  &quot;KC_ASTR&quot;: &quot;*&quot;,
+  &quot;KC_LPRN&quot;: &quot;(&quot;,
+  &quot;KC_RPRN&quot;: &quot;)&quot;,
+  &quot;KC_MINS&quot;: &quot;-&quot;,
+  &quot;KC_UNDS&quot;: &quot;_&quot;,
+  &quot;KC_EQL&quot;: &quot;=&quot;,
+  &quot;KC_PLUS&quot;: &quot;+&quot;,
+  &quot;KC_DQUO&quot;: &quot;\&quot;&quot;,
+  &quot;KC_LT&quot;: &quot;&lt;&quot;,
+  &quot;KC_GT&quot;: &quot;&gt;&quot;,
+  &quot;KC_QUES&quot;: &quot;?&quot;,
+  &quot;KC_COLN&quot;: &quot;:&quot;,
+  &quot;KC_LBRC&quot;: &quot;[&quot;,
+  &quot;KC_RBRC&quot;: &quot;]&quot;,
+  &quot;KC_LCBR&quot;: &quot;{&quot;,
+  &quot;KC_RCBR&quot;: &quot;}&quot;,
+  &quot;KC_LEFT&quot;: &quot;←&quot;,
+  &quot;KC_DOWN&quot;: &quot;↓&quot;,
+  &quot;KC_UP&quot;: &quot;↑&quot;,
+  &quot;KC_RGHT&quot;: &quot;→&quot;,
+  &quot;KC_HOME&quot;: &quot;⤒&quot;,
+  &quot;KC_END&quot;: &quot;⤓&quot;,
+  &quot;KC_PGUP&quot;: &quot;⇞&quot;,
+  &quot;KC_PGDN&quot;: &quot;⇟&quot;,
+  &quot;KC_LCTL&quot;: &quot;Ⓒ&quot;,
+  &quot;KC_RCTL&quot;: &quot;Ⓒ&quot;,
+  &quot;KC_LALT&quot;: &quot;Ⓐ&quot;,
+  &quot;KC_RALT&quot;: &quot;Ⓐ&quot;,
+  &quot;KC_LGUI&quot;: &quot;Ⓖ&quot;,
+  &quot;KC_RGUI&quot;: &quot;Ⓖ&quot;,
+  &quot;KC_MPLY&quot;: &quot;⏯&quot;,
+  &quot;KC_MNXT&quot;: &quot;⏭&quot;,
+  &quot;KC_VOLU&quot;: &quot;🕪&quot;,
+  &quot;KC_VOLD&quot;: &quot;🕩&quot;,
+  &quot;MO(1)&quot;: &quot;▲1&quot;,
+  &quot;MO(2)&quot;: &quot;▲2&quot;,
+  &quot;MO(3)&quot;: &quot;▲3&quot;,
+  &quot;MO(4)&quot;: &quot;▲4&quot;,
+  &quot;MO(5)&quot;: &quot;▲5&quot;,
+  &quot;MO(6)&quot;: &quot;▲6&quot;,
+  &quot;LT(1,KC_GRV)&quot;: &quot;▲1&quot;,
+};
+
+var shift_keys = {
+  &quot;&#39;&quot;: &quot;\&quot;&quot;,
+  &quot;;&quot;: &quot;:&quot;,
+  &quot;/&quot;: &quot;?&quot;,
+  &quot;,&quot;: &quot;&lt;&quot;,
+  &quot;.&quot;: &quot;&gt;&quot;,
+  &quot;a&quot;: &quot;A&quot;,
+  &quot;b&quot;: &quot;B&quot;,
+  &quot;c&quot;: &quot;C&quot;,
+  &quot;d&quot;: &quot;D&quot;,
+  &quot;e&quot;: &quot;E&quot;,
+  &quot;f&quot;: &quot;F&quot;,
+  &quot;g&quot;: &quot;G&quot;,
+  &quot;h&quot;: &quot;H&quot;,
+  &quot;i&quot;: &quot;I&quot;,
+  &quot;j&quot;: &quot;J&quot;,
+  &quot;k&quot;: &quot;K&quot;,
+  &quot;l&quot;: &quot;L&quot;,
+  &quot;m&quot;: &quot;M&quot;,
+  &quot;n&quot;: &quot;N&quot;,
+  &quot;o&quot;: &quot;O&quot;,
+  &quot;p&quot;: &quot;P&quot;,
+  &quot;q&quot;: &quot;Q&quot;,
+  &quot;r&quot;: &quot;R&quot;,
+  &quot;s&quot;: &quot;S&quot;,
+  &quot;t&quot;: &quot;T&quot;,
+  &quot;u&quot;: &quot;U&quot;,
+  &quot;v&quot;: &quot;V&quot;,
+  &quot;w&quot;: &quot;W&quot;,
+  &quot;x&quot;: &quot;X&quot;,
+  &quot;y&quot;: &quot;Y&quot;,
+  &quot;z&quot;: &quot;Z&quot;,
+  &quot;1&quot;: &quot;!&quot;,
+  &quot;2&quot;: &quot;@&quot;,
+  &quot;3&quot;: &quot;#&quot;,
+  &quot;4&quot;: &quot;$&quot;,
+  &quot;5&quot;: &quot;%&quot;,
+  &quot;6&quot;: &quot;^&quot;,
+  &quot;7&quot;: &quot;&amp;&quot;,
+  &quot;8&quot;: &quot;*&quot;,
+  &quot;9&quot;: &quot;(&quot;,
+  &quot;0&quot;: &quot;)&quot;,
+  &quot;[&quot;: &quot;{&quot;,
+  &quot;]&quot;: &quot;}&quot;,
+  &quot;-&quot;: &quot;_&quot;,
+  &quot;=&quot;: &quot;+&quot;,
+  &quot;`&quot;: &quot;~&quot;,
+  &quot;\\&quot;: &quot;|&quot;,
+};
+
+var shifted_keys = {
+  &quot;\&quot;&quot;: &quot;&#39;&quot;, 
+  &quot;:&quot;: &quot;;&quot;,
+  &quot;?&quot;: &quot;/&quot;,
+  &quot;&lt;&quot;: &quot;,&quot;,
+  &quot;&gt;&quot;: &quot;.&quot;,
+  &quot;A&quot;: &quot;a&quot;,
+  &quot;B&quot;: &quot;b&quot;,
+  &quot;C&quot;: &quot;c&quot;,
+  &quot;D&quot;: &quot;d&quot;,
+  &quot;E&quot;: &quot;e&quot;,
+  &quot;F&quot;: &quot;f&quot;,
+  &quot;G&quot;: &quot;g&quot;,
+  &quot;H&quot;: &quot;h&quot;,
+  &quot;I&quot;: &quot;i&quot;,
+  &quot;J&quot;: &quot;j&quot;,
+  &quot;K&quot;: &quot;k&quot;,
+  &quot;L&quot;: &quot;l&quot;,
+  &quot;M&quot;: &quot;m&quot;,
+  &quot;N&quot;: &quot;n&quot;,
+  &quot;O&quot;: &quot;o&quot;,
+  &quot;P&quot;: &quot;p&quot;,
+  &quot;Q&quot;: &quot;q&quot;,
+  &quot;R&quot;: &quot;r&quot;,
+  &quot;S&quot;: &quot;s&quot;,
+  &quot;T&quot;: &quot;t&quot;,
+  &quot;U&quot;: &quot;u&quot;,
+  &quot;V&quot;: &quot;v&quot;,
+  &quot;W&quot;: &quot;w&quot;,
+  &quot;X&quot;: &quot;x&quot;,
+  &quot;Y&quot;: &quot;y&quot;,
+  &quot;Z&quot;: &quot;z&quot;,
+  &quot;!&quot;: &quot;1&quot;,
+  &quot;@&quot;: &quot;2&quot;,
+  &quot;#&quot;: &quot;3&quot;,
+  &quot;$&quot;: &quot;4&quot;,
+  &quot;%&quot;: &quot;5&quot;,
+  &quot;^&quot;: &quot;6&quot;,
+  &quot;&amp;&quot;: &quot;7&quot;,
+  &quot;*&quot;: &quot;8&quot;,
+  &quot;(&quot;: &quot;9&quot;,
+  &quot;)&quot;: &quot;0&quot;,
+  &quot;{&quot;: &quot;[&quot;,
+  &quot;}&quot;: &quot;]&quot;,
+  &quot;_&quot;: &quot;-&quot;,
+  &quot;+&quot;: &quot;=&quot;,
+  &quot;~&quot;: &quot;`&quot;,
+  &quot;|&quot;: &quot;\\&quot;,
+};
+
+var keyboard = {};
+var HOMEROW_OFFSET = 3;
+
+function findKey(keyboard, character) {
+  for (var layer = 0; layer &lt; keyboard.layers; layer++) {
+    for (var key = 0; key &lt; keyboard.keymap.length; key++) {
+      var c = keyLookup(keyboard.keymap[key].layers[layer].unicode, keyboard.layout);
+      if (c == character) {
+        return {index: key, layer: layer};
+      }
+    }
+  }
+  return -1;
+}
+
+function findKeys(keyboard, character) {
+  var keys = [];
+  for (var layer = 0; layer &lt; keyboard.layers; layer++) {
+    for (var key = 0; key &lt; keyboard.keymap.length; key++) {
+      var c = keyLookup(keyboard.keymap[key].layers[layer].unicode, keyboard.layout);
+      if (c == character) {
+        keys.push({index: key, layer: layer});
+      }
+    }
+  }
+  return keys;
+}
+
+function findKeyAtCoords(keyboard, x, y) {
+  var closest_dist = 1000, dist, closest_index;
+  for (var key = 0; key &lt; keyboard.keymap.length; key++) {
+    dist = Math.sqrt(Math.pow(keyboard.keymap[key].x - x, 2) + Math.pow(keyboard.keymap[key].y - y, 2));
+    if (dist &lt; closest_dist) {
+      closest_dist = dist;
+      closest_index = key;
+    }
+  }
+  return {index: closest_index, dist: closest_dist};
+}
+
+function findKeyInMatrix(keyboard, row, col) {
+  for (var key = 0; key &lt; keyboard.keymap.length; key++) {
+    if (keyboard.keymap[key].matrix_row == row &amp;&amp; keyboard.keymap[key].matrix_col == col) {
+      return {index: key};
+    }
+  }
+  return -1;
+}
+
+function guessHomerow(keyboard) {
+  // assumes that home row keys are all neighbors in the layout
+  var lm, lp, rp, rm;
+  // test for qwerty
+  lm = findKey(keyboard, &quot;d&quot;);
+  lp = findKey(keyboard, &quot;f&quot;);
+  rp = findKey(keyboard, &quot;j&quot;);
+  rm = findKey(keyboard, &quot;k&quot;);
+  if ((lm.index + 1 == lp.index) &amp;&amp; (rp.index + 1 == rm.index))
+    return {leftPointer: lp, rightPointer: rp};
+  // test for colemak
+  lm = findKey(keyboard, &quot;s&quot;);
+  lp = findKey(keyboard, &quot;t&quot;);
+  rp = findKey(keyboard, &quot;n&quot;);
+  rm = findKey(keyboard, &quot;e&quot;);
+  if ((lm.index + 1 == lp.index) &amp;&amp; (rp.index + 1 == rm.index))
+    return {leftPointer: lp, rightPointer: rp};
+  // test for dvorak
+  lm = findKey(keyboard, &quot;e&quot;);
+  lp = findKey(keyboard, &quot;i&quot;);
+  rp = findKey(keyboard, &quot;h&quot;);
+  rm = findKey(keyboard, &quot;t&quot;);
+  if ((lm.index + 1 == lp.index) &amp;&amp; (rp.index + 1 == rm.index))
+    return {leftPointer: lp, rightPointer: rp};
+  // test for beakl
+  lm = findKey(keyboard, &quot;e&quot;);
+  lp = findKey(keyboard, &quot;a&quot;);
+  rp = findKey(keyboard, &quot;s&quot;);
+  rm = findKey(keyboard, &quot;t&quot;);
+  if ((lm.index + 1 == lp.index) &amp;&amp; (rp.index + 1 == rm.index))
+    return {leftPointer: lp, rightPointer: rp};
+  return {leftPointer: { index: 3 }, rightPointer: { index: 4}};
+}
+
+function guessThumbs(keyboard, homerow) {
+  var key_lp = keyboard.keymap[homerow.leftPointer.index];
+  var key_rp = keyboard.keymap[homerow.rightPointer.index];
+  var left = findKeyAtCoords(keyboard, key_lp.x + 0, key_lp.y + 2);
+  var right = findKeyAtCoords(keyboard, key_rp.x - 0, key_lp.y + 2);
+  return {left: left, right: right}; 
+}
+
+function guessFingerLocations(keyboard) {
+  keyboard.fingers = [];
+  var homerow = guessHomerow(keyboard);
+  var thumbs = guessThumbs(keyboard, homerow);
+  keyboard.fingers[0] = homerow.leftPointer.index - 3;
+  keyboard.fingers[1] = homerow.leftPointer.index - 2;
+  keyboard.fingers[2] = homerow.leftPointer.index - 1;
+  keyboard.fingers[3] = homerow.leftPointer.index;
+  keyboard.fingers[4] = thumbs.left.index;
+  keyboard.fingers[5] = thumbs.right.index;
+  keyboard.fingers[6] = homerow.rightPointer.index;
+  keyboard.fingers[7] = homerow.rightPointer.index + 1;
+  keyboard.fingers[8] = homerow.rightPointer.index + 2;
+  keyboard.fingers[9] = homerow.rightPointer.index + 3;
+}
+
+function calcPenalty(key) {
+  if (key.thumb)
+    return (parseFloat(W_0) + W_HAND * Math.max((key.hand?2:-2) * (P_HAND - 0.5), 0) + W_THUMB);
+  else
+    return (parseFloat(W_0) + W_HAND * Math.max((key.hand?2:-2) * (P_HAND - 0.5), 0) + W_FINGER * P_FINGER[key.finger] + W_ROW * P_ROW[Math.max(Math.min(Math.round(key.row), 6), 0)]);
+}
+
+function guessBaseEffort(keyboard) {
+  if (!keyboard.fingers)
+    guessFingerLocations(keyboard);
+  var keymap = keyboard.keymap;
+  for (var key = 0; key &lt; keymap.length; key++) {
+    keymap[key].effort = 1000;
+    for (var i = 0; i &lt; 10; i++) {
+      var hrk = keymap[keyboard.fingers[i]];
+      var temp_key = {};
+      temp_key.dist = Math.sqrt(Math.pow(keymap[key].x + (keymap[key].w / 2) - hrk.x - (hrk.w / 2), 2) + Math.pow(keymap[key].y + (keymap[key].h / 2) - hrk.y - (hrk.h / 2), 2));
+      temp_key.thumb = (i == 4 || i == 5);
+      // temp_key.base = Math.pow(temp_key.dist, (temp_key.thumb ? 3 : 2));
+      temp_key.base = temp_key.dist * (temp_key.thumb ? 4 : 2);
+      temp_key.finger = (i &gt; 4 ? i - 2 : i);
+      temp_key.raw_finger = i;
+      temp_key.hand = (i &gt; 4);
+      temp_key.row = keymap[key].y - hrk.y + HOMEROW_OFFSET;
+      temp_key.penalty = calcPenalty(temp_key);
+      temp_key.effort = temp_key.base + temp_key.penalty;
+      if (temp_key.effort &lt; keymap[key].effort) {
+        keymap[key] = {...keymap[key], ...temp_key};
+      }
+    }
+  }
+}
+
+function loadLayout(info) {
+  var keymap = [];
+
+  for (var i = 0; i &lt; info.layout.length; i++) {
+    var w = 1, h = 1;
+    if (info.layout[i].w)
+      w = info.layout[i].w;
+    if (info.layout[i].h)
+      h = info.layout[i].h;
+    keymap[i] = {};
+    keymap[i] = info.layout[i];
+    keymap[i].x = parseFloat(keymap[i].x);
+    keymap[i].y = parseFloat(keymap[i].y);
+    if (keymap[i].matrix) {
+      keymap[i].matrix_row = parseInt(keymap[i].matrix[0]);
+      keymap[i].matrix_col = parseInt(keymap[i].matrix[1]);
+    } else {
+      keymap[i].matrix_row = parseInt(keymap[i].y);
+      keymap[i].matrix_col = parseInt(keymap[i].x);
+    }
+    keymap[i].w = parseFloat(w);
+    keymap[i].h = parseFloat(h);
+    keymap[i].i = i;
+    keymap[i].layers = [];
+  }
+  return keymap;
+}
+
+function precise(x) {
+  return Number.parseFloat(x).toPrecision(4);
+}
+
+function keyLookup(character, layout) {
+  if (keyboard_layout[character])
+    return keyboard_layout[character][layout];
+  return character;
+}
+
+function renderLayout(keyboard) {
+  var layout_element = document.getElementById(&quot;keymap&quot;);
+  var inner = &quot;&quot;;
+  var keymap = keyboard.keymap;
+
+  var max_effort = 1;
+  var max_base = 1;
+  var max_penalties = 1;
+  var max_count = 0;
+  var max_ghost = 0;
+  for (var i = 0; i &lt; keymap.length; i++) {
+    var effort = keymap[i].penalty + keymap[i].base;
+    if (max_effort &lt; effort)
+      max_effort = effort;
+    if (max_base &lt; keymap[i].base)
+      max_base = keymap[i].base;
+    if (max_penalties &lt; keymap[i].penalty)
+      max_penalties = keymap[i].penalty;
+    if (max_count &lt; keymap[i].count)
+      max_count = keymap[i].count;
+    if (max_ghost &lt; keymap[i].ghost)
+      max_ghost = keymap[i].ghost;
+  }
+  for (var i = 0; i &lt; keymap.length; i++) {
+    var key_html = &quot;&quot;;
+    for (var layer = 0; layer &lt; keymap[i].layers.length; layer++) {
+      var k = keymap[i].layers[layer].keycode;
+      var l = keyLookup(keymap[i].layers[layer].legend, keyboard.layout);
+      var u = keyLookup(keymap[i].layers[layer].unicode, keyboard.layout);
+      key_html += `&lt;div class=&quot;legend legend-${layer}${l &amp;&amp; l.includes(&quot;▲&quot;)?` layer-${l.substring(1, 2)}`:&quot;&quot;}&quot; title=&quot;${u}, ${k}&quot;&gt;${l &amp;&amp; l.includes(&quot;▲&quot;)?&quot;▲&quot;:l}&lt;/div&gt;`;
+    }
+    var effort = precise(keymap[i].penalty + keymap[i].base);
+    var effort_bg = d3.interpolatePuBuGn(1 - effort/max_effort);
+    var effort_fg = textColorFromBackground(effort_bg);
+
+    var base = precise(keymap[i].base);
+    var base_bg = d3.interpolatePuBuGn(1 - keymap[i].base/max_base);
+    var base_fg = textColorFromBackground(base_bg);
+
+    var penalties = precise(keymap[i].penalty);
+    var penalties_bg = d3.interpolatePuBuGn(1 - keymap[i].penalty/max_penalties);
+    var penalties_fg = textColorFromBackground(penalties_bg);
+
+    var usage = precise(keymap[i].usage * 100);
+    var usage_bg = d3.interpolatePuBuGn(keymap[i].count / max_count);
+    var usage_fg = textColorFromBackground(usage_bg);
+
+    var finger = (keyboard.fingers.includes(i)?`&lt;strong&gt;( ${keymap[i].raw_finger} )&lt;/strong&gt;`:keymap[i].raw_finger);
+    var finger_bg = d3.schemeCategory10[keymap[i].raw_finger];
+    var finger_fg = textColorFromBackground(finger_bg);
+
+    var ghosts =  keymap[i].ghost;
+    var ghosts_bg = d3.interpolateSinebow(keymap[i].ghost / max_ghost);
+    if (ghosts == 0) {
+      ghosts_bg = d3.interpolatePuBuGn(0.0);
+    }
+    var ghosts_fg = textColorFromBackground(ghosts_bg);
+
+    var matrix_col_bg = d3.interpolateSinebow(keymap[i].matrix_col / (keyboard.matrix_size.cols + keyboard.matrix_size.rows));
+    var matrix_row_bg = d3.interpolateSinebow((keyboard.matrix_size.cols + keymap[i].matrix_row) / (keyboard.matrix_size.cols + keyboard.matrix_size.rows));
+
+    inner += `&lt;div id=&quot;key-${i}&quot; class=&quot;key${selecting_keys?&quot; selectable&quot;:&quot;&quot;}&quot; data-key=&quot;${i}&quot; style=&quot;left: calc(${keymap[i].x} * (var(--key-spacing) + var(--key-unit))); top: calc(${keymap[i].y} * (var(--key-spacing) + var(--key-unit))); width: calc(${keymap[i].w} * (var(--key-unit) + var(--key-spacing)) - var(--key-spacing));&quot;&gt;${key_html}
+      &lt;div class=&quot;heatmap-6 label&quot; style=&quot;display: ${heatmap_selected == 6 ? &quot;block&quot;: &quot;none&quot;}&quot;&gt;${keymap[i].label}&lt;/div&gt;
+      &lt;div class=&quot;heatmap-6 matrix-row&quot; style=&quot;background:${matrix_row_bg}; display: ${heatmap_selected == 6 ? &quot;block&quot;: &quot;none&quot;}&quot;&gt;${keymap[i].matrix_row}&lt;/div&gt;
+      &lt;div class=&quot;heatmap-6 matrix-col&quot; style=&quot;background:${matrix_col_bg}; display: ${heatmap_selected == 6 ? &quot;block&quot;: &quot;none&quot;}&quot;&gt;${keymap[i].matrix_col}&lt;/div&gt;
+    &lt;div class=&quot;heatmap heatmap-0&quot; style=&quot;background:${effort_bg}; color: ${effort_fg}; display: ${heatmap_selected == 0 ? &quot;block&quot;: &quot;none&quot;}&quot;&gt;${effort}&lt;/div&gt;
+    &lt;div class=&quot;heatmap heatmap-1&quot; style=&quot;background:${base_bg}; color: ${base_fg}; display: ${heatmap_selected == 1 ? &quot;block&quot;: &quot;none&quot;}&quot;&gt;${base}&lt;/div&gt;
+    &lt;div class=&quot;heatmap heatmap-2&quot; style=&quot;background:${penalties_bg}; color: ${penalties_fg}; display: ${heatmap_selected == 2 ? &quot;block&quot;: &quot;none&quot;}&quot;&gt;${penalties}&lt;/div&gt;
+    &lt;div class=&quot;heatmap heatmap-3&quot; style=&quot;background:${usage_bg}; color: ${usage_fg}; display: ${heatmap_selected == 3 ? &quot;block&quot;: &quot;none&quot;}&quot;&gt;${usage}&lt;/div&gt;
+    &lt;div class=&quot;heatmap heatmap-4&quot; style=&quot;background:${finger_bg}; color: ${finger_fg}; display: ${heatmap_selected == 4 ? &quot;block&quot;: &quot;none&quot;}&quot;&gt;${finger}&lt;/div&gt;
+    &lt;div class=&quot;heatmap heatmap-5 color-legends&quot; style=&quot;display: ${heatmap_selected == 5 ? &quot;block&quot;: &quot;none&quot;}&quot;&gt;${key_html}&lt;/div&gt;
+    &lt;div class=&quot;heatmap heatmap-6&quot; style=&quot;background:${ghosts_bg}; color: ${ghosts_fg}; display: ${heatmap_selected == 6 ? &quot;block&quot;: &quot;none&quot;}&quot;&gt;${ghosts}&lt;/div&gt;
+    &lt;/div&gt;`;
+  }
+
+  layout_element.innerHTML = inner;  
+
+  const keys = document.querySelectorAll(&quot;#keymap .key&quot;);
+  Array.prototype.forEach.call(keys, key =&gt; {
+    key.addEventListener(&quot;click&quot;, () =&gt; {
+      if (!selecting_keys) return false;
+      var keyboard = getSelectedResult().keyboard;
+      keyboard.fingers[selecting_home_position] = parseInt(key.dataset.key);
+      selecting_home_position++;
+      document.getElementById(&quot;home-positions&quot;).innerHTML = `Selecting ${finger_names[selecting_home_position]}`;
+      if (selecting_home_position == 10) {
+        selecting_keys = false;
+        document.getElementById(&quot;home-positions&quot;).innerHTML = `Select Home Positions`;
+      }
+      guessBaseEffort(keyboard);
+      computeResult(getSelectedResult());
+      renderLayout(keyboard);
+      drawTable(false);
+    });
+  });
+}
+
+var selecting_home_position = 0;
+
+const lsft = /LSFT\((.+)\)/;
+
+function loadLayers(keyboard, layers) {
+  keyboard.layers = layers.length;
+  for (var layer = 0; layer &lt; layers.length; layer++) {
+    for (var key = 0; key &lt; layers[layer].length; key++) {
+      var m, unicode, legend, keycode = layers[layer][key];
+      if (unicode_lookup[keycode] != null) {
+        unicode = unicode_lookup[keycode];
+      } else if ((m = lsft.exec(keycode)) != null) {
+        if (shift_keys[unicode_lookup[m[1]]]) {
+          unicode = shift_keys[unicode_lookup[m[1]]];
+        } else {
+          unicode = unicode_lookup[m[1]];
+        }
+      }
+      if (legend_lookup[keycode] != null) {
+        legend = legend_lookup[keycode];
+      } else if ((m = lsft.exec(keycode)) != null &amp;&amp; shift_keys[legend_lookup[m[1]]]) {
+        legend = shift_keys[legend_lookup[m[1]]];
+      } else {
+        legend = unicode;
+      }
+      
+      keyboard.keymap[key].layers[layer] = {};
+      keyboard.keymap[key].layers[layer].keycode = layers[layer][key];
+      keyboard.keymap[key].layers[layer].unicode = unicode;
+      keyboard.keymap[key].layers[layer].legend = legend;
+    }
+  }
+}
+
+function loadKeymap(file, filename) {
+  if (!file.keyboard) {
+    console.log(&quot;No keyboard defined&quot;);
+    return;
+  }
+  const fetchPromise = fetch(&#39;https://keyboards.qmk.fm/v1/keyboards/&#39; + file.keyboard + &#39;/info.json&#39;);
+  fetchPromise.then(promise =&gt; {
+    return promise.json();
+  }).then(response =&gt; {
+    if (!Object.keys(response.keyboards).length || !response.keyboards[file.keyboard]) {
+      console.log(&quot;Keyboard not found&quot;);
+      return;
+    }
+    if (file.layouts &amp;&amp; file.layouts[file.layout]) {
+      response.keyboards[file.keyboard].layouts[file.layout] = file.layouts[file.layout];
+    }
+    if (!response.keyboards[file.keyboard].layouts[file.layout]) {
+        console.log(&quot;Layout not found&quot;);
+        return;
+    }
+    keyboard = response.keyboards[file.keyboard];
+    if (file.extra) {
+      if (file.extra.matrix_cols) {
+        keyboard.matrix_size.cols = file.extra.matrix_cols;
+      }
+      if (file.extra.matrix_rows) {
+        keyboard.matrix_size.rows = file.extra.matrix_rows;
+      }
+    }
+    keyboard.layout = 0;
+    if (keyboard.layouts[file.layout].width) {
+      keyboard.width = keyboard.layouts[file.layout].width;
+    }
+    if (keyboard.layouts[file.layout].height) {
+      keyboard.height = keyboard.layouts[file.layout].height;
+    }
+    renderKeyboard(keyboard);
+    keyboard.keymap = loadLayout(keyboard.layouts[file.layout]);
+    loadLayers(keyboard, file.layers)
+    guessBaseEffort(keyboard);
+    keyboard.filename = filename;
+
+    var result_id = results.length;
+    results[result_id] = {};
+    results[result_id].id = result_id;
+    results[result_id].keyboard = keyboard;
+    results[result_id].corpus = document.getElementById(&quot;corpus&quot;).value;
+    computeResult(results[result_id]);
+    renderLayout(keyboard);
+    drawTable(true);
+  });
+}
+
+function renderKeyboard(keyboard) {
+    var width = parseInt(getComputedStyle(document.getElementById(&quot;main-container&quot;)).getPropertyValue(&quot;width&quot;));
+    var padding = parseInt(getComputedStyle(document.documentElement).getPropertyValue(&#39;--key-padding&#39;));
+    var spacing = parseInt(getComputedStyle(document.documentElement).getPropertyValue(&#39;--key-spacing&#39;));
+    var scale = width / keyboard.width;
+    document.documentElement.style.setProperty(&#39;--key-unit&#39;, (scale-padding+(padding/keyboard.width))+&#39;px&#39;);
+    document.documentElement.style.setProperty(&#39;--keyboard-height&#39;, keyboard.height);
+    document.documentElement.style.setProperty(&#39;--keyboard-width&#39;, keyboard.width);
+}
+
+if (window.File &amp;&amp; window.FileReader &amp;&amp; window.FileList &amp;&amp; window.Blob) {
+
+  function handleFiles(files) {
+    for (var i = 0, f; f = files[i]; i++) {
+        if (!f.type.match(&#39;application/json&#39;))
+          continue;
+      var reader = new FileReader();
+      reader.onload = (function(file) {
+        return function(e) {
+          var obj = JSON.parse(e.target.result);
+          loadKeymap(obj, file.name);
+        }
+      })(f);
+      reader.readAsText(f);
+    }
+  }
+
+  function handleChooseFile(event) {
+    handleFiles(event.target.files);
+  }
+
+  function handleJSONDrop(event) {
+    event.stopPropagation();
+    event.preventDefault();
+    handleFiles(event.dataTransfer.files);
+  }
+
+  function handleDragOver(event) {
+    event.stopPropagation();
+    event.preventDefault();
+    event.dataTransfer.dropEffect = &#39;copy&#39;; // Explicitly show this is a copy.
+  }
+
+  // Setup the dnd listeners.
+  var dropZone = document.getElementsByTagName(&#39;body&#39;)[0];
+  dropZone.addEventListener(&#39;dragover&#39;, handleDragOver, false);
+  dropZone.addEventListener(&#39;drop&#39;, handleJSONDrop, false);
+  document.getElementById(&#39;file&#39;).addEventListener(&#39;change&#39;, handleChooseFile);
+ 
+}
+
+function recalculateResults() {
+  for (var i = 0; i &lt; results.length; i++) {
+    computeResult(results[i]);
+    drawTable(false);
+  } 
+  renderLayout(getSelectedResult().keyboard);
+}
+
+function register_param(name, initial) {
+  var elements = [];
+  var initial_values = [];
+  window[name] = initial;
+  if (initial.constructor === Array) {
+    for (var i = 0; i &lt; initial.length; i++) {
+      elements[i] = document.getElementById(name+&quot;.&quot;+i);
+      initial_values[i] = initial[i];
+    }
+  } else { 
+    elements[0] = document.getElementById(name);
+    initial_values[0] = initial;
+  }
+
+  for (var i = 0; i &lt; elements.length; i++) {
+    if (!elements[i]) {
+      console.log(&quot;Loose parameter&quot;);
+      continue;
+    }
+    elements[i].min = 0.000;
+    elements[i].max = 1.000;
+    elements[i].step = 0.001;
+    elements[i].value = initial_values[i];
+    elements[i].title = initial_values[i];
+    elements[i].onchange = e =&gt; {
+      var id = e.target.id.split(&quot;.&quot;);
+      if (id.length &gt; 1)
+        window[id[0]][id[1]] = e.target.value;
+      else
+        window[id[0]] = e.target.value;
+      e.target.title = e.target.value;
+      recalculateResults();
+    }
+  }
+  
+}
+
+register_param(&quot;K_B&quot;, 0.2218);
+register_param(&quot;K_P&quot;, 1.0000);
+register_param(&quot;K_S&quot;, 0.2663);
+
+register_param(&quot;K_1&quot;, 1.000);
+register_param(&quot;K_2&quot;, 0.367);
+register_param(&quot;K_3&quot;, 0.235);
+
+register_param(&quot;P_HAND&quot;, 0.5);
+register_param(&quot;P_ROW&quot;, [ 1.0, 0.666, 0.333, 0.0, 0.666, 0.8, 1.0]);
+register_param(&quot;P_FINGER&quot;, [ 1.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 1.0 ]);
+
+register_param(&quot;W_0&quot;,      0.0000);
+register_param(&quot;W_HAND&quot;,   0.1142);
+register_param(&quot;W_ROW&quot;,    0.7869);
+register_param(&quot;W_FINGER&quot;, 1.0000);
+register_param(&quot;W_THUMB&quot;,  0.0000);
+
+register_param(&quot;F_HAND&quot;, 1.0);
+register_param(&quot;F_ROW&quot;, 0.3);
+register_param(&quot;F_FINGER&quot;, 0.3);
+
+register_param(&quot;STROKE_PATH_HAND_WEIGHT&quot;, [
+  0.0,
+  0.5,
+  1.0,
+]);
+
+register_param(&quot;STROKE_PATH_ROW_WEIGHT&quot;, [
+  0.0000,
+  0.1428,
+  0.2857,
+  0.4285,
+  0.5714,
+  0.7142,
+  0.8571,
+  1.0000 
+]);
+
+register_param(&quot;STROKE_PATH_FINGER_WEIGHT&quot;, [
+  0.0000, // 0 double inner roll
+  0.2857, // 1 repeat one
+  0.1428, // 2 single inner roll
+  0.4285, // 3 single outer roll
+  0.2857, // 4 double outer roll
+  0.2857, // 5 same finger
+  0.4285, // 6 alt hands
+  0.2857  // 7 bounce
+]);
+
+register_param(&quot;STROKE_PATH_SAME_KEY_WEIGHT&quot;, 0.5000);
+
+
+// 0b000 format where each bit is a hand, left=0 right=1
+// write out elements manually, then sort by index
+var STROKE_PATH_HAND_INDEX = [2, 0, 1, 0, 0, 1, 0, 2];
+
+// 3 bits per row, 0b011 is homerow, higher numbers are higher rows
+// write out elements manually, then sort by index
+// neat pattern forms based around 3,3
+var STROKE_PATH_ROW_INDEX = [
+  1, 5, 5, 3, 7, 7, 7, 7, 
+  4, 1, 5, 3, 7, 7, 7, 7, 
+  4, 4, 1, 3, 7, 7, 7, 7, 
+  1, 1, 1, 0, 2, 2, 2, 2, 
+  5, 5, 5, 3, 2, 6, 6, 6, 
+  5, 5, 5, 3, 7, 2, 6, 6, 
+  5, 5, 5, 3, 7, 7, 2, 6, 
+  5, 5, 5, 3, 7, 7, 7, 2
+];
+
+// 3 bits per finger, 0 is left pinky, 7 right pinky
+// https://docs.google.com/spreadsheets/d/14FXg6m0PgpJf6eSjiu0r1wzG-G45J_H6WQEIGcLrODM/edit?usp=sharing
+// 0 double inner roll
+// 1 repeat one
+// 2 single inner roll
+// 3 single outer roll
+// 4 double outer roll
+// 5 same key
+// 6 alt hands
+// 7 bounce
+var STROKE_PATH_FINGER_INDEX = [ 5, 1, 1, 1, 1, 1, 1, 1, 7, 1, 0, 0, 2, 2, 2, 2, 7, 3, 1, 0, 2, 2, 2, 2, 7, 3, 3, 1, 2, 2, 2, 2, 6, 6, 6, 6, 1, 3, 3, 3, 6, 6, 6, 6, 2, 1, 3, 3, 6, 6, 6, 6, 2, 2, 1, 3, 6, 6, 6, 6, 2, 2, 2, 1, 1, 7, 3, 3, 3, 3, 3, 3, 1, 5, 1, 1, 1, 1, 1, 1, 2, 7, 1, 0, 2, 2, 2, 2, 2, 7, 3, 1, 2, 2, 2, 2, 6, 6, 6, 6, 1, 3, 3, 3, 6, 6, 6, 6, 2, 1, 3, 3, 6, 6, 6, 6, 2, 2, 1, 3, 6, 6, 6, 6, 2, 2, 2, 1, 1, 3, 7, 3, 3, 3, 3, 3, 4, 1, 7, 3, 3, 3, 3, 3, 1, 1, 5, 1, 1, 1, 1, 1, 2, 2, 7, 1, 2, 2, 2, 2, 6, 6, 6, 6, 1, 3, 3, 3, 6, 6, 6, 6, 2, 1, 3, 3, 6, 6, 6, 6, 2, 2, 1, 3, 6, 6, 6, 6, 2, 2, 2, 1, 1, 3, 3, 7, 3, 3, 3, 3, 4, 1, 3, 7, 3, 3, 3, 3, 4, 4, 1, 7, 3, 3, 3, 3, 1, 1, 1, 5, 1, 1, 1, 1, 6, 6, 6, 6, 1, 3, 3, 3, 6, 6, 6, 6, 2, 1, 3, 3, 6, 6, 6, 6, 2, 2, 1, 3, 6, 6, 6, 6, 2, 2, 2, 1, 1, 2, 2, 2, 6, 6, 6, 6, 3, 1, 2, 2, 6, 6, 6, 6, 3, 3, 1, 2, 6, 6, 6, 6, 3, 3, 3, 1, 6, 6, 6, 6, 1, 1, 1, 1, 5, 1, 1, 1, 3, 3, 3, 3, 7, 1, 4, 4, 3, 3, 3, 3, 7, 3, 1, 4, 3, 3, 3, 3, 7, 3, 3, 1, 1, 2, 2, 2, 6, 6, 6, 6, 3, 1, 2, 2, 6, 6, 6, 6, 3, 3, 1, 2, 6, 6, 6, 6, 3, 3, 3, 1, 6, 6, 6, 6, 2, 2, 2, 2, 1, 7, 2, 2, 1, 1, 1, 1, 1, 5, 1, 1, 3, 3, 3, 3, 3, 7, 1, 4, 3, 3, 3, 3, 3, 7, 3, 1, 1, 2, 2, 2, 6, 6, 6, 6, 3, 1, 2, 2, 6, 6, 6, 6, 3, 3, 1, 2, 6, 6, 6, 6, 3, 3, 3, 1, 6, 6, 6, 6, 2, 2, 2, 2, 1, 3, 7, 2, 2, 2, 2, 2, 0, 1, 7, 2, 1, 1, 1, 1, 1, 1, 5, 1, 3, 3, 3, 3, 3, 3, 7, 1, 1, 2, 2, 2, 6, 6, 6, 6, 3, 1, 2, 2, 6, 6, 6, 6, 3, 3, 1, 2, 6, 6, 6, 6, 3, 3, 3, 1, 6, 6, 6, 6, 2, 2, 2, 2, 1, 3, 3, 7, 2, 2, 2, 2, 0, 1, 3, 7, 2, 2, 2, 2, 0, 0, 1, 7, 1, 1, 1, 1, 1, 1, 1, 5 ];
+
+function clone(obj) {
+    if (null == obj || &quot;object&quot; != typeof obj) return obj;
+    var copy = obj.constructor();
+    for (var attr in obj) {
+        if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+    }
+    return copy;
+}
+
+function updateNeedsKeyboard(exists) {
+  var buttons = document.querySelectorAll(&quot;.needs-keyboard&quot;);
+  Array.prototype.forEach.call(buttons, button =&gt; {
+    button.disabled = !exists;
+  });
+}
+
+updateNeedsKeyboard(false);
+
+var selecting_keys = false;
+
+document.getElementById(&quot;home-positions&quot;).onclick = event =&gt; { 
+  if (selecting_keys) {
+    selecting_keys = false;
+    document.getElementById(&quot;home-positions&quot;).innerHTML = `Select Home Positions`;
+  } else {
+    selecting_keys = true;
+    selecting_home_position = 0;
+    document.getElementById(&quot;home-positions&quot;).innerHTML = `Selecting ${finger_names[selecting_home_position]}`;
+    renderLayout(getSelectedResult().keyboard);
+  }
+};
+
+document.getElementById(&quot;recompute-all&quot;).onclick = event =&gt; { 
+  for (var i = 0; i &lt; results.length; i++) {
+    results[i].corpus = document.getElementById(&quot;corpus&quot;).value;
+    computeResult(results[i]);
+  }
+  renderLayout(getSelectedResult().keyboard);
+  drawTable(false);
+};
+
+document.getElementById(&quot;compute&quot;).onclick = event =&gt; { 
+  if (results.length == 0)
+    return; 
+  var result_id = results.length;
+  results[result_id] = {};
+  results[result_id].id = result_id;
+  results[result_id].keyboard = getSelectedResult().keyboard;
+  results[result_id].corpus = document.getElementById(&quot;corpus&quot;).value;
+  computeResult(results[result_id]);
+  renderLayout(results[result_id].keyboard);
+  drawTable(false);
+};
+
+function loadConfiguratorKeyboards() {
+  fetch(&quot;https://api.qmk.fm/v1/keyboards&quot;).then(promise =&gt; {
+    return promise.json();
+  }).then(response =&gt; {
+    var select = document.getElementById(&quot;configurator-keyboard&quot;);
+    Array.prototype.forEach.call(response, keyboard =&gt; {
+      var opt = document.createElement(&#39;option&#39;);
+      opt.value = keyboard;
+      opt.innerHTML = keyboard;
+      select.appendChild(opt);
+    });
+  });
+}
+
+loadConfiguratorKeyboards();
+
+document.getElementById(&quot;load-default&quot;).onclick = event =&gt; { 
+  var keyboard = document.getElementById(&quot;configurator-keyboard&quot;).value;
+  var filename = keyboard.replace(/\//gi, &quot;_&quot;) + &quot;_default.json&quot;;
+  var prefix = keyboard[0]
+  fetch(`https://config.qmk.fm/keymaps/${prefix}/${filename}`).then(promise =&gt; {
+    return promise.json();
+  }).then(keyboard =&gt; {
+    loadKeymap(keyboard, filename);
+  }).catch(error =&gt; {
+    alert(&quot;No default keymap found for &quot;+keyboard+&quot; in the QMK Configurator repo.&quot;);
+  });
+}
+
+const heatmaps = document.querySelectorAll(&quot;.heatmap-button&quot;);
+
+Array.prototype.forEach.call(heatmaps, heatmap =&gt; {
+  heatmap.addEventListener(&quot;click&quot;, () =&gt; {
+    if (!heatmap.dataset.heatmapId) return false;
+    heatmap_selected = heatmap.dataset.heatmapId;
+
+    Array.prototype.forEach.call(heatmaps, hm =&gt; {
+      if (hm.dataset.heatmapId == heatmap_selected) {
+        hm.classList.add(&quot;selected&quot;);
+        var divs = document.querySelectorAll(&quot;.key .heatmap-&quot;+hm.dataset.heatmapId);
+        Array.prototype.forEach.call(divs, div =&gt; {
+          div.style.display = &quot;block&quot;;
+        });
+      } else {
+        hm.classList.remove(&quot;selected&quot;);
+        var divs = document.querySelectorAll(&quot;.key .heatmap-&quot;+hm.dataset.heatmapId);
+        Array.prototype.forEach.call(divs, div =&gt; {
+          div.style.display = &quot;none&quot;;
+        });
+      }
+    });
+
+  });
+});
+
+function checkForPhantom(keyboard, key_1, key_2, key_3) {
+  var phantom_key = -1;
+  if (key_1.matrix_row == key_2.matrix_row &amp;&amp; key_1.matrix_col == key_3.matrix_col) {
+    phantom_key = findKeyInMatrix(keyboard, key_3.matrix_row, key_2.matrix_col);
+  }
+  if (key_1.matrix_row == key_2.matrix_row &amp;&amp; key_2.matrix_col == key_3.matrix_col) {
+    phantom_key = findKeyInMatrix(keyboard, key_3.matrix_row, key_1.matrix_col);
+  }
+  if (key_1.matrix_row == key_3.matrix_row &amp;&amp; key_1.matrix_col == key_2.matrix_col) {
+    phantom_key = findKeyInMatrix(keyboard, key_2.matrix_row, key_3.matrix_col);
+  }
+  if (key_1.matrix_row == key_3.matrix_row &amp;&amp; key_2.matrix_col == key_3.matrix_col) {
+    phantom_key = findKeyInMatrix(keyboard, key_2.matrix_row, key_1.matrix_col);
+  }
+  if (key_2.matrix_row == key_3.matrix_row &amp;&amp; key_1.matrix_col == key_3.matrix_col) {
+    phantom_key = findKeyInMatrix(keyboard, key_1.matrix_row, key_2.matrix_col);
+  }
+  if (phantom_key != -1) {
+    console.log(key_1.label + &quot; &amp; &quot; + key_2.label + &quot; &amp; &quot; + key_3.label + &quot; =&gt; &quot; + keyboard.keymap[phantom_key.index].label);
+    keyboard.keymap[phantom_key.index].ghost++;
+  }
+}
+
+
+function computeResult(result) {
+  var finger_effort = 0;
+  var thumb_effort = 0;
+  var finger_base = 0;
+  var finger_penalty = 0;
+  var thumb_base = 0;
+  var thumb_penalty = 0;
+  var total_stroke_path = 0;
+  var keys = [], thumbs = [], fingers = [];
+  var unknown_chars = [];
+  var keyboard = result.keyboard;
+  var keymap = keyboard.keymap;
+  var text = result.corpus;
+  var usage_fingers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+  for (var i = 0; i &lt; keymap.length; i++) {
+    keymap[i].count = 0;
+    keymap[i].ghost = 0;
+    keymap[i].penalty = calcPenalty(keymap[i]);
+  } 
+
+  // convert to lut/switch eventually
+  text = text.replace(/(?:\r\n|\r|\n)/g, &#39;↵&#39;);
+  for (var i = 0; i &lt; text.length; i++) {
+    var key = findKey(keyboard, text[i]);
+    // skip keys we can&#39;t find
+    if (key != -1) {
+      if (key.layer != 0) {
+        var layer_key = findKey(keyboard, &quot;▲&quot;+key.layer);
+        if (layer_key != -1)
+          keys.push(keymap[layer_key.index])
+      }
+      keys.push(keymap[key.index]);
+    } else {
+      // check for shifted keys
+      key = findKey(keyboard, shifted_keys[text[i]]);
+      if (key != -1) {
+        var shift_key = findKey(keyboard, &quot;⇧&quot;);
+        if (shift_key != -1) {
+          keys.push(keymap[shift_key.index]);
+          keys.push(keymap[key.index]);
+        }
+      } else {
+        unknown_chars.push(text[i]);
+      }
+    }
+  }
+  for (var i = 0; i &lt; keys.length; i++) {
+    keys[i].count++;
+    if (keys[i].thumb) {
+      thumbs[fingers.length] = keys[i];
+      usage_fingers[keys[i].hand + 4]++;
+    } else {
+      fingers.push(keys[i]);
+      if (keys[i].hand)
+        usage_fingers[keys[i].finger + 2]++;
+      else
+        usage_fingers[keys[i].finger]++;
+    }
+  }
+  // save for later incase we need to remove some for calculations
+  var num_triads = fingers.length - 2;
+  for (var i = 0; i &lt; fingers.length - 2; i++) {
+
+    // very basic thumb model. should account for previous states
+    if (thumbs[i] != null &amp;&amp; thumbs[i+1] != null &amp;&amp; thumbs[i+2] != null) {
+      var t_base = thumbs[i].base * K_1 *
+                 (1 + thumbs[i+1].base * K_2 * 
+                 (1 + thumbs[i+2].base * K_3));
+      var t_penalty = thumbs[i].penalty * K_1 *
+                    (1 + thumbs[i+1].penalty * K_2 *
+                    (1 + thumbs[i+2].penalty * K_3));
+      thumb_base += t_base;
+      thumb_penalty += t_penalty;
+      thumb_effort += K_B * t_base + K_P * t_penalty;
+    } else if (thumbs[i] != null &amp;&amp; thumbs[i+1] != null) {
+      var t_base = thumbs[i].base * K_1 *
+                 (1 + thumbs[i+1].base * K_2);
+      var t_penalty = thumbs[i].penalty * K_1 *
+                    (1 + thumbs[i+1].penalty * K_2);
+      thumb_base += t_base;
+      thumb_penalty += t_penalty;
+      thumb_effort += K_B * t_base + K_P * t_penalty;
+    } else if (thumbs[i] != null) {
+      var t_base = thumbs[i].base * K_1;
+      var t_penalty = thumbs[i].penalty * K_1;
+      thumb_base += t_base;
+      thumb_penalty += t_penalty;
+      thumb_effort += K_B * t_base + K_P * t_penalty;
+    }
+
+    if (thumbs[i+1])
+      checkForPhantom(keyboard, fingers[i], thumbs[i+1], fingers[i+1]);
+    if (thumbs[i] &amp;&amp; thumbs[i+1])
+      checkForPhantom(keyboard, thumbs[i], fingers[i], thumbs[i+1]);
+
+
+    var base = fingers[i].base * K_1 *
+                      (1 + fingers[i+1].base * K_2 * 
+                      (1 + fingers[i+2].base * K_3));
+
+    var penalty = fingers[i].penalty * K_1 *
+                  (1 + fingers[i+1].penalty * K_2 *
+                  (1 + fingers[i+2].penalty * K_3));
+
+    var stroke_path_hand = STROKE_PATH_HAND_INDEX[(fingers[i].hand &lt;&lt; 2) | (fingers[i+1].hand &lt;&lt; 1) | (fingers[i+2].hand)];
+    
+    var row_diff_1 = Math.max(Math.min(parseInt(Math.round(fingers[i].row - fingers[i+1].row + HOMEROW_OFFSET)), 3), 0);
+    var row_diff_2 = Math.max(Math.min(parseInt(Math.round(fingers[i].row - fingers[i+2].row + HOMEROW_OFFSET)), 3), 0);
+    var stroke_path_row = STROKE_PATH_ROW_INDEX[(row_diff_1 &lt;&lt; 3) | row_diff_2];
+
+    var stroke_path_finger_index = STROKE_PATH_FINGER_INDEX[(fingers[i].finger &lt;&lt; 6) | (fingers[i+1].finger &lt;&lt; 3) | fingers[i+2].finger];
+    var stroke_path_finger = STROKE_PATH_FINGER_WEIGHT[stroke_path_finger_index];
+    if (stroke_path_finger_index == 1 || stroke_path_finger_index == 5) {
+      if (fingers[i] != fingers[i+1] &amp;&amp; fingers[i+1] != fingers[i+2]) {
+        stroke_path_finger /= (STROKE_PATH_SAME_KEY_WEIGHT * STROKE_PATH_SAME_KEY_WEIGHT);
+      } else if (fingers[i] != fingers[i+1] || fingers[i+1] != fingers[i+2]) {
+        stroke_path_finger /= STROKE_PATH_SAME_KEY_WEIGHT;
+      }
+    }
+
+    var stroke_path = stroke_path_hand * F_HAND + 
+                      stroke_path_row * F_ROW + 
+                      stroke_path_finger * F_FINGER; 
+
+    finger_base += base;
+    finger_penalty += penalty;
+    total_stroke_path += stroke_path;
+
+    finger_effort += K_B * base +
+                     K_P * penalty +
+                     K_S * stroke_path;
+  }
+
+  var usage = [];
+  for (var i = 0; i &lt; keymap.length; i++) {
+    keymap[i].usage = keymap[i].count / fingers.length;
+  }
+
+  var total_effort = thumb_effort + finger_effort;
+
+  result.total_effort = total_effort / num_triads;
+  result.thumb_effort = thumb_effort / num_triads;
+  result.thumb_base = thumb_base / num_triads;
+  result.thumb_penalties = thumb_penalty / num_triads;
+  result.finger_effort = finger_effort / num_triads;
+  result.finger_base = finger_base / num_triads;
+  result.finger_penalties = finger_penalty / num_triads;
+  result.path = total_stroke_path / num_triads;
+  result.unknown_chars = unknown_chars.slice(0);
+  result.usage_fingers = usage_fingers;
+  if (result.details == null)
+    result.details = false;
+}
+
+&lt;/script&gt;
+
+&lt;/html&gt;
+
+
+</textarea>
+
 
   <div class="row">
     <div class="columns twelve" style="text-align: right;">
@@ -1508,7 +3624,10 @@ function renderLayout(keyboard) {
     var finger_fg = textColorFromBackground(finger_bg);
 
     var ghosts =  keymap[i].ghost;
-    var ghosts_bg = d3.interpolatePuBuGn(keymap[i].ghost / max_ghost);
+    var ghosts_bg = d3.interpolateSinebow(keymap[i].ghost / max_ghost);
+    if (ghosts == 0) {
+      ghosts_bg = d3.interpolatePuBuGn(0.0);
+    }
     var ghosts_fg = textColorFromBackground(ghosts_bg);
 
     var matrix_col_bg = d3.interpolateSinebow(keymap[i].matrix_col / (keyboard.matrix_size.cols + keyboard.matrix_size.rows));
