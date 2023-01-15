@@ -488,7 +488,7 @@ h1, h2, h3, h4 {
       <h1>QMK Keymap Carpalx Analyser</h1>
       <p>This attempts to adapt <a href="http://mkweb.bcgsc.ca/carpalx/?typing_effort">Carpalx</a> into a JS system that can analyse QMK keymaps in the form of configurator .json files. <a href="https://github.com/qmk/qmk_configurator/tree/master/public/keymaps">Some default keymaps are available here</a>, which can be dropped any where on this page (drop multiple files for quick comparing). The textarea below is used as a corpus, and is populated by a <a href="http://www.gutenberg.org/files/60750/60750-h/60750-h.htm">section from a book on Project Gutenberg</a>, along with some of the source code for this page.</p>
       <details id="overall">
-        <summary><strong>Adjust overall weights</strong></summary>
+        <summary><strong>▶ Adjust overall weights</strong></summary>
         <div class="model-parameters">
 
           <div class="row">
@@ -520,7 +520,7 @@ h1, h2, h3, h4 {
 
       </details>
       <details id="penalties">
-        <summary><strong>Adjust penalties</strong></summary>
+        <summary><strong>▶ Adjust penalties</strong></summary>
         <div class="model-parameters">
 
           <div class="row">
@@ -583,7 +583,7 @@ h1, h2, h3, h4 {
 
       </details>
       <details id="path">
-        <summary><strong>Adjust stroke path</strong></summary>
+        <summary><strong>▶ Adjust stroke path</strong></summary>
         <div class="model-parameters">
 
       \[s_{triad} = {f_{hand} \times s_{hand} + f_{row} \times s_{row} + f_{finger} \times s_{finger} }\]
@@ -2955,7 +2955,7 @@ const renderTable = tableData => {
                   <button data-item-id="${item.id}" data-function="removeResult" class="item-button small red">X</button>
                 </div>
                 <details data-item-id="${item.id}"${item.details?" open":""}>
-                <summary><strong>Usage stats</strong></summary>
+                <summary><strong>▶ Usage stats</strong></summary>
                 <div class="finger-usages">
                   ${finger_usage_string}
                 </div>
