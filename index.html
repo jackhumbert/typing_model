@@ -3527,6 +3527,8 @@ function guessBaseEffort(keyboard) {
       temp_key.row = keymap[key].y - hrk.y + HOMEROW_OFFSET;
       temp_key.penalty = calcPenalty(temp_key);
       temp_key.effort = temp_key.base + temp_key.penalty;
+
+      // if this finger has less effort than existing one, overwrite it
       if (temp_key.effort < keymap[key].effort) {
         keymap[key] = {...keymap[key], ...temp_key};
       }
@@ -3635,8 +3637,8 @@ function renderLayout(keyboard) {
 
     inner += `<div id="key-${i}" class="key${selecting_keys?" selectable":""}" data-key="${i}" style="left: calc(${keymap[i].x} * (var(--key-spacing) + var(--key-unit))); top: calc(${keymap[i].y} * (var(--key-spacing) + var(--key-unit))); width: calc(${keymap[i].w} * (var(--key-unit) + var(--key-spacing)) - var(--key-spacing));">${key_html}
       <div class="heatmap-6 label" style="display: ${heatmap_selected == 6 ? "block": "none"}">${keymap[i].label}</div>
-      <div class="heatmap-6 matrix-row" style="background:${matrix_row_bg}; display: ${heatmap_selected == 6 ? "block": "none"}">${keymap[i].matrix_row}</div>
-      <div class="heatmap-6 matrix-col" style="background:${matrix_col_bg}; display: ${heatmap_selected == 6 ? "block": "none"}">${keymap[i].matrix_col}</div>
+      <div class="heatmap-6 matrix-row" style="background:${matrix_row_bg}; display: ${heatmap_selected == 6 ? "block": "none"}">R${keymap[i].matrix_row}</div>
+      <div class="heatmap-6 matrix-col" style="background:${matrix_col_bg}; display: ${heatmap_selected == 6 ? "block": "none"}">C${keymap[i].matrix_col}</div>
     <div class="heatmap heatmap-0" style="background:${effort_bg}; color: ${effort_fg}; display: ${heatmap_selected == 0 ? "block": "none"}">${effort}</div>
     <div class="heatmap heatmap-1" style="background:${base_bg}; color: ${base_fg}; display: ${heatmap_selected == 1 ? "block": "none"}">${base}</div>
     <div class="heatmap heatmap-2" style="background:${penalties_bg}; color: ${penalties_fg}; display: ${heatmap_selected == 2 ? "block": "none"}">${penalties}</div>
@@ -3731,13 +3733,14 @@ function loadKeymap(file, filename) {
         console.log(response);
         return;
     }
-    if (file.extra) {
-      if (file.extra.matrix_cols) {
-        keyboard.matrix_size.cols = file.extra.matrix_cols;
-      }
-      if (file.extra.matrix_rows) {
-        keyboard.matrix_size.rows = file.extra.matrix_rows;
-      }
+    if (file.fingers) {
+      keyboard.fingers = file.fingers;
+    }
+    if (file.matrix_cols) {
+      keyboard.matrix_size.cols = file.matrix_cols;
+    }
+    if (file.matrix_rows) {
+      keyboard.matrix_size.rows = file.matrix_rows;
     }
     keyboard.layout = 0;
     // if (keyboard.layouts[file.layout].width) {
