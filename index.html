@@ -3713,17 +3713,24 @@ function loadKeymap(file, filename) {
     return promise.json();
   }).then(response => {
     if (!Object.keys(response.keyboards).length || !response.keyboards[file.keyboard]) {
-      console.log("Keyboard not found");
+      console.log("Keyboard not found: " + file.keyboard);
       return;
     }
+    keyboard = response.keyboards[file.keyboard];
     if (file.layouts && file.layouts[file.layout]) {
-      response.keyboards[file.keyboard].layouts[file.layout] = file.layouts[file.layout];
+      keyboard.layouts[file.layout] = file.layouts[file.layout];
     }
-    if (!response.keyboards[file.keyboard].layouts[file.layout]) {
-        console.log("Layout not found");
+    if (keyboard.layout_aliases) {
+      var aliases = Object.keys(keyboard.layout_aliases);
+      for (var i = 0; i < aliases.length; i++) {
+        keyboard.layouts[aliases[i]] = keyboard.layouts[keyboard.layout_aliases[aliases[i]]];
+      }
+    }
+    if (!keyboard.layouts[file.layout]) {
+        console.log("Layout not found: " + file.layout);
+        console.log(response);
         return;
     }
-    keyboard = response.keyboards[file.keyboard];
     if (file.extra) {
       if (file.extra.matrix_cols) {
         keyboard.matrix_size.cols = file.extra.matrix_cols;
@@ -3733,12 +3740,12 @@ function loadKeymap(file, filename) {
       }
     }
     keyboard.layout = 0;
-    if (keyboard.layouts[file.layout].width) {
-      keyboard.width = keyboard.layouts[file.layout].width;
-    }
-    if (keyboard.layouts[file.layout].height) {
-      keyboard.height = keyboard.layouts[file.layout].height;
-    }
+    // if (keyboard.layouts[file.layout].width) {
+    //   keyboard.width = keyboard.layouts[file.layout].width;
+    // }
+    // if (keyboard.layouts[file.layout].height) {
+    //   keyboard.height = keyboard.layouts[file.layout].height;
+    // }
     keyboard.keymap = loadLayout(keyboard.layouts[file.layout]);
     renderKeyboard(keyboard);
     loadLayers(keyboard, file.layers)
