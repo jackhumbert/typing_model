@@ -3739,8 +3739,8 @@ function loadKeymap(file, filename) {
     if (keyboard.layouts[file.layout].height) {
       keyboard.height = keyboard.layouts[file.layout].height;
     }
-    renderKeyboard(keyboard);
     keyboard.keymap = loadLayout(keyboard.layouts[file.layout]);
+    renderKeyboard(keyboard);
     loadLayers(keyboard, file.layers)
     guessBaseEffort(keyboard);
     keyboard.filename = filename;
@@ -3760,10 +3760,20 @@ function renderKeyboard(keyboard) {
     var width = parseInt(getComputedStyle(document.getElementById("main-container")).getPropertyValue("width"));
     var padding = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--key-padding'));
     var spacing = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--key-spacing'));
-    var scale = width / keyboard.width;
-    document.documentElement.style.setProperty('--key-unit', (scale-padding+(padding/keyboard.width))+'px');
-    document.documentElement.style.setProperty('--keyboard-height', keyboard.height);
-    document.documentElement.style.setProperty('--keyboard-width', keyboard.width);
+    var keyboard_width = 0;
+    var keyboard_height = 0;
+    for (var i = 0; i < keyboard.keymap.length; i++) {
+      if (keyboard.keymap[i].x + keyboard.keymap[i].w > keyboard_width) {
+        keyboard_width = keyboard.keymap[i].x + keyboard.keymap[i].w;
+      }
+      if (keyboard.keymap[i].y + keyboard.keymap[i].h > keyboard_height) {
+        keyboard_height = keyboard.keymap[i].y + keyboard.keymap[i].h;
+      }
+    }
+    var scale = width / keyboard_width;
+    document.documentElement.style.setProperty('--key-unit', (scale-padding+(padding/keyboard_width))+'px');
+    document.documentElement.style.setProperty('--keyboard-height', keyboard_height);
+    document.documentElement.style.setProperty('--keyboard-width', keyboard_width);
 }
 
 if (window.File && window.FileReader && window.FileList && window.Blob) {
