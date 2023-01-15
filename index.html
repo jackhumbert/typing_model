@@ -3514,7 +3514,13 @@ function guessBaseEffort(keyboard) {
   var keymap = keyboard.keymap;
   for (var key = 0; key < keymap.length; key++) {
     keymap[key].effort = 1000;
-    for (var i = 0; i < 10; i++) {
+    var i = 0;
+    var i_max = 9;
+    if (keymap[key].finger_index) {
+      i = keymap[key].finger_index;
+      i_max = keymap[key].finger_index;
+    }
+    for (; i <= i_max; i++) {
       var hrk = keymap[keyboard.fingers[i]];
       var temp_key = {};
       temp_key.dist = Math.sqrt(Math.pow(keymap[key].x + (keymap[key].w / 2) - hrk.x - (hrk.w / 2), 2) + Math.pow(keymap[key].y + (keymap[key].h / 2) - hrk.y - (hrk.h / 2), 2));
