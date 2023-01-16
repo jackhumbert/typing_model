@@ -4080,6 +4080,9 @@ Array.prototype.forEach.call(heatmaps, heatmap => {
 });
 
 function checkForPhantom(keyboard, key_1, key_2, key_3) {
+  if (key_1 == key_3) {
+    return;
+  }
   var phantom_key = -1;
   if (key_1.matrix_row == key_2.matrix_row && key_1.matrix_col == key_3.matrix_col) {
     phantom_key = findKeyInMatrix(keyboard, key_3.matrix_row, key_2.matrix_col);
