@@ -76,8 +76,12 @@ def _letter_cell(ch: str, *, candidates: list[str] | None = None) -> dict:
 def _special_cell(ch: str, layer_ids: dict[str, str]) -> dict:
     cell_id = new_uuid()
     if ch == '^':
+        # mirrors the original board exactly: repeatEnabled true and a keyID
+        # distinct from the cellID (the app's own editor emits shift this way)
         key = _key('', icon=2, ktype=3)
-    elif ch == '⌫':
+        key['repeatEnabled'] = True
+        return {'cellID': cell_id, 'key': key}
+    if ch == '⌫':
         key = _key('', icon=3, ktype=4)
     elif ch == '1':
         key = _key('123', layer_ids['numbers'], ktype=5)
@@ -135,6 +139,7 @@ def build_letters_layer(rows: list[str], bottom: list[tuple[str, float]],
             'layoutType': 'Standard',
             'rowGap': 11.0,
             'rows': layout_rows,
+            'rowsWeight': float(sum(r['weight'] for r in layout_rows)),
         },
         'layoutMap': layout_map,
     }
