@@ -62,15 +62,17 @@ from the exact stream simulation (`thumbmodel.simulate`).
 
 ## Findings (see `results.md` for the current numbers)
 
-1. **Colemak Ortho is already excellent for two-thumb typing.** Its
-   left-consonant/right-vowel split yields ~52% side alternation, near the
-   ceiling the model can exploit; a validated hill-climb finds **no letter
-   swap** that improves the balanced objective by even 0.4%. (This matches
-   why KALQ-style optimizers rediscover vowel-clustering-on-one-side — it is
-   the same design idea Colemak already encodes.)
-2. **One-thumb typing is where assignment optimization pays** (+6-7% in the
-   model): one thumb wants frequent letters in one compact cluster around
-   space, not split across the board.
+1. **Colemak Ortho is already a very good two-thumb layout — and a local
+   optimum.** Its left-consonant/right-vowel split yields ~52% side
+   alternation, and a validated hill-climb finds **no letter swap** that
+   improves the balanced objective by even 0.4%; there is no cheap tweak
+   worth partial relearning. Full re-annealing, however, lifts alternation
+   to ~60% and beats it on both postures (+3-4% two-thumb) even on the same
+   grid — and the annealed boards rediscover KALQ's structure unprompted
+   (vowel block one side, consonant runs packed on the dominant side).
+2. **One-thumb typing is where assignment optimization pays most** (+5-7% in
+   the model): one thumb wants frequent letters in one compact cluster
+   around space, not split across the board.
 3. **Precision is geometry-first**: dropping from 10 to 8 columns nearly
    halves modeled miss risk (6.5 → 8.1 mm pitch), at the cost of moving the
    four rarest letters (q z x j — together ~0.45% of characters) onto

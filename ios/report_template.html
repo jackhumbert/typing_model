@@ -130,14 +130,14 @@
     position: absolute; font-size: .6rem; color: var(--ink-3); line-height: 1;
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
   }
-  .sw.n  { top: 4px; left: 50%; transform: translateX(-50%); }
-  .sw.s  { bottom: 4px; left: 50%; transform: translateX(-50%); }
-  .sw.e  { right: 6px; top: 50%; transform: translateY(-50%); }
-  .sw.w  { left: 6px; top: 50%; transform: translateY(-50%); }
-  .sw.ne { top: 4px; right: 6px; }
-  .sw.nw { top: 4px; left: 6px; }
-  .sw.se { bottom: 4px; right: 6px; }
-  .sw.sw { bottom: 4px; left: 6px; }
+  .sw.d-n  { top: 4px; left: 50%; transform: translateX(-50%); }
+  .sw.d-s  { bottom: 4px; left: 50%; transform: translateX(-50%); }
+  .sw.d-e  { right: 6px; top: 50%; transform: translateY(-50%); }
+  .sw.d-w  { left: 6px; top: 50%; transform: translateY(-50%); }
+  .sw.d-ne { top: 4px; right: 6px; }
+  .sw.d-nw { top: 4px; left: 6px; }
+  .sw.d-se { bottom: 4px; right: 6px; }
+  .sw.d-sw { bottom: 4px; left: 6px; }
   .kb-tip {
     position: absolute; z-index: 30; pointer-events: none;
     background: var(--ink); color: var(--bg);
@@ -254,13 +254,16 @@
     Hover any key below to see its share of taps and average press cost.</p>
   <div id="colemak-board"></div>
   <div class="chips" id="colemak-chips"></div>
-  <p><strong>Colemak is already a very good two-thumb phone layout.</strong> Its
-    left-consonants / right-vowels split alternates sides on 52% of transitions —
-    exactly the property the KALQ optimizer chases — and a validated hill-climb over
-    all 325 possible letter swaps found <strong>none</strong> that improves the
-    balanced objective by even 0.4%. The two places it leaves value on the table:
-    one-thumb travel (vowels sit a board-width away from common consonants) and
-    key size.</p>
+  <p><strong>Colemak is already a very good two-thumb phone layout — and a local
+    optimum.</strong> Its left-consonants / right-vowels split alternates sides on
+    52% of transitions — exactly the property the KALQ optimizer chases — and a
+    validated hill-climb over all 325 possible letter swaps found
+    <strong>none</strong> that improves the balanced objective by even 0.4%: there
+    is no cheap tweak worth relearning two keys for. The value sits in bigger
+    moves. Full re-annealing lifts alternation to ~60% and pulls the vowels back
+    within one-thumb reach of the common consonants; and the 10-column grid
+    itself leaves precision on the table — a geometry problem, not a letter
+    problem.</p>
 
   <h2>The three levers</h2>
   <div class="lever-grid">
@@ -465,7 +468,7 @@ function renderBoard3(entry) {
       k.textContent = ch;
       for (const [d, sc] of Object.entries(swm[ch] || {})) {
         const s = document.createElement('span');
-        s.className = 'sw ' + d;
+        s.className = 'sw d-' + d;
         s.textContent = sc;
         k.appendChild(s);
       }
@@ -588,10 +591,10 @@ const NOTES = {
   opt9_swipe: 'Thumb-Key\'s construction rules applied to your corpus: top nine letters on taps placed by the annealer, next eight stroking toward the hub, next eight on the hub\'s directions, and your punctuation corner preserved on the bottom-right key.',
   qwerty: 'The layout everyone measures against. Alternates almost as well as Colemak (the vowels are already spread), but pays 12% more travel — and you left it behind years ago anyway.',
   colemak_plus: 'Greedy hill-climb from your board, keeping any swap only if the exact simulator confirms it. It kept none: your layout is a local optimum for balanced two/one-thumb use.',
-  opt10_hybrid: 'Same 10-column grid as your board, letters re-annealed for a 50/50 one-/two-thumb blend. Buys one-thumb travel by giving up alternation — a sidegrade that shows assignment alone can\'t fix the geometry.',
-  opt8_two: 'Eight columns, annealed 85/15 toward two-thumb use: keeps a Colemak-like vowel island right, consonant runs left, and the biggest keys the screen allows.',
+  opt10_hybrid: 'Same 10-column grid as your board, letters re-annealed for a 50/50 blend. Clusters the frequent letters around space and pushes alternation to 60% — beating Colemak on both postures on its own geometry. A full relearn for no precision gain, though; the 8-column boards dominate it.',
+  opt8_two: 'Eight columns, annealed 85/15 toward two-thumb use. The optimizer rediscovered KALQ\'s principle unprompted: vowel block on one half, consonant runs packed on the dominant side.',
   opt8_one: 'Annealed 15/85 toward one-thumb use: everything frequent collapses into a tight arc over the spacebar. The fastest single-thumb board here.',
-  opt8_hybrid: 'The recommendation. Eight columns for precision, letters annealed 50/50 — nearly the one-thumb win of the dedicated board while giving back only ~2% two-thumb, and about half the modeled miss risk of your current keys.',
+  opt8_hybrid: 'The recommendation. Eight columns for precision, letters annealed 50/50 — better than your board everywhere: +3% two-thumb, +6% one-thumb, and about half the modeled miss risk, for the price of long-pressing q z x j (1.1% of taps).',
 };
 function makeCard(t, e) {
   const card = document.createElement('div');
