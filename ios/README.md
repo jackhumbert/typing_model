@@ -79,15 +79,39 @@ from the exact stream simulation (`thumbmodel.simulate`).
 4. Punctuation check: in this corpus, comma is ~2.7× more frequent than
    period, so the uploaded board's `,`-tap / `.`-long-press choice is kept.
 
+## The swipe family (3×3 tap+swipe)
+
+`swipe_layouts.py` / `swipe_explore.py` model the MessagEase / Thumb-Key
+family: nine ~20.7 × 7.1 mm keys, the nine most frequent letters on taps
+(~70% of characters), the rest on directional swipes (4 cardinals + 4
+diagonals). Movement uses the same Fitts machinery (travel is nearly free at
+these sizes — IDs sit at the clamp floor); each swipe costs a flat overhead
+(default +110 ms, +30 ms more for diagonals), following Yamanaka, Usuba &
+Sato's CHI 2024 finding that swipes are reliably slower and more error-prone
+than taps. Precision swaps 6-8% Gaussian tap-miss for ~1% (cardinal) / ~3%
+(diagonal) assumed direction-slip rates on the ~30% of characters that are
+swipes — the family's actual bargain, and why it suits a precision-first
+typist.
+
+Scored: classic MessagEase (transcribed from Thumb-Key's `ENMessagEase.kt`),
+Thumb-Key EN, and a corpus-tuned variant built by Thumb-Key's construction
+rules with tap positions and swipe hosts annealed. The xKeyboard app cannot
+express gestures, so these ship as analysis only; the
+[MessagEase app](https://apps.apple.com/us/app/messagease-keyboard/id990325092)
+still hosts this grid on iOS.
+
 ## Files
 
 * `thumbmodel.py` — geometry, movement models, corpus, exact simulator,
   trigram scorer
 * `layouts_def.py` — layout/slot definitions (10-col and 8-col families)
 * `optimize.py` — simulated annealing + validated greedy swaps
+* `swipe_layouts.py`, `swipe_explore.py` — the 3×3 tap+swipe family
 * `xkbgen.py` — emits installable `.xkeyboard` archives (fresh UUIDs
   throughout; numbers/symbols layers carried over from the original board)
-* `explore.py` — end-to-end driver (`python3 explore.py [--quick]`)
+* `explore.py` — end-to-end driver (`python3 explore.py [--quick]`),
+  then `python3 swipe_explore.py` to append the swipe family
+* `report_template.html`, `build_report.py` — visual report (`report.html`)
 * `layouts/` — the uploaded baseline plus generated `.xkeyboard` variants
 * `results.md`, `layouts.json` — scored comparison and machine-readable dump
 
@@ -122,5 +146,10 @@ from the exact stream simulation (`thumbmodel.simulate`).
   Keyboards.* MobileHCI 2012.
 * Bi, Li & Zhai. *FFitts Law: Modeling Finger Touch with Fitts' Law.*
   CHI 2013.
+* Yamanaka, Usuba & Sato. *Behavioral Differences between Tap and Swipe:
+  Observations on Time, Error, Touch-point Distribution, and Trajectory for
+  Tap-and-swipe Enabled Targets.* CHI 2024.
+* MessagEase (Exideas) and Thumb-Key (dessalines) — the 3×3 tap+swipe
+  family's canonical layouts.
 * Carpalx (M. Krzywinski) — the triad effort framework this repo's desktop
   model adapts.

@@ -125,6 +125,19 @@
   .kb-key.sideL { background: color-mix(in srgb, var(--thumb-l) 14%, var(--key)); }
   .kb-key.sideR { background: color-mix(in srgb, var(--thumb-r) 14%, var(--key)); }
   .kb-key.special.sideL, .kb-key.special.sideR { background: var(--special); }
+  .kb-key.big { height: 58px; font-size: 1.25rem; font-weight: 600; }
+  .kb-key .sw {
+    position: absolute; font-size: .6rem; color: var(--ink-3); line-height: 1;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  .sw.n  { top: 4px; left: 50%; transform: translateX(-50%); }
+  .sw.s  { bottom: 4px; left: 50%; transform: translateX(-50%); }
+  .sw.e  { right: 6px; top: 50%; transform: translateY(-50%); }
+  .sw.w  { left: 6px; top: 50%; transform: translateY(-50%); }
+  .sw.ne { top: 4px; right: 6px; }
+  .sw.nw { top: 4px; left: 6px; }
+  .sw.se { bottom: 4px; right: 6px; }
+  .sw.sw { bottom: 4px; left: 6px; }
   .kb-tip {
     position: absolute; z-index: 30; pointer-events: none;
     background: var(--ink); color: var(--bg);
@@ -280,13 +293,34 @@
   <div class="db" id="wpm-db"></div>
   <div class="cards" id="cards"></div>
 
+  <h2>The swipe family</h2>
+  <p>A different bargain, from the 3×3 tap-plus-swipe grids of Android
+    (MessagEase and its open-source successor Thumb-Key): nine enormous keys —
+    a third of the screen wide each — carry the nine most frequent letters as
+    plain taps (~70% of characters), and everything else is a short directional
+    swipe. Tap misses become physically implausible; the residual risks are the
+    swipe itself (slower than a tap, and diagonals fumble more — Yamanaka et
+    al., CHI 2024) and direction slips, both charged in the numbers below.</p>
+  <p class="sub">xKeyboard can't express gestures, so these can't ship as
+    <code>.xkeyboard</code> files — but classic MessagEase is
+    <a href="https://apps.apple.com/us/app/messagease-keyboard/id990325092">alive on the
+    App Store</a> and hosts exactly this grid on an iPhone today. The
+    corpus-tuned variant below is what the model would build from your statistics
+    under Thumb-Key's construction rules — and it beats the classic by barely 1%,
+    which is the interesting result: the family's structure does all the work.
+    If you go this way, learn the standard MessagEase layout; it's already at the
+    ceiling and works in the shipping app.</p>
+  <div class="cards" id="cards-swipe"></div>
+
   <h2>All the numbers</h2>
   <div class="tablewrap"><table id="results-table"></table></div>
   <p class="sub">WPM figures are expert-ceiling estimates from movement models fitted
     in a tablet study; read them comparatively, not as a forecast of day-one speed.
-    Miss % assumes 2 mm tap scatter and scales with your true σ — the ranking doesn't
-    change. Corpus: Alice in Wonderland + this repo's corpus passage + mobile-register
-    phrases upweighted ×20 (~180k characters).</p>
+    Error risk = Gaussian tap-miss at 2 mm scatter, plus assumed direction-slip rates
+    (1% cardinal / 3% diagonal) for swipe layouts; it scales with your true σ — the
+    ranking doesn't change. Swipe/hold % is the share of characters needing a gesture
+    beyond a plain tap. Corpus: Alice in Wonderland + this repo's corpus passage +
+    mobile-register phrases upweighted ×20 (~180k characters).</p>
 
   <h2>Trying them on the phone</h2>
   <ol class="steps">
@@ -323,6 +357,7 @@ const DATA = /*__DATA__*/{}/*__END__*/;
 const GEO = {
   '10col': { pitch: '6.5', key: '5.5×7.1' },
   '8col':  { pitch: '8.1', key: '7.1×7.1' },
+  '3x3':   { pitch: '21.7', key: '20.7×7.1' },
 };
 const BOTTOM_W = {
   '10col': [2, 2, 2, 2, 2],
@@ -348,6 +383,7 @@ function keyStats(entry, ch) {
 
 function renderBoard(entry, { sides = true, legend = true } = {}) {
   const fam = entry.family;
+  if (fam === '3x3') return renderBoard3(entry);
   const board = document.createElement('div');
   board.className = 'board';
   const half = fam === '10col' ? 5 : 4;
@@ -416,6 +452,56 @@ function renderBoard(entry, { sides = true, legend = true } = {}) {
   return wrap;
 }
 
+function renderBoard3(entry) {
+  const board = document.createElement('div');
+  board.className = 'board';
+  const swm = entry.meta.swipemap || {};
+  for (const row of entry.grid) {
+    const r = document.createElement('div');
+    r.className = 'krow';
+    for (const ch of row) {
+      const k = document.createElement('div');
+      k.className = 'kb-key big';
+      k.textContent = ch;
+      for (const [d, sc] of Object.entries(swm[ch] || {})) {
+        const s = document.createElement('span');
+        s.className = 'sw ' + d;
+        s.textContent = sc;
+        k.appendChild(s);
+      }
+      const stats = keyStats(entry, ch);
+      if (stats) {
+        k.addEventListener('pointerenter', () => {
+          const b = k.getBoundingClientRect();
+          tip.textContent = stats;
+          tip.style.left = (b.left + b.width / 2 + scrollX) + 'px';
+          tip.style.top = (b.top + scrollY) + 'px';
+          tip.style.display = 'block';
+        });
+        k.addEventListener('pointerleave', () => tip.style.display = 'none');
+      }
+      r.appendChild(k);
+    }
+    board.appendChild(r);
+  }
+  const br = document.createElement('div');
+  br.className = 'krow';
+  entry.bottom.forEach(ch => {
+    const k = document.createElement('div');
+    k.className = 'kb-key special';
+    k.textContent = BOTTOM_LABELS[ch] || ch;
+    br.appendChild(k);
+  });
+  board.appendChild(br);
+  const wrap = document.createElement('div');
+  wrap.appendChild(board);
+  const lg = document.createElement('div');
+  lg.className = 'legendline';
+  lg.innerHTML = '<span>tap the big letter · swipe toward an edge glyph for the rest</span>';
+  wrap.appendChild(lg);
+  return wrap;
+}
+
 function chip(label, value, cls = '') {
   return `<span class="chip ${cls}"><b>${value}</b>${label}</span>`;
 }
@@ -468,12 +554,18 @@ document.getElementById('pitch-meter').innerHTML = [
 
 // ---- dumbbell
 const ORDER = ['colemak', 'qwerty', 'colemak_plus', 'opt10_hybrid', 'opt8_two', 'opt8_one', 'opt8_hybrid'];
+const SWIPE_ORDER = ['messagease', 'thumbkey', 'opt9_swipe'];
 const present = ORDER.filter(t => DATA[t]);
-const lo = 36, hi = 47;
+const presentSwipe = SWIPE_ORDER.filter(t => DATA[t]);
+const allTags = present.concat(presentSwipe);
+const wpms = allTags.flatMap(t => [DATA[t].wpm_2t, DATA[t].wpm_1t]);
+const lo = Math.floor(Math.min(...wpms)) - 1, hi = Math.ceil(Math.max(...wpms)) + 1;
 const x = v => ((v - lo) / (hi - lo) * 100).toFixed(2) + '%';
 let db = '<div class="db-legend"><span><span class="dot two"></span>two thumbs</span><span><span class="dot one"></span>one thumb</span></div>';
-db += '<div class="axis">' + [38, 40, 42, 44, 46].map(t => `<span class="tick" style="left:${x(t)}">${t}</span>`).join('') + '</div>';
-for (const t of present) {
+const ticks = [];
+for (let t = Math.ceil(lo / 2) * 2; t <= hi; t += 2) ticks.push(t);
+db += '<div class="axis">' + ticks.map(t => `<span class="tick" style="left:${x(t)}">${t}</span>`).join('') + '</div>';
+for (const t of allTags) {
   const e = DATA[t];
   if (t === 'colemak_plus' && !(e.meta && e.meta.swaps && e.meta.swaps.length)) continue; // identical to baseline
   const two = e.wpm_2t, one = e.wpm_1t;
@@ -491,6 +583,9 @@ document.getElementById('wpm-db').innerHTML = db;
 
 // ---- cards
 const NOTES = {
+  messagease: 'The classic, unchanged since the Palm era: a n i h o r t e s on taps, everything else stroking toward the hub. What it loses in per-action speed it repays in near-zero tap misses.',
+  thumbkey: 'The FOSS successor\'s English default — same skeleton, re-ranked taps (s r o / n h a / t i e) with vowels pulled right for two-thumb alternation.',
+  opt9_swipe: 'Thumb-Key\'s construction rules applied to your corpus: top nine letters on taps placed by the annealer, next eight stroking toward the hub, next eight on the hub\'s directions, and your punctuation corner preserved on the bottom-right key.',
   qwerty: 'The layout everyone measures against. Alternates almost as well as Colemak (the vowels are already spread), but pays 12% more travel — and you left it behind years ago anyway.',
   colemak_plus: 'Greedy hill-climb from your board, keeping any swap only if the exact simulator confirms it. It kept none: your layout is a local optimum for balanced two/one-thumb use.',
   opt10_hybrid: 'Same 10-column grid as your board, letters re-annealed for a 50/50 one-/two-thumb blend. Buys one-thumb travel by giving up alternation — a sidegrade that shows assignment alone can\'t fix the geometry.',
@@ -498,20 +593,24 @@ const NOTES = {
   opt8_one: 'Annealed 15/85 toward one-thumb use: everything frequent collapses into a tight arc over the spacebar. The fastest single-thumb board here.',
   opt8_hybrid: 'The recommendation. Eight columns for precision, letters annealed 50/50 — nearly the one-thumb win of the dedicated board while giving back only ~2% two-thumb, and about half the modeled miss risk of your current keys.',
 };
-const cardsEl = document.getElementById('cards');
-for (const t of present) {
-  if (t === 'colemak') continue;
-  const e = DATA[t];
+function makeCard(t, e) {
   const card = document.createElement('div');
   card.className = 'card';
+  const isSwipe = e.family === '3x3';
+  const errChip = isSwipe
+    ? chip(' gesture err/char', (e.miss_pct + (e.dir_err_pct || 0)).toFixed(1) + '%')
+    : chip(' miss/tap', e.miss_pct.toFixed(1) + '%' + fmtDelta(e.miss_pct, base.miss_pct, true));
+  const lastChip = isSwipe
+    ? chip(' of chars are swipes', e.longpress_pct.toFixed(0) + '%')
+    : chip(' alternation', (e.alternation * 100).toFixed(0) + '%');
   const info = `
     <div class="info">
       <h3>${e.name}${t === heroTag ? ' ★' : ''}</h3>
       <div class="chips">
         ${chip(' 2T wpm', e.wpm_2t.toFixed(1) + fmtDelta(e.wpm_2t, base.wpm_2t))}
         ${chip(' 1T wpm', e.wpm_1t.toFixed(1) + fmtDelta(e.wpm_1t, base.wpm_1t))}
-        ${chip(' miss/tap', e.miss_pct.toFixed(1) + '%' + fmtDelta(e.miss_pct, base.miss_pct, true))}
-        ${chip(' alternation', (e.alternation * 100).toFixed(0) + '%')}
+        ${errChip}
+        ${lastChip}
       </div>
       <p class="sub">${NOTES[t] || ''}</p>
     </div>`;
@@ -520,14 +619,24 @@ for (const t of present) {
   top.appendChild(renderBoard(e, { legend: false }));
   top.insertAdjacentHTML('beforeend', info);
   card.appendChild(top);
-  cardsEl.appendChild(card);
+  return card;
+}
+const cardsEl = document.getElementById('cards');
+for (const t of present) {
+  if (t === 'colemak') continue;
+  cardsEl.appendChild(makeCard(t, DATA[t]));
+}
+const swipeEl = document.getElementById('cards-swipe');
+for (const t of presentSwipe) {
+  swipeEl.appendChild(makeCard(t, DATA[t]));
 }
 
 // ---- table
 const tbl = document.getElementById('results-table');
-let html = '<thead><tr><th>layout</th><th class="num">key mm</th><th class="num">2-thumb wpm</th><th class="num">1-thumb wpm</th><th class="num">mm/tap</th><th class="num">alt %</th><th class="num">miss %</th><th class="num">long-press %</th></tr></thead><tbody>';
-for (const t of present) {
+let html = '<thead><tr><th>layout</th><th class="num">key mm</th><th class="num">2-thumb wpm</th><th class="num">1-thumb wpm</th><th class="num">mm/tap</th><th class="num">alt %</th><th class="num">error risk %</th><th class="num">swipe/hold %</th></tr></thead><tbody>';
+for (const t of allTags) {
   const e = DATA[t];
+  const err = e.miss_pct + (e.dir_err_pct || 0);
   html += `<tr class="${t === heroTag ? 'hero-row' : ''}">
     <td>${e.name}${t === heroTag ? ' ★' : ''}</td>
     <td class="num">${GEO[e.family].key}</td>
@@ -535,7 +644,7 @@ for (const t of present) {
     <td class="num">${e.wpm_1t.toFixed(1)}${t !== 'colemak' ? fmtDelta(e.wpm_1t, base.wpm_1t) : ''}</td>
     <td class="num">${e.travel.toFixed(2)}</td>
     <td class="num">${(e.alternation * 100).toFixed(1)}</td>
-    <td class="num">${e.miss_pct.toFixed(2)}</td>
+    <td class="num">${err.toFixed(2)}</td>
     <td class="num">${e.longpress_pct.toFixed(2)}</td>
   </tr>`;
 }
