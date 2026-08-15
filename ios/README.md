@@ -96,6 +96,13 @@ from the exact stream simulation (`thumbmodel.simulate`).
 * KALQ's coefficients were fitted on a tablet grip; on a phone the absolute
   WPMs should be read as expert-ceiling estimates, and comparisons between
   layouts are what matter.
+* At a steady ~300 ms/char pace, each thumb in strict alternation waits
+  ~600 ms between its own presses — exactly where the paper reports the wait
+  penalty kicking in. The model therefore scores two-thumb typing
+  conservatively (even slightly under one-thumb) and flattens the two-thumb
+  landscape; the corresponding design pressure it *does* transmit is KALQ's
+  own: cheap same-side runs on the dominant side, alternation to reach the
+  other. At faster paces alternation wins outright.
 * The model has no reachability asymmetry (a one-handed grip makes the
   far-top corner genuinely harder than Fitts distance implies) and no
   language model / autocorrect (deliberately — this board has none).

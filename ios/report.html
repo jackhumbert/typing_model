@@ -1,0 +1,542 @@
+<!-- Thumbline — iPhone thumb-typing layout exploration report.
+     Built by build_report.py: inlines layouts.json as DATA. -->
+<title>Thumbline</title>
+<style>
+  :root {
+    --bg: #eceef1;          /* iOS keyboard tray, cool grey */
+    --surface: #ffffff;
+    --key: #ffffff;
+    --key-edge: #b9bec6;
+    --special: #dfe2e7;     /* iOS function-key grey */
+    --ink: #1a1c20;
+    --ink-2: #5a6069;
+    --ink-3: #878e98;
+    --line: #d4d8de;
+    --thumb-l: #2a78d6;     /* left thumb  — validated categorical blue  */
+    --thumb-r: #eb6834;     /* right thumb — validated categorical orange */
+    --accent: #2a78d6;
+    --good: #1e7f4f;
+    --bad: #b3372a;
+    --chip: #e2e5ea;
+    --code: #f4f5f7;
+    --shadow: 0 1px 0 rgba(20,24,32,.28);
+  }
+  :root:not([data-theme="light"]) { color-scheme: light dark; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17181b;
+      --surface: #1f2125;
+      --key: #2b2d33;
+      --key-edge: #0d0e10;
+      --special: #24262b;
+      --ink: #ecedef;
+      --ink-2: #9aa0a8;
+      --ink-3: #6d737c;
+      --line: #34373d;
+      --thumb-l: #3987e5;
+      --thumb-r: #d95926;
+      --accent: #3987e5;
+      --good: #43b581;
+      --bad: #e06d5c;
+      --chip: #2a2d33;
+      --code: #212328;
+      --shadow: 0 1px 0 rgba(0,0,0,.55);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17181b;
+    --surface: #1f2125;
+    --key: #2b2d33;
+    --key-edge: #0d0e10;
+    --special: #24262b;
+    --ink: #ecedef;
+    --ink-2: #9aa0a8;
+    --ink-3: #6d737c;
+    --line: #34373d;
+    --thumb-l: #3987e5;
+    --thumb-r: #d95926;
+    --accent: #3987e5;
+    --good: #43b581;
+    --bad: #e06d5c;
+    --chip: #2a2d33;
+    --code: #212328;
+    --shadow: 0 1px 0 rgba(0,0,0,.55);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, "SF Pro Text", system-ui, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  main { max-width: 920px; margin: 0 auto; padding: 40px 20px 80px; }
+  h1, h2, h3 { font-family: -apple-system, "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif; text-wrap: balance; }
+  h1 { font-size: 2.6rem; font-weight: 750; letter-spacing: -0.02em; line-height: 1.08; margin: 8px 0 10px; }
+  h2 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.012em; margin: 56px 0 6px; }
+  h3 { font-size: 1.06rem; font-weight: 650; margin: 0 0 4px; }
+  p  { max-width: 68ch; margin: 10px 0; }
+  a  { color: var(--accent); text-decoration: none; }
+  a:hover, a:focus-visible { text-decoration: underline; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .mono, td.num, .tick, .chip b, .keystat {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: .72rem; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .lede { font-size: 1.12rem; color: var(--ink-2); max-width: 62ch; }
+  .sub { color: var(--ink-2); font-size: .92rem; max-width: 68ch; }
+
+  /* ---------- keyboards ---------- */
+  .board {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 10px 6px 8px;
+    max-width: 460px;
+  }
+  .board .krow { display: flex; gap: 5px; margin-bottom: 8px; }
+  .board .krow:last-child { margin-bottom: 0; }
+  .kb-key {
+    position: relative;
+    flex: 1 1 0;
+    height: 44px;
+    background: var(--key);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+    display: flex; align-items: center; justify-content: center;
+    font-family: -apple-system, "SF Pro Text", system-ui, sans-serif;
+    font-size: 1.05rem;
+    cursor: default;
+  }
+  .kb-key.special { background: var(--special); font-size: .72rem; color: var(--ink-2); }
+  .kb-key .lp {
+    position: absolute; top: 3px; right: 5px;
+    font-size: .58rem; color: var(--ink-3);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  .kb-key.sideL { background: color-mix(in srgb, var(--thumb-l) 14%, var(--key)); }
+  .kb-key.sideR { background: color-mix(in srgb, var(--thumb-r) 14%, var(--key)); }
+  .kb-key.special.sideL, .kb-key.special.sideR { background: var(--special); }
+  .kb-tip {
+    position: absolute; z-index: 30; pointer-events: none;
+    background: var(--ink); color: var(--bg);
+    border-radius: 7px; padding: 5px 9px; font-size: .78rem;
+    white-space: nowrap; transform: translate(-50%, -110%);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    display: none;
+  }
+  .legendline { display: flex; gap: 18px; align-items: center; margin: 8px 2px 0; font-size: .8rem; color: var(--ink-2); }
+  .swatch { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+  /* ---------- chips & stats ---------- */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+  .chip {
+    background: var(--chip); border-radius: 999px; padding: 5px 13px;
+    font-size: .84rem; color: var(--ink-2);
+  }
+  .chip b { color: var(--ink); font-weight: 600; margin-right: 2px; }
+  .chip.up b { color: var(--good); }
+  .chip.down b { color: var(--bad); }
+
+  /* ---------- layout cards ---------- */
+  .cards { display: grid; grid-template-columns: 1fr; gap: 18px; margin-top: 18px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 16px; padding: 20px 22px;
+  }
+  .card .top { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+  .card .board { flex: 0 1 440px; min-width: 300px; }
+  .card .info { flex: 1 1 260px; min-width: 240px; }
+  .lever-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin-top: 16px; }
+  .lever { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 14px; }
+  .lever p { font-size: .92rem; color: var(--ink-2); margin: 6px 0 0; }
+
+  /* ---------- pitch meter ---------- */
+  .meter { margin-top: 26px; }
+  .meter .mrow { margin: 4px 0 14px; font-size: .82rem; }
+  .meter .mhead { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .meter .track { position: relative; height: 16px; background: var(--chip); border-radius: 5px; }
+  .meter .fill { position: absolute; inset: 2px auto 2px 2px; border-radius: 4px; background: color-mix(in srgb, var(--accent) 72%, var(--surface)); }
+  .meter .thr { position: absolute; top: -5px; bottom: -5px; width: 0; border-left: 2px dashed var(--ink-3); }
+  .meter .caption { font-size: .72rem; color: var(--ink-3); margin-top: 2px; }
+  .meter .verdict { font-size: .76rem; white-space: nowrap; }
+  .meter .verdict.ok { color: var(--good); }
+  .meter .verdict.no { color: var(--bad); }
+
+  /* ---------- dumbbell ---------- */
+  .db { margin: 18px 0 6px; }
+  .db .axis { position: relative; height: 20px; margin-left: 172px; }
+  .db .tick { position: absolute; transform: translateX(-50%); font-size: .72rem; color: var(--ink-3); }
+  .db .row { display: grid; grid-template-columns: 160px 1fr; gap: 12px; align-items: center; margin: 10px 0; }
+  .db .lab { font-size: .86rem; text-align: right; color: var(--ink-2); }
+  .db .lab.hero { color: var(--ink); font-weight: 600; }
+  .db .track { position: relative; height: 26px; }
+  .db .rail { position: absolute; left: 0; right: 0; top: 12px; height: 2px; background: var(--line); }
+  .db .join { position: absolute; top: 11px; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--accent) 30%, transparent); }
+  .db .dot { position: absolute; top: 6px; width: 14px; height: 14px; border-radius: 50%; transform: translateX(-50%); }
+  .db .dot.two { background: var(--accent); box-shadow: 0 0 0 2px var(--surface); }
+  .db .dot.one { background: var(--surface); border: 2.5px solid var(--accent); box-shadow: 0 0 0 2px var(--surface); }
+  .db .val { position: absolute; top: -8px; transform: translateX(-50%); font-size: .7rem; color: var(--ink-2);
+             font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .db .val.lo { top: 22px; }
+  .db-legend { display: flex; gap: 20px; font-size: .8rem; color: var(--ink-2); margin-left: 172px; margin-bottom: 4px; }
+  .db-legend .dot { position: static; display: inline-block; transform: none; vertical-align: -2px; margin-right: 6px; width: 12px; height: 12px; }
+
+  /* ---------- table ---------- */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+  th, td { padding: 9px 14px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+  td.num { text-align: right; }
+  th.num { text-align: right; }
+  tr:last-child td { border-bottom: none; }
+  tr.hero-row td { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+  .delta { font-size: .78rem; margin-left: 6px; }
+  .delta.up { color: var(--good); }
+  .delta.down { color: var(--bad); }
+
+  /* ---------- misc ---------- */
+  ol.steps { padding-left: 20px; max-width: 68ch; }
+  ol.steps li { margin: 8px 0; }
+  code, .path {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: .84em; background: var(--code); border: 1px solid var(--line);
+    border-radius: 5px; padding: 1px 6px;
+  }
+  .foot { margin-top: 60px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--ink-3); font-size: .82rem; }
+  .foot p { margin: 6px 0; }
+  .refs { font-size: .85rem; color: var(--ink-2); max-width: 74ch; }
+  .refs li { margin: 5px 0; }
+  @media (prefers-reduced-motion: no-preference) {
+    .kb-key { transition: transform .06s ease; }
+    .kb-key:hover { transform: translateY(-1px); }
+  }
+</style>
+
+<main>
+  <p class="eyebrow">typing_model · iPhone 16 · XKeyboard</p>
+  <h1>Thumbline</h1>
+  <p class="lede">Your Colemak Ortho board, taken apart with a thumb-movement model and
+    rebuilt for how phones are actually typed on — one thumb or two, precision first,
+    no autocorrect to catch a miss.</p>
+  <div class="chips" id="hero-chips"></div>
+  <div id="hero-board"></div>
+
+  <h2>What the model says about your Colemak</h2>
+  <p>The desktop model in this repo scores keymaps by walking a corpus through
+    per-key efforts and stroke-path penalties. This adaptation swaps the machinery for
+    thumb physics: same-side taps follow the thumb Fitts curves measured for the
+    <a href="https://dl.acm.org/doi/10.1145/2470654.2481383">KALQ study (CHI 2013)</a>,
+    alternating taps use its hover-over model — the idle thumb drifts toward its next
+    target while the other presses — and precision is a 2&nbsp;mm tap-scatter Gaussian
+    against each key's exclusive cell.
+    Hover any key below to see its share of taps and average press cost.</p>
+  <div id="colemak-board"></div>
+  <div class="chips" id="colemak-chips"></div>
+  <p><strong>Colemak is already a very good two-thumb phone layout.</strong> Its
+    left-consonants / right-vowels split alternates sides on 52% of transitions —
+    exactly the property the KALQ optimizer chases — and a validated hill-climb over
+    all 325 possible letter swaps found <strong>none</strong> that improves the
+    balanced objective by even 0.4%. The two places it leaves value on the table:
+    one-thumb travel (vowels sit a board-width away from common consonants) and
+    key size.</p>
+
+  <h2>The three levers</h2>
+  <div class="lever-grid">
+    <div class="lever">
+      <h3>Alternation <span class="eyebrow" style="margin-left:6px">two thumbs</span></h3>
+      <p>When the wait is short, an alternating tap is cheaper than a same-side one —
+        the idle thumb is already hovering over its target. Colemak's vowel split
+        banks this; any redesign has to defend it.</p>
+    </div>
+    <div class="lever">
+      <h3>Key size <span class="eyebrow" style="margin-left:6px">precision</span></h3>
+      <p>Serial thumb taps want ≥ 7.6–7.7 mm targets (Parhi et al. 2006). On a
+        65 mm screen, ten columns miss that bar; eight clear it.</p>
+      <div class="meter" id="pitch-meter"></div>
+    </div>
+    <div class="lever">
+      <h3>Travel <span class="eyebrow" style="margin-left:6px">one thumb</span></h3>
+      <p>One thumb has no partner to alternate with — only distance matters. It wants
+        the frequent letters in one compact cluster above space, which is precisely
+        what a split layout refuses to do. This is where optimization pays.</p>
+    </div>
+  </div>
+
+  <h2>The candidates</h2>
+  <p>Every variant keeps your bottom row (123 · ⌫ · #+= · space · return), your
+    punctuation zone, and the numbers/symbols layers of the original board. The
+    8-column family moves shift down beside 123 and hides the four rarest letters
+    (q z x j — 0.45% of characters) behind long-presses on mnemonic hosts:
+    <span class="mono">q→u&nbsp; z→s&nbsp; x→c&nbsp; j→g</span>, shown in key corners.</p>
+  <div class="db" id="wpm-db"></div>
+  <div class="cards" id="cards"></div>
+
+  <h2>All the numbers</h2>
+  <div class="tablewrap"><table id="results-table"></table></div>
+  <p class="sub">WPM figures are expert-ceiling estimates from movement models fitted
+    in a tablet study; read them comparatively, not as a forecast of day-one speed.
+    Miss % assumes 2 mm tap scatter and scales with your true σ — the ranking doesn't
+    change. Corpus: Alice in Wonderland + this repo's corpus passage + mobile-register
+    phrases upweighted ×20 (~180k characters).</p>
+
+  <h2>Trying them on the phone</h2>
+  <ol class="steps">
+    <li>Grab the <code>.xkeyboard</code> files from
+      <span class="path">ios/layouts/</span> on the branch — AirDrop, Files, or
+      iCloud them to the phone.</li>
+    <li>Open each with the XKeyboard app (share sheet → XKeyboard) to import; every
+      variant carries a fresh keyboard ID, so they install side by side instead of
+      overwriting your Colemak.</li>
+    <li>Give a candidate a fair run before judging: the KALQ study needed a few
+      hours of practice before its optimized layout overtook QWERTY, then finished
+      34% faster. Expect the same shape of curve, gentler here because your
+      function keys and punctuation don't move.</li>
+    <li>To iterate further: edit the corpus in <span class="path">ios/corpus/</span>
+      toward your real writing, re-run
+      <span class="path">python3 ios/explore.py</span>, and the annealer + exact
+      polish will re-derive the boards from your own statistics.</li>
+  </ol>
+
+  <div class="foot">
+    <p>Model: KALQ same-side / alternating thumb equations (Oulasvirta et al., CHI 2013) ·
+      Fitts-digraph corpus scoring (MacKenzie &amp; Zhang 1999; Zhai, Hunter &amp; Smith 2000) ·
+      target-size threshold (Parhi, Karlson &amp; Bederson 2006) ·
+      tap-scatter precision (Azenkot &amp; Zhai 2012; Bi, Li &amp; Zhai 2013).</p>
+    <p>Source, corpus, and installable boards live in <span class="path">ios/</span> on branch
+      <span class="path">claude/ios-typing-layout-uz7859</span> of
+      <a href="https://github.com/jackhumbert/typing_model">jackhumbert/typing_model</a>.</p>
+  </div>
+</main>
+
+<script>
+const DATA = {"colemak": {"name": "Colemak Ortho (current)", "family": "10col", "grid": [["q", "w", "f", "p", "g", "j", "l", "u", "y", "^"], ["a", "r", "s", "t", "d", "h", "n", "e", "i", "o"], ["z", "x", "c", "v", "b", "k", "m", ",", "'", "-"]], "bottom": ["1", "\u232b", "#", " ", "\u23ce"], "meta": {"source": "uploaded"}, "wpm_2t": 38.96535897924535, "wpm_1t": 42.12236402406067, "travel": 15.991832767379593, "alternation": 0.5252233450289737, "miss_pct": 10.718668551284967, "longpress_pct": 0.5815359523073029, "key_time": {"c": 1102686.3012914136, "h": 2749200.0193947833, "a": 3813403.787695885, "p": 718943.0602832097, "t": 4820294.282711382, "e": 4840275.511627196, "r": 2316003.4871457773, " ": 8990143.121927045, "i": 2874715.1277813506, ".": 639928.5529717143, "d": 2157379.8479209896, "o": 3123894.1984817265, "w": 1468195.5574396034, "n": 2554978.609159379, "b": 682228.1945973559, "-": 39480.0608109329, "l": 1546275.2868041995, "s": 2849991.453254992, "g": 1354253.3971548928, "v": 386119.9886931716, "y": 874159.550860776, "f": 974432.7949641363, "k": 460025.4028909379, ",": 768212.8112825834, "u": 1265135.1798768714, "m": 812986.9619774584, "q": 90646.84982800864, "j": 65688.40686068812, "x": 94466.76573021534, "'": 291385.8580545568, "z": 32337.99251736172}, "key_count": {"c": 3049.0, "h": 9195.0, "a": 10957.0, "p": 2038.0, "t": 13795.0, "e": 17518.0, "r": 6993.0, " ": 34090.0, "i": 9720.0, ".": 1034.0, "d": 6202.0, "o": 10585.0, "w": 3568.0, "n": 9307.0, "b": 1878.0, "-": 143.0, "l": 5711.0, "s": 8170.0, "g": 3350.0, "v": 1052.0, "y": 3049.0, "f": 2568.0, "k": 1597.0, ",": 2853.0, "u": 4532.0, "m": 2967.0, "q": 239.0, "j": 209.0, "x": 239.0, "'": 1092.0, "z": 105.0}}, "qwerty": {"name": "QWERTY ortho (reference)", "family": "10col", "grid": [["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"], ["a", "s", "d", "f", "g", "h", "j", "k", "l", "^"], ["z", "x", "c", "v", "b", "n", "m", ",", "'", "-"]], "bottom": ["1", "\u232b", "#", " ", "\u23ce"], "meta": {"source": "reference"}, "wpm_2t": 38.956496761868664, "wpm_1t": 42.3260948246275, "travel": 17.825366898295606, "alternation": 0.5228292455458945, "miss_pct": 10.718668551284967, "longpress_pct": 0.5815359523073029, "key_time": {"c": 1024045.7926927361, "h": 2903195.70069758, "a": 3634829.7728470643, "p": 594942.0629111502, "t": 4592258.023437707, "e": 5217412.2885357095, "r": 2107135.285158707, " ": 9159393.047843507, "i": 3006934.847294359, ".": 682009.587499077, "d": 1968712.410563983, "o": 3272598.431251563, "w": 1349749.150578081, "n": 2760222.085674492, "b": 618959.7001417154, "-": 46444.95228324309, "l": 1664086.5595159628, "s": 2671477.9191558585, "g": 1314543.9302463091, "v": 334122.21328529937, "y": 953727.3261870951, "f": 854629.5619817054, "k": 461241.4445121019, ",": 876659.1922108616, "u": 1291456.262746448, "m": 858627.4710322849, "q": 76645.01841984638, "j": 64124.41200342711, "x": 67685.31452864631, "'": 309847.148334255, "z": 32608.381420935406}, "key_count": {"c": 3049.0, "h": 9195.0, "a": 10957.0, "p": 2038.0, "t": 13795.0, "e": 17518.0, "r": 6993.0, " ": 34090.0, "i": 9720.0, ".": 1034.0, "d": 6202.0, "o": 10585.0, "w": 3568.0, "n": 9307.0, "b": 1878.0, "-": 143.0, "l": 5711.0, "s": 8170.0, "g": 3350.0, "v": 1052.0, "y": 3049.0, "f": 2568.0, "k": 1597.0, ",": 2853.0, "u": 4532.0, "m": 2967.0, "q": 239.0, "j": 209.0, "x": 239.0, "'": 1092.0, "z": 105.0}}, "colemak_plus": {"name": "Colemak Thumb (micro-iterated)", "family": "10col", "grid": [["q", "w", "f", "p", "g", "j", "l", "u", "y", "^"], ["a", "r", "s", "t", "d", "h", "n", "e", "i", "o"], ["z", "x", "c", "v", "b", "k", "m", ",", "'", "-"]], "bottom": ["1", "\u232b", "#", " ", "\u23ce"], "meta": {"swaps": []}, "wpm_2t": 38.96535897924535, "wpm_1t": 42.12236402406067, "travel": 15.991832767379593, "alternation": 0.5252233450289737, "miss_pct": 10.718668551284967, "longpress_pct": 0.5815359523073029, "key_time": {"c": 1102686.3012914136, "h": 2749200.0193947833, "a": 3813403.787695885, "p": 718943.0602832097, "t": 4820294.282711382, "e": 4840275.511627196, "r": 2316003.4871457773, " ": 8990143.121927045, "i": 2874715.1277813506, ".": 639928.5529717143, "d": 2157379.8479209896, "o": 3123894.1984817265, "w": 1468195.5574396034, "n": 2554978.609159379, "b": 682228.1945973559, "-": 39480.0608109329, "l": 1546275.2868041995, "s": 2849991.453254992, "g": 1354253.3971548928, "v": 386119.9886931716, "y": 874159.550860776, "f": 974432.7949641363, "k": 460025.4028909379, ",": 768212.8112825834, "u": 1265135.1798768714, "m": 812986.9619774584, "q": 90646.84982800864, "j": 65688.40686068812, "x": 94466.76573021534, "'": 291385.8580545568, "z": 32337.99251736172}, "key_count": {"c": 3049.0, "h": 9195.0, "a": 10957.0, "p": 2038.0, "t": 13795.0, "e": 17518.0, "r": 6993.0, " ": 34090.0, "i": 9720.0, ".": 1034.0, "d": 6202.0, "o": 10585.0, "w": 3568.0, "n": 9307.0, "b": 1878.0, "-": 143.0, "l": 5711.0, "s": 8170.0, "g": 3350.0, "v": 1052.0, "y": 3049.0, "f": 2568.0, "k": 1597.0, ",": 2853.0, "u": 4532.0, "m": 2967.0, "q": 239.0, "j": 209.0, "x": 239.0, "'": 1092.0, "z": 105.0}}, "opt10_hybrid": {"name": "Opt-10 hybrid (same grid as Colemak)", "family": "10col", "grid": [["z", "c", "g", "w", "r", "d", "i", "n", "k", "^"], ["q", "f", "u", "o", "l", "a", "e", "h", "b", "x"], ["j", "p", "v", "y", "m", "s", "t", ",", "'", "-"]], "bottom": ["1", "\u232b", "#", " ", "\u23ce"], "meta": {}, "wpm_2t": 38.35468377606379, "wpm_1t": 44.68447963522043, "travel": 14.673998525915666, "alternation": 0.35072135752833394, "miss_pct": 10.718668551284967, "longpress_pct": 0.5815359523073029, "key_time": {"c": 1221064.0660854012, "h": 2559558.003540112, "a": 3206534.455299154, "p": 753866.060127314, "t": 3821660.3255109093, "e": 4815596.702623874, "r": 2699279.619842121, " ": 9024926.840257222, "i": 2825977.6830522525, ".": 650346.9677347442, "d": 1761855.1722762731, "o": 4180283.0414695614, "w": 1548767.2386866654, "n": 2588479.210418252, "b": 550332.0882732418, "-": 43046.1464510982, "l": 2145222.394600032, "s": 2293915.0064910008, "g": 1569487.7127294978, "v": 442526.1789251571, "y": 1185447.9571278193, "f": 995941.0334902604, "k": 514660.2886825495, ",": 798646.1744706173, "u": 1510693.5065179847, "m": 1295422.2515900985, "q": 122964.40162557091, "j": 95832.10816174975, "x": 66287.893494583, "'": 304503.85788918, "z": 36587.29156570779}, "key_count": {"c": 3049.0, "h": 9195.0, "a": 10957.0, "p": 2038.0, "t": 13795.0, "e": 17518.0, "r": 6993.0, " ": 34090.0, "i": 9720.0, ".": 1034.0, "d": 6202.0, "o": 10585.0, "w": 3568.0, "n": 9307.0, "b": 1878.0, "-": 143.0, "l": 5711.0, "s": 8170.0, "g": 3350.0, "v": 1052.0, "y": 3049.0, "f": 2568.0, "k": 1597.0, ",": 2853.0, "u": 4532.0, "m": 2967.0, "q": 239.0, "j": 209.0, "x": 239.0, "'": 1092.0, "z": 105.0}}, "opt8_two": {"name": "Thumbline-8 two-thumb", "family": "8col", "grid": [["p", "w", "s", "c", "l", "v", "r", "y"], ["m", "b", "o", "u", "h", "e", "n", "d"], ["f", "g", "i", "k", "t", "a", ",", "'"]], "bottom": ["^", "1", "\u232b", " ", "#", "\u23ce"], "meta": {}, "wpm_2t": 38.21243411547417, "wpm_1t": 44.36593638233994, "travel": 15.47924226389236, "alternation": 0.39507759498205847, "miss_pct": 5.835544498586119, "longpress_pct": 1.1073929304575236, "key_time": {"c": 1138366.661446352, "h": 2609244.431848719, "a": 3045051.357206524, "p": 766409.7553622542, "t": 3957571.029651435, "e": 4879158.18329165, "r": 2061703.447774932, " ": 8946620.049351448, "i": 3863223.4808886885, ".": 639296.2598977347, "d": 1698157.734780708, "o": 4141212.5275073457, "w": 1481198.389356357, "n": 2729307.987538798, "b": 835554.9814541175, "-": 89959.09629280225, "l": 1597233.1336830847, "s": 3176586.3031504313, "g": 1163669.5716944681, "v": 294709.34952929965, "y": 865066.3022660885, "f": 975523.8956177029, "k": 577507.3675911721, ",": 780450.6020074219, "u": 1374188.9657674606, "m": 1202271.6255444193, "q": 200424.76620362094, "j": 169385.4308511579, "x": 208916.37946389083, "'": 302739.32826567796, "z": 66090.52609028658}, "key_count": {"c": 3049.0, "h": 9195.0, "a": 10957.0, "p": 2038.0, "t": 13795.0, "e": 17518.0, "r": 6993.0, " ": 34090.0, "i": 9720.0, ".": 1034.0, "d": 6202.0, "o": 10585.0, "w": 3568.0, "n": 9307.0, "b": 1878.0, "-": 143.0, "l": 5711.0, "s": 8170.0, "g": 3350.0, "v": 1052.0, "y": 3049.0, "f": 2568.0, "k": 1597.0, ",": 2853.0, "u": 4532.0, "m": 2967.0, "q": 239.0, "j": 209.0, "x": 239.0, "'": 1092.0, "z": 105.0}}, "opt8_one": {"name": "Thumbline-8 one-thumb", "family": "8col", "grid": [["b", "m", "u", "n", "r", "c", "v", "w"], ["f", "y", "i", "o", "e", "h", "k", "p"], ["l", "g", "d", "a", "t", "s", ",", "'"]], "bottom": ["^", "1", "\u232b", " ", "#", "\u23ce"], "meta": {}, "wpm_2t": 37.72931991599607, "wpm_1t": 45.004407592971454, "travel": 15.74612723459293, "alternation": 0.3690666424034257, "miss_pct": 5.835544498586119, "longpress_pct": 1.1073929304575236, "key_time": {"c": 1061429.2863329072, "h": 2529728.3262301474, "a": 4538269.031646011, "p": 627442.6027461134, "t": 4381168.275007241, "e": 4980856.9535513595, "r": 2163846.564108889, " ": 8929598.38193364, "i": 3546736.241395181, ".": 678311.9189104177, "d": 1979851.648027138, "o": 3791898.209600538, "w": 1182788.3784037489, "n": 2881012.5716382335, "b": 697632.964082139, "-": 93259.80365907251, "l": 1827672.5807536019, "s": 2474029.4969884357, "g": 1044491.9886799116, "v": 335341.83836751914, "y": 1102858.5847083437, "f": 885518.3610248036, "k": 520377.1130730181, ",": 882716.7074544061, "u": 1384733.5400085996, "m": 1082817.6939472063, "q": 201243.41375194993, "j": 155850.18651199335, "x": 155338.33486141232, "'": 364286.3926059207, "z": 70667.32398959149}, "key_count": {"c": 3049.0, "h": 9195.0, "a": 10957.0, "p": 2038.0, "t": 13795.0, "e": 17518.0, "r": 6993.0, " ": 34090.0, "i": 9720.0, ".": 1034.0, "d": 6202.0, "o": 10585.0, "w": 3568.0, "n": 9307.0, "b": 1878.0, "-": 143.0, "l": 5711.0, "s": 8170.0, "g": 3350.0, "v": 1052.0, "y": 3049.0, "f": 2568.0, "k": 1597.0, ",": 2853.0, "u": 4532.0, "m": 2967.0, "q": 239.0, "j": 209.0, "x": 239.0, "'": 1092.0, "z": 105.0}}, "opt8_hybrid": {"name": "Thumbline-8 hybrid", "family": "8col", "grid": [["f", "w", "u", "n", "y", "l", "c", "k"], ["p", "g", "o", "i", "a", "h", "r", "v"], ["b", "m", "d", "s", "t", "e", ",", "'"]], "bottom": ["^", "1", "\u232b", " ", "#", "\u23ce"], "meta": {}, "wpm_2t": 38.038667377510436, "wpm_1t": 45.00742359314275, "travel": 15.044610619920709, "alternation": 0.38953875199745236, "miss_pct": 5.835544498586119, "longpress_pct": 1.1073929304575236, "key_time": {"c": 955649.9198214124, "h": 2658901.0025763684, "a": 3221148.08561465, "p": 768428.7234086691, "t": 4258690.127585945, "e": 5027556.941571244, "r": 2092043.6925924586, " ": 8895788.217715824, "i": 3647567.4691160526, ".": 665322.7459146406, "d": 2184132.914880518, "o": 3703437.0181699987, "w": 1410720.9735616301, "n": 3146113.3449956784, "b": 777725.1324398379, "-": 92380.55900461902, "l": 1597466.0955867092, "s": 3031706.140613671, "g": 1084589.599312807, "v": 316317.9394950314, "y": 872254.6669980657, "f": 929220.5413886615, "k": 482026.447228611, ",": 851914.5308017323, "u": 1359869.7009935474, "m": 1145840.2390630485, "q": 193945.6028116485, "j": 157611.21636835663, "x": 151009.62281953404, "'": 346891.9267322025, "z": 65599.24174085108}, "key_count": {"c": 3049.0, "h": 9195.0, "a": 10957.0, "p": 2038.0, "t": 13795.0, "e": 17518.0, "r": 6993.0, " ": 34090.0, "i": 9720.0, ".": 1034.0, "d": 6202.0, "o": 10585.0, "w": 3568.0, "n": 9307.0, "b": 1878.0, "-": 143.0, "l": 5711.0, "s": 8170.0, "g": 3350.0, "v": 1052.0, "y": 3049.0, "f": 2568.0, "k": 1597.0, ",": 2853.0, "u": 4532.0, "m": 2967.0, "q": 239.0, "j": 209.0, "x": 239.0, "'": 1092.0, "z": 105.0}}};
+
+const GEO = {
+  '10col': { pitch: '6.5', key: '5.5×7.1' },
+  '8col':  { pitch: '8.1', key: '7.1×7.1' },
+};
+const BOTTOM_W = {
+  '10col': [2, 2, 2, 2, 2],
+  '8col':  [1.2, 1.2, 1.2, 2.6, 1.2, 1.6],
+};
+const BOTTOM_LABELS = { '1': '123', '⌫': '⌫', '#': '#+=', ' ': 'space', '⏎': 'return', '^': '⇧' };
+const LP = {
+  '10col': { ',': '.', "'": '@', '-': '_' },
+  '8col':  { ',': '.', "'": '-', 'u': 'q', 's': 'z', 'c': 'x', 'g': 'j' },
+};
+
+const tip = document.createElement('div');
+tip.className = 'kb-tip';
+document.body.appendChild(tip);
+
+function keyStats(entry, ch) {
+  const n = entry.key_count[ch];
+  if (!n) return null;
+  const total = Object.values(entry.key_count).reduce((a, b) => a + b, 0);
+  const avg = entry.key_time[ch] / n;
+  return `${ch === ' ' ? 'space' : ch} · ${(100 * n / total).toFixed(1)}% of taps · ${avg.toFixed(0)} ms avg`;
+}
+
+function renderBoard(entry, { sides = true, legend = true } = {}) {
+  const fam = entry.family;
+  const board = document.createElement('div');
+  board.className = 'board';
+  const half = fam === '10col' ? 5 : 4;
+  for (const row of entry.grid) {
+    const r = document.createElement('div');
+    r.className = 'krow';
+    row.forEach((ch, ci) => {
+      const k = document.createElement('div');
+      k.className = 'kb-key';
+      if (ch === '^') { k.classList.add('special'); k.textContent = '⇧'; }
+      else if (ch === '∅') { k.style.visibility = 'hidden'; }
+      else {
+        k.textContent = ch;
+        if (sides) k.classList.add(ci < half ? 'sideL' : 'sideR');
+        const lp = LP[fam][ch];
+        if (lp) { const s = document.createElement('span'); s.className = 'lp'; s.textContent = lp; k.appendChild(s); }
+        const stats = keyStats(entry, ch);
+        if (stats) {
+          k.addEventListener('pointerenter', () => {
+            const b = k.getBoundingClientRect();
+            tip.textContent = stats;
+            tip.style.left = (b.left + b.width / 2 + scrollX) + 'px';
+            tip.style.top = (b.top + scrollY) + 'px';
+            tip.style.display = 'block';
+          });
+          k.addEventListener('pointerleave', () => tip.style.display = 'none');
+        }
+      }
+      r.appendChild(k);
+    });
+    board.appendChild(r);
+  }
+  const br = document.createElement('div');
+  br.className = 'krow';
+  entry.bottom.forEach((ch, i) => {
+    const k = document.createElement('div');
+    k.className = 'kb-key special';
+    k.style.flexGrow = BOTTOM_W[fam][i];
+    k.textContent = BOTTOM_LABELS[ch] || ch;
+    if (ch === ' ') {
+      const stats = keyStats(entry, ' ');
+      if (stats) {
+        k.addEventListener('pointerenter', () => {
+          const b = k.getBoundingClientRect();
+          tip.textContent = stats;
+          tip.style.left = (b.left + b.width / 2 + scrollX) + 'px';
+          tip.style.top = (b.top + scrollY) + 'px';
+          tip.style.display = 'block';
+        });
+        k.addEventListener('pointerleave', () => tip.style.display = 'none');
+      }
+    }
+    br.appendChild(k);
+  });
+  board.appendChild(br);
+  const wrap = document.createElement('div');
+  wrap.appendChild(board);
+  if (sides && legend) {
+    const lg = document.createElement('div');
+    lg.className = 'legendline';
+    lg.innerHTML = `<span><span class="swatch" style="background:color-mix(in srgb, var(--thumb-l) 40%, var(--key))"></span>left thumb</span>` +
+      `<span><span class="swatch" style="background:color-mix(in srgb, var(--thumb-r) 40%, var(--key))"></span>right thumb</span>` +
+      `<span>corner glyph = long-press</span>`;
+    wrap.appendChild(lg);
+  }
+  return wrap;
+}
+
+function chip(label, value, cls = '') {
+  return `<span class="chip ${cls}"><b>${value}</b>${label}</span>`;
+}
+
+function fmtDelta(v, base, invert = false) {
+  const d = (v / base - 1) * 100;
+  if (Math.abs(d) < 0.05) return '';
+  const up = invert ? d < 0 : d > 0;
+  return `<span class="delta ${up ? 'up' : 'down'}">${d > 0 ? '+' : ''}${d.toFixed(1)}%</span>`;
+}
+
+const base = DATA.colemak;
+const heroTag = 'opt8_hybrid';
+
+// ---- hero
+const hero = DATA[heroTag];
+document.getElementById('hero-chips').innerHTML =
+  chip(' two-thumb', hero.wpm_2t.toFixed(1) + ' wpm') +
+  chip(' one-thumb', hero.wpm_1t.toFixed(1) + ' wpm', hero.wpm_1t > base.wpm_1t ? 'up' : '') +
+  chip(' modeled miss risk vs your board', '−' + (100 - 100 * hero.miss_pct / base.miss_pct).toFixed(0) + '%', 'up') +
+  chip(' mm key pitch', GEO[hero.family].pitch);
+document.getElementById('hero-board').appendChild(renderBoard(hero));
+
+// ---- colemak baseline
+document.getElementById('colemak-board').appendChild(renderBoard(base));
+document.getElementById('colemak-chips').innerHTML =
+  chip(' two-thumb', base.wpm_2t.toFixed(1) + ' wpm') +
+  chip(' one-thumb', base.wpm_1t.toFixed(1) + ' wpm') +
+  chip(' side alternation', (base.alternation * 100).toFixed(0) + '%') +
+  chip(' miss risk per tap at σ=2mm', base.miss_pct.toFixed(1) + '%') +
+  chip(' key pitch (below 7.7mm bar)', GEO[base.family].pitch + ' mm', 'down');
+
+// ---- pitch meter
+const scaleMax = 10;
+document.getElementById('pitch-meter').innerHTML = [
+  ['10 columns', 6.51, false],
+  ['8 columns', 8.14, true],
+].map(([lab, v, ok]) => `
+  <div class="mrow">
+    <div class="mhead">
+      <span>${lab}</span>
+      <span class="verdict ${ok ? 'ok' : 'no'}">${v.toFixed(1)} mm ${ok ? '✓ clears it' : '✕ under'}</span>
+    </div>
+    <div class="track">
+      <span class="fill" style="width:${v / scaleMax * 100}%"></span>
+      <span class="thr" style="left:${7.7 / scaleMax * 100}%"></span>
+    </div>
+  </div>`).join('') +
+  '<div class="caption">dashed line — 7.7 mm serial-tap threshold</div>';
+
+// ---- dumbbell
+const ORDER = ['colemak', 'qwerty', 'colemak_plus', 'opt10_hybrid', 'opt8_two', 'opt8_one', 'opt8_hybrid'];
+const present = ORDER.filter(t => DATA[t]);
+const lo = 36, hi = 47;
+const x = v => ((v - lo) / (hi - lo) * 100).toFixed(2) + '%';
+let db = '<div class="db-legend"><span><span class="dot two"></span>two thumbs</span><span><span class="dot one"></span>one thumb</span></div>';
+db += '<div class="axis">' + [38, 40, 42, 44, 46].map(t => `<span class="tick" style="left:${x(t)}">${t}</span>`).join('') + '</div>';
+for (const t of present) {
+  const e = DATA[t];
+  const two = e.wpm_2t, one = e.wpm_1t;
+  const l = Math.min(two, one), r = Math.max(two, one);
+  db += `<div class="row"><span class="lab ${t === heroTag ? 'hero' : ''}">${e.name.replace(/ \(.*\)/, '')}</span>
+    <span class="track"><span class="rail"></span>
+    <span class="join" style="left:${x(l)};width:calc(${x(r)} - ${x(l)})"></span>
+    <span class="dot two" style="left:${x(two)}" title="two thumbs: ${two.toFixed(1)} wpm"></span>
+    <span class="dot one" style="left:${x(one)}" title="one thumb: ${one.toFixed(1)} wpm"></span>
+    <span class="val ${two < one ? '' : 'lo'}" style="left:${x(two)}">${two.toFixed(1)}</span>
+    <span class="val ${two < one ? 'lo' : ''}" style="left:${x(one)}">${one.toFixed(1)}</span>
+    </span></div>`;
+}
+document.getElementById('wpm-db').innerHTML = db;
+
+// ---- cards
+const NOTES = {
+  qwerty: 'The layout everyone measures against. Alternates almost as well as Colemak (the vowels are already spread), but pays 12% more travel — and you left it behind years ago anyway.',
+  colemak_plus: 'Greedy hill-climb from your board, keeping any swap only if the exact simulator confirms it. It kept none: your layout is a local optimum for balanced two/one-thumb use.',
+  opt10_hybrid: 'Same 10-column grid as your board, letters re-annealed for a 50/50 one-/two-thumb blend. Buys one-thumb travel by giving up alternation — a sidegrade that shows assignment alone can\'t fix the geometry.',
+  opt8_two: 'Eight columns, annealed 85/15 toward two-thumb use: keeps a Colemak-like vowel island right, consonant runs left, and the biggest keys the screen allows.',
+  opt8_one: 'Annealed 15/85 toward one-thumb use: everything frequent collapses into a tight arc over the spacebar. The fastest single-thumb board here.',
+  opt8_hybrid: 'The recommendation. Eight columns for precision, letters annealed 50/50 — nearly the one-thumb win of the dedicated board while giving back only ~2% two-thumb, and about half the modeled miss risk of your current keys.',
+};
+const cardsEl = document.getElementById('cards');
+for (const t of present) {
+  if (t === 'colemak') continue;
+  const e = DATA[t];
+  const card = document.createElement('div');
+  card.className = 'card';
+  const info = `
+    <div class="info">
+      <h3>${e.name}${t === heroTag ? ' ★' : ''}</h3>
+      <div class="chips">
+        ${chip(' 2T wpm', e.wpm_2t.toFixed(1) + fmtDelta(e.wpm_2t, base.wpm_2t))}
+        ${chip(' 1T wpm', e.wpm_1t.toFixed(1) + fmtDelta(e.wpm_1t, base.wpm_1t))}
+        ${chip(' miss/tap', e.miss_pct.toFixed(1) + '%' + fmtDelta(e.miss_pct, base.miss_pct, true))}
+        ${chip(' alternation', (e.alternation * 100).toFixed(0) + '%')}
+      </div>
+      <p class="sub">${NOTES[t] || ''}</p>
+    </div>`;
+  const top = document.createElement('div');
+  top.className = 'top';
+  top.appendChild(renderBoard(e, { legend: false }));
+  top.insertAdjacentHTML('beforeend', info);
+  card.appendChild(top);
+  cardsEl.appendChild(card);
+}
+
+// ---- table
+const tbl = document.getElementById('results-table');
+let html = '<thead><tr><th>layout</th><th class="num">key mm</th><th class="num">2-thumb wpm</th><th class="num">1-thumb wpm</th><th class="num">mm/tap</th><th class="num">alt %</th><th class="num">miss %</th><th class="num">long-press %</th></tr></thead><tbody>';
+for (const t of present) {
+  const e = DATA[t];
+  html += `<tr class="${t === heroTag ? 'hero-row' : ''}">
+    <td>${e.name}${t === heroTag ? ' ★' : ''}</td>
+    <td class="num">${GEO[e.family].key}</td>
+    <td class="num">${e.wpm_2t.toFixed(1)}${t !== 'colemak' ? fmtDelta(e.wpm_2t, base.wpm_2t) : ''}</td>
+    <td class="num">${e.wpm_1t.toFixed(1)}${t !== 'colemak' ? fmtDelta(e.wpm_1t, base.wpm_1t) : ''}</td>
+    <td class="num">${e.travel.toFixed(2)}</td>
+    <td class="num">${(e.alternation * 100).toFixed(1)}</td>
+    <td class="num">${e.miss_pct.toFixed(2)}</td>
+    <td class="num">${e.longpress_pct.toFixed(2)}</td>
+  </tr>`;
+}
+tbl.innerHTML = html + '</tbody>';
+</script>
