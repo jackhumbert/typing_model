@@ -67,3 +67,13 @@ Corpus: 179,825 chars (Alice in Wonderland + this repo's corpus passage + mobile
   b m d s t e , '
   [^] [1] [⌫] [ ] [#] [⏎]
 ```
+
+## Swipe family (3x3 tap+swipe, MessagEase style)
+
+| layout | 2-thumb WPM | 1-thumb WPM | swipe % | tap-miss % | dir-err % |
+|---|---|---|---|---|---|
+| MessagEase classic | 35.2 | 42.3 | 26.7 | 2.55 | 0.45 |
+| Thumb-Key EN | 35.2 | 41.7 | 26.7 | 2.55 | 0.58 |
+| Swipe-9 (corpus-tuned) | 35.5 | 42.5 | 26.7 | 2.55 | 0.46 |
+
+Swipe-overhead sensitivity (corpus-tuned board): 80 ms → 43.7 1T wpm, 110 ms → 42.5 1T wpm, 140 ms → 41.3 1T wpm
